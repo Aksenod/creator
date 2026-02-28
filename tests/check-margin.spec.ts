@@ -9,8 +9,7 @@ test.beforeEach(async ({ page }) => {
 async function enterPageEditor(page: Page) {
   await page.click('button:has-text("Новый проект")')
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
-  const artboard = page.locator('div').filter({ hasText: /Пусто|двойной клик/ }).first()
-  await artboard.dblclick()
+  await page.locator('[data-testid="artboard-card"]').first().dblclick()
   await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
 }
 
@@ -23,9 +22,9 @@ test('margin-top moves element visually away from sibling', async ({ page }) => 
   await page.click('button:has-text("+ Div")')
   await page.waitForTimeout(200)
 
-  // Select second div (div 2) 
+  // Select second div (div 2): elements(0)=body, elements(1)=div1, elements(2)=div2
   const elements = page.locator('[data-element-id]')
-  const secondEl = elements.nth(1)
+  const secondEl = elements.nth(2)
   await secondEl.click()
   await page.waitForTimeout(200)
 

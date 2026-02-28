@@ -69,16 +69,28 @@ type EditorState = {
   setGridEditElementId: (id: string | null) => void
 }
 
-const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => ({
-  id: generateId(),
-  name,
-  width: 1440,
-  height: 900,
-  x,
-  y,
-  elements: {},
-  rootChildren: [],
-})
+const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
+  const bodyId = generateId()
+  const bodyElement: CanvasElement = {
+    id: bodyId,
+    name: 'Body',
+    className: 'body',
+    type: 'body',
+    positionMode: 'static',
+    styles: { width: '100%', display: 'block' },
+    children: [],
+  }
+  return {
+    id: generateId(),
+    name,
+    width: 1440,
+    height: 900,
+    x,
+    y,
+    elements: { [bodyId]: bodyElement },
+    rootChildren: [bodyId],
+  }
+}
 
 export const useEditorStore = create<EditorState>()(
   persist(
@@ -157,9 +169,11 @@ export const useEditorStore = create<EditorState>()(
           image:   { width: '200px', height: '150px', backgroundColor: '#e0e0e0' },
           button:  { width: 'auto',  height: 'auto',  backgroundColor: '#0066ff' },
           input:   { width: '200px', height: '40px',  backgroundColor: '#fff' },
+          body:    { width: '100%',  display: 'block' },
         }
 
-        const name = `${type} ${Object.keys(ab.elements).length + 1}`
+        const nonBodyCount = Object.values(ab.elements).filter(e => e.type !== 'body').length
+        const name = `${type} ${nonBodyCount + 1}`
         const newElement: CanvasElement = {
           id,
           name,
@@ -174,9 +188,14 @@ export const useEditorStore = create<EditorState>()(
         const updatedElements = { ...ab.elements, [id]: newElement }
         let updatedRootChildren = ab.rootChildren
 
-        if (parentId && ab.elements[parentId]) {
-          const parent = ab.elements[parentId]
-          updatedElements[parentId] = { ...parent, children: [...parent.children, id] }
+        // Определяем эффективного родителя: переданный parentId → body → rootChildren
+        const effectiveParentId = (parentId && ab.elements[parentId])
+          ? parentId
+          : (ab.rootChildren.find(cid => ab.elements[cid]?.type === 'body') ?? null)
+
+        if (effectiveParentId) {
+          const parent = ab.elements[effectiveParentId]
+          updatedElements[effectiveParentId] = { ...parent, children: [...parent.children, id] }
         } else {
           updatedRootChildren = [...ab.rootChildren, id]
         }
@@ -200,9 +219,11 @@ export const useEditorStore = create<EditorState>()(
         const el = ab?.elements[elementId]
         if (!ab || !el || !state.project) return state
 
-        const newClassName = patch.name && !patch.className
-          ? slugify(patch.name)
-          : (patch.className ?? el.className)
+        const newClassName = el.type === 'body'
+          ? 'body'
+          : patch.name && !patch.className
+            ? slugify(patch.name)
+            : (patch.className ?? el.className)
 
         const activeBpId = state.activeBreakpointId
 
@@ -256,7 +277,10 @@ export const useEditorStore = create<EditorState>()(
         if (!ab || !state.project) return state
 
         // Собрать все id для удаления (рекурсивно), включая все выделенные
-        const idsToDelete = state.selectedElementIds.length > 0 ? state.selectedElementIds : [elementId]
+        const rawIds = state.selectedElementIds.length > 0 ? state.selectedElementIds : [elementId]
+        // Нельзя удалять body-элементы
+        const idsToDelete = rawIds.filter(id => ab.elements[id]?.type !== 'body')
+        if (idsToDelete.length === 0) return state
         const toDelete = new Set<string>()
         idsToDelete.forEach(id => collectDescendantIds(ab.elements, id).forEach(d => toDelete.add(d)))
 
@@ -442,7 +466,15 @@ export const useEditorStore = create<EditorState>()(
             newAb = { ...ab, elements: mergedElements, rootChildren: newRoot }
           }
         } else {
-          newAb = { ...ab, elements: mergedElements, rootChildren: [...ab.rootChildren, newRootId] }
+          // Fallback: вставить в body, если он есть
+          const bodyId = ab.rootChildren.find(cid => ab.elements[cid]?.type === 'body')
+          if (bodyId) {
+            const body = mergedElements[bodyId]
+            mergedElements[bodyId] = { ...body, children: [...body.children, newRootId] }
+            newAb = { ...ab, elements: mergedElements }
+          } else {
+            newAb = { ...ab, elements: mergedElements, rootChildren: [...ab.rootChildren, newRootId] }
+          }
         }
 
         const newProject = {
@@ -463,6 +495,7 @@ export const useEditorStore = create<EditorState>()(
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
         const id = state.selectedElementId
         if (!ab || !id || !ab.elements[id] || !state.project) return state
+        if (ab.elements[id].type === 'body') return state
 
         const idMap: Record<string, string> = {}
         collectDescendantIds(ab.elements, id).forEach(eid => {

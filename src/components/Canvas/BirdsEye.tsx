@@ -134,6 +134,7 @@ export function BirdsEye() {
                 {/* Артборд-карточка с реальным превью элементов */}
                 <div
                   onDoubleClick={() => enterArtboard(id)}
+                  data-testid="artboard-card"
                   style={{
                     width: artboard.width,
                     height: artboard.height,

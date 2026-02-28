@@ -6,7 +6,7 @@ export const generateId = () => Math.random().toString(36).slice(2, 10)
 const HISTORY_MAX_SIZE = 50
 
 // Типы-контейнеры, которые принимают дочерние элементы
-export const CONTAINER_TYPES = ['div', 'section'] as const
+export const CONTAINER_TYPES = ['div', 'section', 'body'] as const
 
 // Сохранить текущий проект в историю и вернуть обновлённые поля
 export const pushHistory = (

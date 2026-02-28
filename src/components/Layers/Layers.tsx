@@ -57,7 +57,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
   const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
   const el = artboard.elements[id]
 
-  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id })
+  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id, disabled: el.type === 'body' })
   const { setNodeRef: setDropRef } = useDroppable({ id })
 
   // Merge refs onto the row element (NOT the outer wrapper, so nested droppables don't overlap)
@@ -96,12 +96,12 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         style={{
           display: 'flex', alignItems: 'center',
           padding: `4px 8px 4px ${8 + depth * 16}px`,
-          cursor: 'grab', fontSize: 12,
+          cursor: el.type === 'body' ? 'default' : 'grab', fontSize: 12,
           borderRadius: 3,
           background: isDropInto
             ? 'rgba(0,102,255,0.06)'
             : isSelected ? '#e8f0fe' : 'transparent',
-          color: isSelected ? '#0066ff' : '#333',
+          color: isSelected ? '#0066ff' : el.type === 'body' ? '#555' : '#333',
           userSelect: 'none',
           outline: isDropInto ? '1.5px solid rgba(0,102,255,0.35)' : 'none',
           outlineOffset: -1,
@@ -177,6 +177,7 @@ function DragGhost({ id, artboard }: { id: string; artboard: Artboard }) {
 
 function getIcon(type: string) {
   switch (type) {
+    case 'body': return '⊡'
     case 'text': return 'T'
     case 'image': return '⬜'
     case 'section': return '▭'
@@ -284,7 +285,7 @@ export function Layers({ artboard }: Props) {
     const fraction = Math.min(1, Math.max(0, relY / rect.height))
 
     const targetEl = artboard.elements[targetId]
-    const isContainer = targetEl != null && CONTAINER_TYPES.includes(targetEl.type)
+    const isContainer = targetEl != null && CONTAINER_TYPES.includes(targetEl.type as typeof CONTAINER_TYPES[number])
 
     let position: 'above' | 'below' | 'into'
     if (fraction < 0.3) {

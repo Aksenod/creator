@@ -19,9 +19,8 @@ async function createProject(page: Page) {
 /** Войти в PageEditor (двойной клик по артборду) */
 async function enterPageEditor(page: Page) {
   await createProject(page)
-  // Артборд — первый белый div с содержимым "Пусто"
-  const artboard = page.locator('div').filter({ hasText: /Пусто|двойной клик/ }).first()
-  await artboard.dblclick()
+  // Двойной клик по артборду-карточке
+  await page.locator('[data-testid="artboard-card"]').first().dblclick()
   // Ждём появления кнопки "← Назад"
   await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
 }
@@ -40,8 +39,8 @@ test('создание проекта', async ({ page }) => {
   await btn.click()
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
 
-  // Должен быть виден артборд (белый прямоугольник с текстом о пустоте или кол-ве элементов)
-  const artboard = page.locator('div').filter({ hasText: /Пусто|двойной клик/ }).first()
+  // Должен быть виден артборд-карточка в BirdsEye
+  const artboard = page.locator('[data-testid="artboard-card"]').first()
   await expect(artboard).toBeVisible()
 
   // Должно быть имя проекта в топбаре
@@ -53,9 +52,8 @@ test('создание проекта', async ({ page }) => {
 test('вход в артборд', async ({ page }) => {
   await createProject(page)
 
-  // Двойной клик по артборду
-  const artboard = page.locator('div').filter({ hasText: /Пусто|двойной клик/ }).first()
-  await artboard.dblclick()
+  // Двойной клик по артборду-карточке
+  await page.locator('[data-testid="artboard-card"]').first().dblclick()
 
   // Кнопка "← Назад"
   await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
@@ -72,8 +70,8 @@ test('вход в артборд', async ({ page }) => {
 test('добавление элементов через Toolbar', async ({ page }) => {
   await enterPageEditor(page)
 
-  // Начальное состояние — "Нет элементов"
-  await expect(page.getByText('Нет элементов', { exact: true })).toBeVisible()
+  // Начальное состояние — Body слой виден в Layers
+  await expect(page.locator('text=Body').first()).toBeVisible()
 
   // Кликнуть "+ Div"
   await page.click('button:has-text("+ Div")')
@@ -86,9 +84,6 @@ test('добавление элементов через Toolbar', async ({ page
 
   // В Layers должен появиться элемент "text 2"
   await expect(page.locator('text=text 2')).toBeVisible()
-
-  // "Нет элементов" должно исчезнуть
-  await expect(page.getByText('Нет элементов', { exact: true })).toHaveCount(0)
 })
 
 // ─── Тест 4: Выделение элемента и редактирование в Properties ─────────────────
@@ -162,8 +157,8 @@ test('удаление элемента', async ({ page }) => {
   // Элемент должен исчезнуть из Layers
   await expect(page.locator('text=div 1')).toHaveCount(0)
 
-  // "Нет элементов" должно появиться снова
-  await expect(page.getByText('Нет элементов', { exact: true })).toBeVisible()
+  // Body всё ещё виден в Layers
+  await expect(page.locator('text=Body').first()).toBeVisible()
 })
 
 // ─── Тест 7: Breakpoint bar ──────────────────────────────────────────────────
@@ -241,7 +236,10 @@ test('добавление маржинов через Spacing panel', async ({ 
     const project = persisted.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
-    const elemId = artboard.rootChildren[0]
+    // rootChildren[0] = body, body.children[0] = div 1
+    const bodyId = artboard.rootChildren[0]
+    const body = artboard.elements[bodyId]
+    const elemId = body?.children?.[0]
     return artboard.elements[elemId]?.styles
   })
 
@@ -294,7 +292,10 @@ test('установка черного бордера 10px у div', async ({ pa
     const project = persisted.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
-    const elemId = artboard.rootChildren[0]
+    // rootChildren[0] = body, body.children[0] = div 1
+    const bodyId = artboard.rootChildren[0]
+    const body = artboard.elements[bodyId]
+    const elemId = body?.children?.[0]
     return artboard.elements[elemId]?.styles ?? null
   })
 
@@ -305,7 +306,10 @@ test('установка черного бордера 10px у div', async ({ pa
       if (!raw) return false
       const p = JSON.parse(raw)
       const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-      const elemId = artboard?.rootChildren?.[0]
+      // rootChildren[0] = body, body.children[0] = div 1
+      const bodyId = artboard?.rootChildren?.[0]
+      const body = artboard?.elements?.[bodyId]
+      const elemId = body?.children?.[0]
       const s = artboard?.elements?.[elemId]?.styles
       return s?.borderStyle === 'solid' && s?.borderWidth === 10
     } catch { return false }
@@ -435,7 +439,10 @@ test('Grid Auto-flow: переключение направления', async ({
     if (!raw) return null
     const p = JSON.parse(raw)
     const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    const elemId = artboard?.rootChildren?.[0]
+    // rootChildren[0] = body, body.children[0] = div 1
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elemId = body?.children?.[0]
     return artboard?.elements?.[elemId]?.styles?.gridAutoFlow ?? null
   })
   expect(stored).toBe('column')
@@ -448,7 +455,10 @@ test('Grid Auto-flow: переключение направления', async ({
     if (!raw) return null
     const p = JSON.parse(raw)
     const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    const elemId = artboard?.rootChildren?.[0]
+    // rootChildren[0] = body, body.children[0] = div 1
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elemId = body?.children?.[0]
     return artboard?.elements?.[elemId]?.styles?.gridAutoFlow ?? null
   })
   expect(stored2).toBe('row')
@@ -553,8 +563,10 @@ test('Grid Child: установить column span 2', async ({ page }) => {
     if (!raw) return null
     const p = JSON.parse(raw)
     const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    // div 2 — дочерний элемент div 1
-    const parentId = artboard?.rootChildren?.[0]
+    // rootChildren[0] = body, body.children[0] = div 1 (grid parent), div1.children[0] = div 2
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const parentId = body?.children?.[0]
     const parent = artboard?.elements?.[parentId]
     const childId = parent?.children?.[0]
     return artboard?.elements?.[childId]?.styles?.gridColumn ?? null

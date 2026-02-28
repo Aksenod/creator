@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
 import { getCSSPosition } from '../../utils/cssUtils'
+import { useCanvasDnD } from '../../hooks/useCanvasDnD'
 
 // --- Resize handles ---
 
@@ -45,6 +46,9 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
   } = useEditorStore()
 
   const resizeRef = useRef<ResizeState | null>(null)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const { startDrag, dropIndicator, draggingId } = useCanvasDnD(previewMode ? null : artboard)
 
   // Глобальные обработчики resize (mousemove/mouseup)
   useEffect(() => {
@@ -54,7 +58,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       const state = resizeRef.current
       if (!state || !activeArtboardId) return
 
-      // Конвертируем screen-delta → design-delta с учётом scale
       const dx = (e.clientX - state.startMouseX) / scale
       const dy = (e.clientY - state.startMouseY) / scale
 
@@ -89,7 +92,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     e.stopPropagation()
     e.preventDefault()
 
-    // Берём реальные rendered размеры элемента через DOM
     const elDom = document.querySelector(`[data-element-id="${id}"]`) as HTMLElement
     if (!elDom) return
     const rect = elDom.getBoundingClientRect()
@@ -99,7 +101,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       handle,
       startMouseX: e.clientX,
       startMouseY: e.clientY,
-      // rect уже в screen pixels (с учётом scale), делим обратно → design pixels
       startW: rect.width / scale,
       startH: rect.height / scale,
     }
@@ -113,14 +114,43 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     if (!el) return null
 
     const isSelected = selectedElementIds.includes(id) || selectedElementId === id
+    const isDragging = draggingId === id
+    const isHovered = hoveredId === id
 
-    // Эффективные стили с учётом cascade (base + BP overrides)
+    // Drop indicator flags
+    const isDropBefore = !previewMode && dropIndicator?.zone === 'before' && dropIndicator.targetId === id
+    const isDropAfter  = !previewMode && dropIndicator?.zone === 'after'  && dropIndicator.targetId === id
+    const isDropInto   = !previewMode && dropIndicator?.zone === 'into'   && dropIndicator.targetId === id
+    // Оранжевый: родительский контейнер (zone before/after) — только для flow-элементов
+    const isDropParent = !previewMode && dropIndicator?.zone !== 'into' && dropIndicator?.parentId === id
+
     const s = resolveStyles(el, activeBreakpointId)
-
     const cssPosition = getCSSPosition(el.positionMode)
 
+    // Для static-элементов когда нужны absolute-дочерние (resize handles, drop indicators)
+    const needsRelative =
+      !previewMode &&
+      cssPosition === 'static' &&
+      (isSelected || isDropBefore || isDropAfter || isDropInto)
+
+    // Outline: приоритет — drop indicator > selection > hover
+    let outline: string
+    if (previewMode || el.type === 'body') {
+      outline = 'none'
+    } else if (isDropInto) {
+      outline = '2px solid #0066ff'         // синий — вставить внутрь
+    } else if (isDropParent) {
+      outline = '2px solid #ff8c00'         // оранжевый — parent-контейнер
+    } else if (isSelected) {
+      outline = '2px solid #0066ff'
+    } else if (isHovered) {
+      outline = '1px solid #0066ff'
+    } else {
+      outline = '1px dashed #ddd'
+    }
+
     const style: React.CSSProperties = {
-      position: cssPosition,
+      position: needsRelative ? 'relative' : cssPosition,
       width: s.width ?? 'auto',
       height: s.height ?? 'auto',
       minWidth: s.minWidth,
@@ -164,18 +194,25 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         ? `${s.marginTop ?? 0}px ${s.marginRight ?? 0}px ${s.marginBottom ?? 0}px ${s.marginLeft ?? 0}px`
         : undefined,
       zIndex: s.zIndex,
-      outline: previewMode ? 'none' : (isSelected ? '2px solid #0066ff' : '1px dashed #ddd'),
-      outlineOffset: previewMode ? undefined : (isSelected ? -2 : -1),
+      outline,
+      outlineOffset: previewMode ? undefined : (isSelected || isDropInto || isDropParent ? -2 : -1),
+      // Синяя линия вставки через box-shadow (не меняет layout)
+      boxShadow: isDropBefore
+        ? '0 -2px 0 0 #0066ff'
+        : isDropAfter
+        ? '0 2px 0 0 #0066ff'
+        : undefined,
+      opacity: isDragging ? 0.4 : 1,
       cursor: 'default',
       boxSizing: 'border-box',
     }
 
-    // Применяем offsets: сначала из styles (новый способ), потом из pin (legacy)
+    // Offsets для non-static positioning (только если не needsRelative)
     if (cssPosition !== 'static') {
-      style.top = s.top !== undefined ? s.top : (el.pin?.top !== undefined ? el.pin.top : undefined)
-      style.right = s.right !== undefined ? s.right : (el.pin?.right !== undefined ? el.pin.right : undefined)
-      style.bottom = s.bottom !== undefined ? s.bottom : (el.pin?.bottom !== undefined ? el.pin.bottom : undefined)
-      style.left = s.left !== undefined ? s.left : (el.pin?.left !== undefined ? el.pin.left : undefined)
+      style.top    = s.top    !== undefined ? s.top    : el.pin?.top
+      style.right  = s.right  !== undefined ? s.right  : el.pin?.right
+      style.bottom = s.bottom !== undefined ? s.bottom : el.pin?.bottom
+      style.left   = s.left   !== undefined ? s.left   : el.pin?.left
     }
 
     return (
@@ -183,6 +220,13 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         key={id}
         data-element-id={id}
         style={style}
+        onMouseEnter={previewMode ? undefined : (e) => { e.stopPropagation(); setHoveredId(id) }}
+        onMouseLeave={previewMode ? undefined : () => setHoveredId(null)}
+        onMouseDown={previewMode ? undefined : (e) => {
+          // Resize handles вызывают stopPropagation сами — сюда не попадут
+          if (e.button !== 0 || resizeRef.current) return
+          startDrag(e, id)
+        }}
         onClick={previewMode ? undefined : (e) => {
           e.stopPropagation()
           if (e.shiftKey) toggleSelectElement(id)
@@ -192,8 +236,8 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         {el.content && <span>{el.content}</span>}
         {el.children.map(renderElement)}
 
-        {/* Resize handles — только для выбранного элемента, не в preview */}
-        {isSelected && !previewMode && HANDLES.map(h => (
+        {/* Resize handles — только для выбранного элемента, не в preview, не для body */}
+        {isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
           <div
             key={h.id}
             style={{
@@ -231,9 +275,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         background: '#fff',
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-        // CSS zoom масштабирует layout-пространство вместе с визуалом,
-        // поэтому scroll-контейнер корректно видит реальную высоту контента.
-        // В отличие от transform:scale(), zoom не отрывает элемент от потока.
         zoom: scale !== 1 ? scale : undefined,
       }}>
         {artboard.rootChildren.length === 0 ? (

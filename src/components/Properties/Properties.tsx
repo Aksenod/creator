@@ -188,14 +188,17 @@ export function Properties() {
 
             <Divider />
 
-            <PositionSection
-              positionMode={element.positionMode}
-              styles={effectiveStyles}
-              onUpdateMode={updatePositionMode}
-              onUpdateStyle={updateStyle}
-            />
-
-            <Divider />
+            {element.type !== 'body' && (
+              <>
+                <PositionSection
+                  positionMode={element.positionMode}
+                  styles={effectiveStyles}
+                  onUpdateMode={updatePositionMode}
+                  onUpdateStyle={updateStyle}
+                />
+                <Divider />
+              </>
+            )}
 
             <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
 
