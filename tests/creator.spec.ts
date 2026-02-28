@@ -192,6 +192,65 @@ test('переключение брейкпоинтов', async ({ page }) => {
   await expect(page.locator('button:has-text("1440px")')).toBeVisible()
 })
 
+// ─── Тест 9: Добавление маржинов через Spacing panel ─────────────────────────
+
+test('добавление маржинов через Spacing panel', async ({ page }) => {
+  await enterPageEditor(page)
+
+  // Добавить Div и выделить его
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+
+  // Секция Spacing должна быть видна
+  await expect(page.getByText('Spacing', { exact: true })).toBeVisible()
+
+  // Все SpacingValue-инпуты имеют placeholder="–"
+  // Порядок рендера: marginTop(0), marginRight(1), marginBottom(2), marginLeft(3),
+  //                  paddingTop(4), paddingRight(5), paddingBottom(6), paddingLeft(7)
+  const spacingInputs = page.locator('input[placeholder="–"]')
+  await expect(spacingInputs).toHaveCount(8)
+
+  // Ввести marginTop = 20
+  await spacingInputs.nth(0).fill('20')
+  await page.keyboard.press('Tab')
+
+  // Ввести marginRight = 10
+  await spacingInputs.nth(1).fill('10')
+  await page.keyboard.press('Tab')
+
+  // Ввести marginBottom = 30
+  await spacingInputs.nth(2).fill('30')
+  await page.keyboard.press('Tab')
+
+  // Ввести marginLeft = 40
+  await spacingInputs.nth(3).fill('40')
+  await page.keyboard.press('Tab')
+
+  // Проверить значения инпутов сразу
+  await expect(spacingInputs.nth(0)).toHaveValue('20')
+  await expect(spacingInputs.nth(1)).toHaveValue('10')
+  await expect(spacingInputs.nth(2)).toHaveValue('30')
+  await expect(spacingInputs.nth(3)).toHaveValue('40')
+
+  // Проверить что значения сохранились в localStorage
+  // Zustand persist оборачивает state: { state: { project: ... } }
+  const stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const persisted = JSON.parse(raw)
+    const project = persisted.state?.project
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const elemId = artboard.rootChildren[0]
+    return artboard.elements[elemId]?.styles
+  })
+
+  expect(stored?.marginTop).toBe(20)
+  expect(stored?.marginRight).toBe(10)
+  expect(stored?.marginBottom).toBe(30)
+  expect(stored?.marginLeft).toBe(40)
+})
+
 // ─── Тест 8: Layout display modes ───────────────────────────────────────────
 
 test('переключение display mode в Layout', async ({ page }) => {
