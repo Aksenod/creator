@@ -1,10 +1,9 @@
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
-import type { Transform } from '../../hooks/useCanvasTransform'
 
-type Props = { artboard: Artboard; transform?: Transform; previewMode?: boolean }
+type Props = { artboard: Artboard; previewMode?: boolean }
 
-export function Canvas({ artboard, transform, previewMode }: Props) {
+export function Canvas({ artboard, previewMode }: Props) {
   const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
 
   const renderElement = (id: string): React.ReactNode => {
@@ -62,39 +61,29 @@ export function Canvas({ artboard, transform, previewMode }: Props) {
     )
   }
 
-  const t = transform ?? { x: 0, y: 0, scale: 1 }
-
   return (
     <div
       style={{ padding: 40 }}
       onClick={() => selectElement(null)}
     >
-      <div
-        style={{
-          transformOrigin: '0 0',
-          transform: `translate(${t.x}px, ${t.y}px) scale(${t.scale})`,
-          willChange: 'transform',
-        }}
-      >
-        <div style={{
-          width: artboard.width,
-          background: '#fff',
-          minHeight: artboard.height,
-          position: 'relative',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-        }}>
-          {artboard.rootChildren.length === 0 ? (
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              height: artboard.height, color: '#aaa', fontSize: 13,
-            }}>
-              Добавь первый элемент через панель инструментов
-            </div>
-          ) : (
-            artboard.rootChildren.map(renderElement)
-          )}
-        </div>
+      <div style={{
+        width: artboard.width,
+        background: '#fff',
+        minHeight: artboard.height,
+        position: 'relative',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+        overflow: 'hidden',
+      }}>
+        {artboard.rootChildren.length === 0 ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: artboard.height, color: '#aaa', fontSize: 13,
+          }}>
+            Добавь первый элемент через панель инструментов
+          </div>
+        ) : (
+          artboard.rootChildren.map(renderElement)
+        )}
       </div>
     </div>
   )

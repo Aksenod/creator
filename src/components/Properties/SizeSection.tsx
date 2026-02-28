@@ -31,7 +31,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
           {/* Width + Height */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
             <SizeField
               label="Width"
               value={styles.width ?? ''}
@@ -49,7 +49,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
           </div>
 
           {/* Min W + Min H */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
             <MinMaxField
               label="Min W"
               value={styles.minWidth ?? ''}
@@ -65,7 +65,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
           </div>
 
           {/* Max W + Max H */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
             <SizeField
               label="Max W"
               value={styles.maxWidth ?? ''}
@@ -104,7 +104,7 @@ function SizeField({ label, value, placeholder, onChange, onReset }: {
   onReset: () => void
 }) {
   return (
-    <div style={{ flex: 1 }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ fontSize: 10, color: '#aaa', marginBottom: 3 }}>{label}</div>
       <div style={{
         display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4,
@@ -145,7 +145,7 @@ function MinMaxField({ label, value, unit, onChange }: {
   onChange: (v: string) => void
 }) {
   return (
-    <div style={{ flex: 1 }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ fontSize: 10, color: '#aaa', marginBottom: 3 }}>{label}</div>
       <div style={{
         display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4,

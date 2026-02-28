@@ -50,7 +50,7 @@ const microBtnStyle: React.CSSProperties = {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflow: 'hidden' }}>
       <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
       {children}
     </div>
@@ -67,7 +67,7 @@ function SegmentedControl({ value, options, onChange }: {
   return (
     <div style={{
       display: 'flex', background: '#efefef', borderRadius: 6,
-      padding: 2, gap: 1, flex: 1,
+      padding: 2, gap: 1, flex: 1, minWidth: 0,
     }}>
       {options.map((opt) => {
         const active = value === opt.value
@@ -76,7 +76,7 @@ function SegmentedControl({ value, options, onChange }: {
             key={opt.value}
             onClick={() => onChange(opt.value)}
             style={{
-              flex: 1, padding: '3px 4px', fontSize: 11, border: 'none',
+              flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
               borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
               background: active ? '#1a1a1a' : 'transparent',
               color: active ? '#fff' : '#888',
@@ -179,10 +179,10 @@ function AlignSelect({ label, value, options, onChange }: {
   onChange: (v: string) => void
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
       <span style={{ fontSize: 11, color: '#999', width: 10, flexShrink: 0 }}>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)} style={{
-        flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
+        flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
         fontSize: 11, background: '#fafafa', outline: 'none', cursor: 'pointer',
         color: '#1a1a1a',
       }}>
@@ -224,18 +224,20 @@ function Spinner({ value, onChange }: { value: number; onChange: (v: number) => 
 function GapRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <Row label="Gap">
-      <input
-        type="range" min={0} max={120} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ flex: 1, height: 4, accentColor: '#0066ff' }}
-      />
-      <input
-        type="number" min={0} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ width: 40, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center', color: '#1a1a1a' }}
-      />
-      <span style={{ fontSize: 11, color: '#aaa' }}>PX</span>
-      <button style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#bbb', padding: 0 }}>🔒</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+        <input
+          type="range" min={0} max={120} value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+        />
+        <input
+          type="number" min={0} value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          style={{ width: 36, flexShrink: 0, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center', color: '#1a1a1a' }}
+        />
+        <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
+        <button style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#bbb', padding: 0, flexShrink: 0 }}>🔒</button>
+      </div>
     </Row>
   )
 }
@@ -329,13 +331,13 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
     <>
       {/* Direction */}
       <Row label="Direction">
-        <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+        <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
           {dirOptions.map(opt => {
             const active = dir === opt.value
             return (
               <button key={opt.value} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
                 style={{
-                  flex: 1, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
+                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
                   cursor: 'pointer', background: active ? '#1a1a1a' : '#efefef',
                   color: active ? '#fff' : '#888',
                 }}>
@@ -348,14 +350,14 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
 
       {/* Align */}
       <Row label="Align">
-        <div style={{ display: 'flex', gap: 8, flex: 1, alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
             alignItems={styles.alignItems}
             onChangeJustify={(v) => onUpdate({ justifyContent: v as ElementStyles['justifyContent'] })}
             onChangeAlign={(v) => onUpdate({ alignItems: v as ElementStyles['alignItems'] })}
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
             <AlignSelect
               label="X"
               value={styles.justifyContent ?? ''}
@@ -389,7 +391,7 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       {/* Grid columns/rows */}
       <div>
         <Row label="Grid">
-          <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+          <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0 }}>
             <Spinner value={cols} onChange={(v) => onUpdate({ gridTemplateColumns: makeRepeat(v) })} />
             <Spinner value={rows} onChange={(v) => onUpdate({ gridTemplateRows: makeRepeat(v) })} />
             <button style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#888', fontSize: 14 }}>🔧</button>
@@ -404,13 +406,13 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
 
       {/* Direction */}
       <Row label="Direction">
-        <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+        <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
           {[{ value: 'row', label: '→' }, { value: 'column', label: '↓' }].map(opt => {
             const active = (styles.flexDirection ?? 'row') === opt.value
             return (
               <button key={opt.value} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
                 style={{
-                  flex: 1, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
+                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
                   cursor: 'pointer', background: active ? '#1a1a1a' : '#efefef',
                   color: active ? '#fff' : '#888',
                 }}>
@@ -423,14 +425,14 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
 
       {/* Align */}
       <Row label="Align">
-        <div style={{ display: 'flex', gap: 8, flex: 1, alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
             alignItems={styles.alignItems}
             onChangeJustify={(v) => onUpdate({ justifyContent: v as ElementStyles['justifyContent'] })}
             onChangeAlign={(v) => onUpdate({ alignItems: v as ElementStyles['alignItems'] })}
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
             <AlignSelect label="X" value={styles.justifyContent ?? ''} options={JUSTIFY_OPTIONS} onChange={(v) => onUpdate({ justifyContent: v as ElementStyles['justifyContent'] })} />
             <AlignSelect label="Y" value={styles.alignItems ?? ''} options={ALIGN_OPTIONS} onChange={(v) => onUpdate({ alignItems: v as ElementStyles['alignItems'] })} />
           </div>

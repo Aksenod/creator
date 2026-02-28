@@ -53,7 +53,7 @@ export function Properties() {
       }}>
         Свойства
       </div>
-      <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+      <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', padding: 12 }}>
         {isMultiSelect ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <div style={{ padding: '6px 0', fontSize: 12, color: '#555', fontWeight: 500 }}>
@@ -119,7 +119,7 @@ export function Properties() {
                   />
                 </Row>
                 <Row label="Класс">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
                     <span style={{ color: '#aaa', fontSize: 11 }}>.</span>
                     <input
                       value={element.className ?? ''}
@@ -225,7 +225,7 @@ export function Properties() {
 
 const inputStyle: React.CSSProperties = {
   flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
-  fontSize: 12, background: '#fafafa', outline: 'none', width: '100%',
+  fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
   color: '#1a1a1a',
 }
 
@@ -276,7 +276,7 @@ function SegmentedControl({ value, options, onChange }: {
   return (
     <div style={{
       display: 'flex', background: '#efefef', borderRadius: 6,
-      padding: 2, gap: 1, flex: 1,
+      padding: 2, gap: 1, flex: 1, minWidth: 0,
     }}>
       {options.map((opt) => {
         const active = value === opt.value
@@ -285,7 +285,7 @@ function SegmentedControl({ value, options, onChange }: {
             key={opt.value}
             onClick={() => onChange(opt.value)}
             style={{
-              flex: 1, padding: '3px 4px', fontSize: 11, border: 'none',
+              flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
               borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
               background: active ? '#1a1a1a' : 'transparent',
               color: active ? '#fff' : '#888',
@@ -303,7 +303,7 @@ function SegmentedControl({ value, options, onChange }: {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflow: 'hidden' }}>
       <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
       {children}
     </div>

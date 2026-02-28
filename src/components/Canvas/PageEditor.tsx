@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useEditorStore } from '../../store'
 import { Layers } from '../Layers/Layers'
 import { Properties } from '../Properties/Properties'
 import { Toolbar } from '../Toolbar/Toolbar'
 import { Canvas } from './Canvas'
-import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 
 // --- SVG icons ---
 
@@ -75,18 +74,7 @@ export function PageEditor() {
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
 
-  const canvasContainerRef = useRef<HTMLDivElement>(null)
-  const { transform, fitToScreen, scalePercent } = useCanvasTransform(canvasContainerRef)
-
   const displayWidth = viewportWidth ?? (artboard?.width ?? 0)
-
-  // При входе в page mode — подогнать артборд под экран
-  useEffect(() => {
-    if (artboard) {
-      // requestAnimationFrame чтобы контейнер успел отрендериться и получить размер
-      requestAnimationFrame(() => fitToScreen(artboard.width))
-    }
-  }, [artboard?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -126,7 +114,6 @@ export function PageEditor() {
             ← Редактор
           </button>
           <span style={{ color: '#888', fontSize: 12 }}>{artboard.name}</span>
-          <span style={{ marginLeft: 'auto', color: '#555', fontSize: 12 }}>{scalePercent}%</span>
         </div>
       ) : (
         <div style={{
@@ -187,13 +174,6 @@ export function PageEditor() {
           >
             {isPreview ? '← Редактор' : '▶ Preview'}
           </button>
-          <span style={{
-            marginLeft: 'auto', fontSize: 12, color: '#888',
-            padding: '3px 8px', background: '#f5f5f5', borderRadius: 4,
-            fontVariantNumeric: 'tabular-nums',
-          }}>
-            {scalePercent}%
-          </span>
         </div>
       )}
 
@@ -207,12 +187,8 @@ export function PageEditor() {
         )}
 
         {/* Canvas */}
-        <div
-          ref={canvasContainerRef}
-          tabIndex={0}
-          style={{ flex: 1, overflow: 'hidden', background: '#f5f5f5', outline: 'none' }}
-        >
-          <Canvas artboard={{ ...artboard, width: displayWidth }} transform={transform} previewMode={isPreview} />
+        <div style={{ flex: 1, overflow: 'auto', background: '#f5f5f5' }}>
+          <Canvas artboard={{ ...artboard, width: displayWidth }} previewMode={isPreview} />
         </div>
 
         {/* Панель свойств */}
