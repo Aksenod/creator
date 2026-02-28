@@ -7,7 +7,7 @@ import { Canvas } from './Canvas'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 
 export function PageEditor() {
-  const { exitArtboard, project, activeArtboardId } = useEditorStore()
+  const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
@@ -29,10 +29,17 @@ export function PageEditor() {
         if (isPreview) setIsPreview(false)
         else exitArtboard()
       }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && activeArtboardId) {
+        // Не удалять если фокус в input/textarea/select
+        const tag = (e.target as HTMLElement).tagName
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          deleteElement(activeArtboardId, selectedElementId)
+        }
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [exitArtboard, isPreview])
+  }, [exitArtboard, isPreview, deleteElement, selectedElementId, activeArtboardId])
 
   if (!artboard) return null
 

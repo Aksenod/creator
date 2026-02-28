@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { ElementStyles } from '../../types'
+import { LayoutSection } from './LayoutSection'
 
 export function Properties() {
-  const { selectedElementId, project, activeArtboardId, updateElement } = useEditorStore()
+  const { selectedElementId, project, activeArtboardId, updateElement, deleteElement } = useEditorStore()
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
@@ -17,8 +18,6 @@ export function Properties() {
     if (!activeArtboardId || !selectedElementId) return
     updateElement(activeArtboardId, selectedElementId, patch)
   }
-
-  const display = element?.styles.display ?? 'block'
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -71,88 +70,7 @@ export function Properties() {
 
             <Divider />
 
-            {/* Layout */}
-            <CollapsibleSection label="Layout" defaultOpen>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Row label="Display">
-                  <SegmentedControl
-                    value={display}
-                    options={[
-                      { value: 'block', label: 'Block' },
-                      { value: 'flex', label: 'Flex' },
-                      { value: 'grid', label: 'Grid' },
-                      { value: 'none', label: 'None' },
-                    ]}
-                    onChange={(v) => updateStyle({ display: v as ElementStyles['display'] })}
-                  />
-                </Row>
-
-                {/* Flex-контролы */}
-                {display === 'flex' && (
-                  <>
-                    <Row label="Direction">
-                      <SegmentedControl
-                        value={element.styles.flexDirection ?? 'row'}
-                        options={[
-                          { value: 'row', label: '→' },
-                          { value: 'column', label: '↓' },
-                          { value: 'row-reverse', label: '←' },
-                          { value: 'column-reverse', label: '↑' },
-                        ]}
-                        onChange={(v) => updateStyle({ flexDirection: v as ElementStyles['flexDirection'] })}
-                      />
-                    </Row>
-                    <Row label="Justify">
-                      <select
-                        value={element.styles.justifyContent ?? ''}
-                        onChange={(e) => updateStyle({ justifyContent: e.target.value as ElementStyles['justifyContent'] })}
-                        style={selectStyle}
-                      >
-                        <option value="">—</option>
-                        <option value="flex-start">Start</option>
-                        <option value="center">Center</option>
-                        <option value="flex-end">End</option>
-                        <option value="space-between">Space Between</option>
-                        <option value="space-around">Space Around</option>
-                      </select>
-                    </Row>
-                    <Row label="Align">
-                      <select
-                        value={element.styles.alignItems ?? ''}
-                        onChange={(e) => updateStyle({ alignItems: e.target.value as ElementStyles['alignItems'] })}
-                        style={selectStyle}
-                      >
-                        <option value="">—</option>
-                        <option value="flex-start">Start</option>
-                        <option value="center">Center</option>
-                        <option value="flex-end">End</option>
-                        <option value="stretch">Stretch</option>
-                      </select>
-                    </Row>
-                    <Row label="Gap">
-                      <input
-                        type="number"
-                        value={element.styles.gap ?? ''}
-                        onChange={(e) => updateStyle({ gap: e.target.value ? Number(e.target.value) : undefined })}
-                        style={inputStyle}
-                      />
-                    </Row>
-                  </>
-                )}
-
-                {/* Grid-контролы */}
-                {display === 'grid' && (
-                  <Row label="Columns">
-                    <input
-                      value={element.styles.gridTemplateColumns ?? ''}
-                      onChange={(e) => updateStyle({ gridTemplateColumns: e.target.value })}
-                      placeholder="1fr 1fr"
-                      style={inputStyle}
-                    />
-                  </Row>
-                )}
-              </div>
-            </CollapsibleSection>
+            <LayoutSection styles={element.styles} onUpdate={updateStyle} />
 
             <Divider />
 
@@ -212,6 +130,21 @@ export function Properties() {
                 </CollapsibleSection>
               </>
             )}
+
+            <button
+              onClick={() => {
+                if (activeArtboardId && selectedElementId) {
+                  deleteElement(activeArtboardId, selectedElementId)
+                }
+              }}
+              style={{
+                marginTop: 8, width: '100%', padding: '6px 0', border: '1px solid #fcc',
+                borderRadius: 4, fontSize: 12, cursor: 'pointer',
+                background: '#fff5f5', color: '#cc0000',
+              }}
+            >
+              Удалить элемент
+            </button>
 
           </div>
         )}

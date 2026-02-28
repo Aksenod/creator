@@ -26,6 +26,7 @@ type EditorState = {
   // Элементы
   updateElement: (artboardId: string, elementId: string, patch: Partial<CanvasElement>) => void
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
+  deleteElement: (artboardId: string, elementId: string) => void
 }
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
@@ -112,6 +113,41 @@ export const useEditorStore = create<EditorState>()(
               [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
             },
           },
+        }
+      }),
+
+      deleteElement: (artboardId, elementId) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        if (!ab || !state.project) return state
+
+        // Собрать все id для удаления (рекурсивно)
+        const toDelete = new Set<string>()
+        const collect = (id: string) => {
+          toDelete.add(id)
+          ab.elements[id]?.children.forEach(collect)
+        }
+        collect(elementId)
+
+        // Новый elements без удалённых
+        const newElements: typeof ab.elements = {}
+        for (const [id, el] of Object.entries(ab.elements)) {
+          if (!toDelete.has(id)) {
+            newElements[id] = { ...el, children: el.children.filter(c => !toDelete.has(c)) }
+          }
+        }
+
+        // Убрать из rootChildren
+        const newRootChildren = ab.rootChildren.filter(id => !toDelete.has(id))
+
+        return {
+          project: {
+            ...state.project,
+            artboards: {
+              ...state.project.artboards,
+              [artboardId]: { ...ab, elements: newElements, rootChildren: newRootChildren },
+            },
+          },
+          selectedElementId: toDelete.has(state.selectedElementId ?? '') ? null : state.selectedElementId,
         }
       }),
 

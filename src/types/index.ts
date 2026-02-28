@@ -31,6 +31,10 @@ export type ElementStyles = {
   gap?: number
   gridTemplateColumns?: string
   gridTemplateRows?: string
+  alignContent?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'space-between' | 'space-around'
+  justifyItems?: 'start' | 'end' | 'center' | 'stretch'
+  columnGap?: number
+  rowGap?: number
   backgroundColor?: string
   color?: string
   fontSize?: number
