@@ -20,6 +20,7 @@ export const pushHistory = (
     project: newProject,
     history: newHistory,
     historyIndex: newHistory.length - 1,
+    future: [] as Project[],  // новое действие сбрасывает future
   }
 }
 

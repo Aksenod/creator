@@ -22,6 +22,7 @@ type EditorState = {
   // История для undo/redo (не персистируется)
   history: Project[]
   historyIndex: number
+  future: Project[]
 
   // Clipboard (не персистируется)
   clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null
@@ -103,6 +104,7 @@ export const useEditorStore = create<EditorState>()(
       activeBreakpointId: 'desktop' as BreakpointId,
       history: [],
       historyIndex: -1,
+      future: [],
       clipboard: null,
       gridEditElementId: null,
 
@@ -114,11 +116,11 @@ export const useEditorStore = create<EditorState>()(
           artboards: { [artboard.id]: artboard },
           artboardOrder: [artboard.id],
         }
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1 })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1, future: [] })
       },
 
       loadProject: (project) => {
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1 })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1, future: [] })
       },
 
       enterArtboard: (artboardId) => {
@@ -395,14 +397,24 @@ export const useEditorStore = create<EditorState>()(
         return {
           project,
           historyIndex: state.historyIndex - 1,
+          future: [state.project!, ...state.future],
           selectedElementId: null,
           selectedElementIds: [],
         }
       }),
 
       redo: () => set((state) => {
-        // Redo не реализован полноценно (нужен future stack), заглушка
-        return state
+        if (state.future.length === 0) return state
+        const [nextProject, ...remainingFuture] = state.future
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project!]
+        return {
+          project: nextProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
+          future: remainingFuture,
+          selectedElementId: null,
+          selectedElementIds: [],
+        }
       }),
 
       copyElement: () => set((state) => {

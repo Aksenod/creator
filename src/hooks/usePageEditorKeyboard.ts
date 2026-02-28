@@ -34,7 +34,7 @@ export function usePageEditorKeyboard({
   onClearCustomWidth,
   onTogglePanels,
 }: Options) {
-  const { deleteElement, undo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint } = useEditorStore()
+  const { deleteElement, undo, redo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint } = useEditorStore()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -67,6 +67,7 @@ export function usePageEditorKeyboard({
       const mod = isMac ? e.metaKey : e.ctrlKey
 
       if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
+      if (mod && e.key === 'z' && e.shiftKey) { e.preventDefault(); redo() }
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
@@ -80,7 +81,7 @@ export function usePageEditorKeyboard({
   }, [
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId, BREAKPOINTS,
     onExitArtboard, onClosePreview, onCloseSettings, onSetViewportWidth, onClearCustomWidth,
-    deleteElement, undo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint,
+    deleteElement, undo, redo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint,
     onTogglePanels,
   ])
 }
