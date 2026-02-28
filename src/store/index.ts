@@ -6,11 +6,10 @@ import { slugify } from '../utils/slugify'
 import {
   generateId,
   CONTAINER_TYPES,
-  findParentId,
   pushHistory,
   applyStyleUpdate,
-  collectDescendantIds,
 } from './helpers'
+import { findParentId, collectDescendantIds } from '../utils/treeUtils'
 
 type EditorState = {
   project: Project | null

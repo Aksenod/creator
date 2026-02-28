@@ -187,23 +187,23 @@ export function Properties() {
 
             <Divider />
 
-            <LayoutSection styles={element.styles} onUpdate={updateStyle} />
+            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
-            <SizeSection styles={element.styles} onUpdate={updateStyle} />
+            <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
-            <BackgroundSection styles={element.styles} onUpdate={updateStyle} />
+            <BackgroundSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
-            <BorderSection styles={element.styles} onUpdate={updateStyle} />
+            <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
-            <TypographySection styles={element.styles} onUpdate={updateStyle} />
+            <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
 
           </div>
         )}

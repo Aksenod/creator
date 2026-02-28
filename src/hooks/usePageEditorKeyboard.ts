@@ -56,13 +56,12 @@ export function usePageEditorKeyboard({
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && activeArtboardId) {
-        const tag = (e.target as HTMLElement).tagName
         if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
           deleteElement(activeArtboardId, selectedElementId)
         }
       }
 
-      const isMac = navigator.platform.includes('Mac')
+      const isMac = navigator.userAgent.includes('Mac')
       const mod = isMac ? e.metaKey : e.ctrlKey
 
       if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }

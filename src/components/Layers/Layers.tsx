@@ -206,6 +206,21 @@ export function Layers({ artboard }: Props) {
     return expanded
   })
 
+  // Авто-раскрытие новых контейнеров (paste/duplicate добавляют элементы)
+  useEffect(() => {
+    setExpandedLayers((prev) => {
+      let changed = false
+      const next = new Set(prev)
+      Object.entries(artboard.elements).forEach(([id, el]) => {
+        if (el.children.length > 0 && !next.has(id)) {
+          next.add(id)
+          changed = true
+        }
+      })
+      return changed ? next : prev
+    })
+  }, [artboard.elements])
+
   const toggleExpand = (id: string, altKey: boolean) => {
     setExpandedLayers((prev) => {
       const next = new Set(prev)
