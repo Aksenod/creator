@@ -57,6 +57,18 @@ type EditorState = {
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
 
+// Найти родителя элемента (null = корень артборда)
+const findParentId = (ab: Artboard, id: string): string | null => {
+  if (ab.rootChildren.includes(id)) return null
+  for (const [pid, pel] of Object.entries(ab.elements)) {
+    if (pel.children.includes(id)) return pid
+  }
+  return null
+}
+
+// Типы-контейнеры, которые принимают дочерние элементы
+const CONTAINER_TYPES = ['div', 'section']
+
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => ({
   id: generateId(),
   name,
@@ -421,10 +433,37 @@ export const useEditorStore = create<EditorState>()(
         })
 
         const newRootId = idMap[state.clipboard.element.id]
-        const newAb = {
-          ...ab,
-          elements: { ...ab.elements, ...newElements },
-          rootChildren: [...ab.rootChildren, newRootId],
+        const mergedElements = { ...ab.elements, ...newElements }
+
+        const selectedEl = state.selectedElementId ? ab.elements[state.selectedElementId] : null
+        let newAb: Artboard
+
+        if (selectedEl && CONTAINER_TYPES.includes(selectedEl.type)) {
+          // Вставить внутрь выбранного контейнера
+          mergedElements[selectedEl.id] = {
+            ...selectedEl,
+            children: [...selectedEl.children, newRootId],
+          }
+          newAb = { ...ab, elements: mergedElements }
+        } else if (selectedEl) {
+          // Вставить рядом с выбранным элементом (тот же родитель)
+          const parentId = findParentId(ab, selectedEl.id)
+          if (parentId) {
+            const parent = mergedElements[parentId]
+            const idx = parent.children.indexOf(selectedEl.id)
+            const newChildren = [...parent.children]
+            newChildren.splice(idx + 1, 0, newRootId)
+            mergedElements[parentId] = { ...parent, children: newChildren }
+            newAb = { ...ab, elements: mergedElements }
+          } else {
+            const idx = ab.rootChildren.indexOf(selectedEl.id)
+            const newRoot = [...ab.rootChildren]
+            newRoot.splice(idx + 1, 0, newRootId)
+            newAb = { ...ab, elements: mergedElements, rootChildren: newRoot }
+          }
+        } else {
+          // Ничего не выбрано — вставить в корень
+          newAb = { ...ab, elements: mergedElements, rootChildren: [...ab.rootChildren, newRootId] }
         }
 
         const newProject = {
@@ -469,10 +508,25 @@ export const useEditorStore = create<EditorState>()(
         })
 
         const newRootId = idMap[id]
-        const newAb = {
-          ...ab,
-          elements: { ...ab.elements, ...newElements },
-          rootChildren: [...ab.rootChildren, newRootId],
+        const mergedElements = { ...ab.elements, ...newElements }
+
+        // Вставить дубликат сразу после оригинала в том же родителе
+        const parentId = findParentId(ab, id)
+        let newAb: Artboard
+
+        if (parentId) {
+          const parent = mergedElements[parentId]
+          const idx = parent.children.indexOf(id)
+          const newChildren = [...parent.children]
+          newChildren.splice(idx + 1, 0, newRootId)
+          mergedElements[parentId] = { ...parent, children: newChildren }
+          newAb = { ...ab, elements: mergedElements }
+        } else {
+          // Корневой элемент — вставить после оригинала в rootChildren
+          const idx = ab.rootChildren.indexOf(id)
+          const newRootChildren = [...ab.rootChildren]
+          newRootChildren.splice(idx + 1, 0, newRootId)
+          newAb = { ...ab, elements: mergedElements, rootChildren: newRootChildren }
         }
 
         const newProject = {
