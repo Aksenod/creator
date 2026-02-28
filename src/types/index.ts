@@ -39,6 +39,16 @@ export type ElementStyles = {
   justifyItems?: 'start' | 'end' | 'center' | 'stretch'
   columnGap?: number
   rowGap?: number
+
+  // Grid container
+  gridAutoFlow?: 'row' | 'column' | 'row dense' | 'column dense'
+
+  // Grid child
+  gridColumn?: string        // e.g. "1 / 3", "span 2", "1 / -1"
+  gridRow?: string           // e.g. "1 / 2", "span 1"
+  alignSelf?: 'auto' | 'start' | 'end' | 'center' | 'stretch' | 'baseline'
+  justifySelf?: 'auto' | 'start' | 'end' | 'center' | 'stretch'
+
   backgroundColor?: string
   color?: string
   fontSize?: number

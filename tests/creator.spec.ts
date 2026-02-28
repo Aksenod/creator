@@ -347,3 +347,218 @@ test('переключение display mode в Layout', async ({ page }) => {
   await expect(page.locator('span').filter({ hasText: 'Columns' })).toBeVisible()
   await expect(page.locator('span').filter({ hasText: 'Rows' })).toBeVisible()
 })
+
+// ─── Helpers для Grid тестов ──────────────────────────────────────────────────
+
+/** Переключить элемент на display: grid */
+async function switchToGrid(page: Page) {
+  const gridBtn = page.locator('button').filter({ hasText: /^Grid$/ })
+  await gridBtn.click()
+  await expect(page.locator('span').filter({ hasText: 'Columns' })).toBeVisible()
+}
+
+// ─── Тест 12: Grid TrackList — добавить/удалить колонку ──────────────────────
+
+test('Grid TrackList: добавить и удалить колонку', async ({ page }) => {
+  await enterPageEditor(page)
+
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // Кнопки удаления треков (data-testid)
+  const removeBtns = page.locator('[data-testid="track-remove"]')
+  const countBefore = await removeBtns.count()
+
+  // Добавить колонку (первая кнопка "+ Add" = Columns)
+  const addBtns = page.locator('button').filter({ hasText: '+ Add' })
+  await expect(addBtns.first()).toBeVisible()
+  await addBtns.first().click()
+
+  // Должен появиться новый трек
+  await expect(removeBtns).toHaveCount(countBefore + 1)
+
+  // Удалить последний добавленный трек
+  await removeBtns.last().click()
+  await expect(removeBtns).toHaveCount(countBefore)
+})
+
+// ─── Тест 13: Grid Gap lock/unlock ───────────────────────────────────────────
+
+test('Grid Gap: lock/unlock раздельные gap значения', async ({ page }) => {
+  await enterPageEditor(page)
+
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // Кнопка lock видна (по умолчанию locked)
+  const lockBtn = page.locator('button[title*="gap"]')
+  await expect(lockBtn).toBeVisible()
+
+  // Заголовка "Col" и "Row" нет когда locked
+  await expect(page.locator('span').filter({ hasText: /^Col$/ })).toHaveCount(0)
+
+  // Разблокировать
+  await lockBtn.click()
+
+  // Теперь видны Col/Row метки
+  await expect(page.locator('span').filter({ hasText: /^Col$/ })).toBeVisible()
+  await expect(page.locator('span').filter({ hasText: /^Row$/ })).toBeVisible()
+
+  // Заблокировать обратно
+  await lockBtn.click()
+  await expect(page.locator('span').filter({ hasText: /^Col$/ })).toHaveCount(0)
+})
+
+// ─── Тест 14: Grid Auto-flow direction ───────────────────────────────────────
+
+test('Grid Auto-flow: переключение направления', async ({ page }) => {
+  await enterPageEditor(page)
+
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // По умолчанию Row активен
+  const rowBtn = page.locator('button').filter({ hasText: '→ Row' })
+  const colBtn = page.locator('button').filter({ hasText: '↓ Column' })
+  await expect(rowBtn).toBeVisible()
+  await expect(colBtn).toBeVisible()
+
+  // Нажать Column
+  await colBtn.click()
+
+  // Проверить в localStorage
+  const stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
+    const elemId = artboard?.rootChildren?.[0]
+    return artboard?.elements?.[elemId]?.styles?.gridAutoFlow ?? null
+  })
+  expect(stored).toBe('column')
+
+  // Нажать Row
+  await rowBtn.click()
+
+  const stored2 = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
+    const elemId = artboard?.rootChildren?.[0]
+    return artboard?.elements?.[elemId]?.styles?.gridAutoFlow ?? null
+  })
+  expect(stored2).toBe('row')
+})
+
+// ─── Тест 15: Grid Child Section — появляется для дочернего элемента ─────────
+
+test('Grid Child Section: появляется для дочернего элемента grid', async ({ page }) => {
+  await enterPageEditor(page)
+
+  // Добавить родительский div и переключить на Grid
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // Добавить дочерний div (будет добавлен в выбранный div 1)
+  await page.click('button:has-text("+ Div")')
+
+  // Выбрать дочерний элемент в Layers
+  await page.click('text=div 2')
+
+  // Секция "Grid child" должна появиться
+  await expect(page.locator('span').filter({ hasText: 'Grid child' })).toBeVisible()
+
+  // Метки Column и Row должны быть видны
+  await expect(page.locator('span').filter({ hasText: /^Column$/ })).toBeVisible()
+  await expect(page.locator('span').filter({ hasText: /^Row$/ })).toBeVisible()
+})
+
+// ─── Тест 16: Grid Edit Mode — открыть и закрыть ─────────────────────────────
+
+test('Grid Edit Mode: открыть и закрыть overlay', async ({ page }) => {
+  await enterPageEditor(page)
+
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // Кнопка "Edit Grid" должна быть видна
+  const editBtn = page.locator('button').filter({ hasText: /Edit Grid/ })
+  await expect(editBtn).toBeVisible()
+
+  // Нажать — появится overlay с кнопкой Done
+  await editBtn.click()
+
+  // Кнопка Done появилась
+  const doneBtn = page.locator('button').filter({ hasText: 'Done' })
+  await expect(doneBtn).toBeVisible()
+
+  // Кнопка "Exit Edit Mode" в Properties (кнопка поменяла текст)
+  await expect(page.locator('button').filter({ hasText: /Exit Edit Mode/ })).toBeVisible()
+
+  // Нажать Done — overlay закрывается
+  await doneBtn.click()
+  await expect(doneBtn).toHaveCount(0)
+
+  // Кнопка в Properties снова "Edit Grid"
+  await expect(page.locator('button').filter({ hasText: /Edit Grid/ })).toBeVisible()
+})
+
+// ─── Тест 17: Grid Child — column span через Properties ──────────────────────
+
+test('Grid Child: установить column span 2', async ({ page }) => {
+  await enterPageEditor(page)
+
+  // Создать grid с 3 колонками
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 1')
+  await switchToGrid(page)
+
+  // Добавить 3 колонки
+  const addColBtn = page.locator('button').filter({ hasText: '+ Add' }).first()
+  await addColBtn.click()
+  await addColBtn.click()
+  await addColBtn.click()
+
+  // Добавить дочерний элемент
+  await page.click('button:has-text("+ Div")')
+  await page.click('text=div 2')
+
+  // Grid child секция видна
+  await expect(page.locator('span').filter({ hasText: 'Grid child' })).toBeVisible()
+
+  // Заполнить Column: start=1, span, end=2
+  // Используем data-testid на select
+  const spanSelect = page.locator('[data-testid="grid-line-span-column"]')
+  await expect(spanSelect).toBeVisible()
+
+  // Inputs рядом со span select в Column row
+  const colInputs = spanSelect.locator('..').locator('input[type="number"]')
+  const startInput = colInputs.first()
+  const endInput = colInputs.last()
+
+  await startInput.fill('1')
+  await spanSelect.selectOption('span')
+  await endInput.fill('2')
+  await page.keyboard.press('Tab')
+
+  // Проверить localStorage
+  const stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
+    // div 2 — дочерний элемент div 1
+    const parentId = artboard?.rootChildren?.[0]
+    const parent = artboard?.elements?.[parentId]
+    const childId = parent?.children?.[0]
+    return artboard?.elements?.[childId]?.styles?.gridColumn ?? null
+  })
+
+  expect(stored).toBe('1 / span 2')
+})

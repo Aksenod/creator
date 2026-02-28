@@ -6,9 +6,11 @@ import { Canvas } from './Canvas'
 import { Topbar } from './PageEditor/Topbar'
 import { BREAKPOINTS, detectBreakpoint, type Breakpoint } from './PageEditor/BreakpointBar'
 import { usePageEditorKeyboard } from '../../hooks/usePageEditorKeyboard'
+import { GridEditOverlay } from '../GridEditOverlay'
+import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 
 export function PageEditor() {
-  const { exitArtboard, project, activeArtboardId, selectedElementId, setActiveBreakpoint, activeBreakpointId } = useEditorStore()
+  const { exitArtboard, project, activeArtboardId, selectedElementId, setActiveBreakpoint, activeBreakpointId, gridEditElementId } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [customWidth, setCustomWidth] = useState<string>('')
@@ -103,6 +105,16 @@ export function PageEditor() {
           </div>
         )}
       </div>
+
+      {/* Grid Edit Mode overlay */}
+      {!isPreview && gridEditElementId && activeArtboardId && (
+        <GridEditOverlay artboardId={activeArtboardId} />
+      )}
+
+      {/* Grid child span resize handles */}
+      {!isPreview && activeArtboardId && (
+        <GridChildResizeOverlay artboardId={activeArtboardId} />
+      )}
     </div>
   )
 }

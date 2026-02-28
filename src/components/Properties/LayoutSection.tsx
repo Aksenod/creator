@@ -1,10 +1,42 @@
 import { useState } from 'react'
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, SegmentedControl } from './shared'
+import { useEditorStore } from '../../store'
 
 type Props = {
   styles: ElementStyles
   onUpdate: (patch: Partial<ElementStyles>) => void
+}
+
+// ─── Track helpers ────────────────────────────────────────────────────────────
+
+export type TrackUnit = 'fr' | 'px' | 'auto'
+export type GridTrack = { value: number; unit: TrackUnit }
+
+export function parseTracks(css?: string): GridTrack[] {
+  if (!css) return []
+  // Expand repeat(N, X) → N copies of X
+  const expanded = css.replace(/repeat\((\d+),\s*([^)]+)\)/g, (_, n, track) => {
+    return Array(parseInt(n)).fill(track.trim()).join(' ')
+  })
+  return expanded.split(/\s+/).filter(Boolean).map(t => {
+    if (t === 'auto') return { value: 0, unit: 'auto' as TrackUnit }
+    const frM = t.match(/^([\d.]+)fr$/)
+    if (frM) return { value: parseFloat(frM[1]), unit: 'fr' as TrackUnit }
+    const pxM = t.match(/^([\d.]+)px$/)
+    if (pxM) return { value: parseFloat(pxM[1]), unit: 'px' as TrackUnit }
+    const numM = t.match(/^([\d.]+)$/)
+    if (numM) return { value: parseFloat(numM[1]), unit: 'px' as TrackUnit }
+    return { value: 0, unit: 'auto' as TrackUnit }
+  })
+}
+
+export function serializeTracks(tracks: GridTrack[]): string {
+  return tracks.map(t => {
+    if (t.unit === 'auto') return 'auto'
+    if (t.unit === 'fr') return `${t.value}fr`
+    return `${t.value}px`
+  }).join(' ')
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -26,26 +58,6 @@ const ALIGN_OPTIONS = [
   { value: 'flex-end', label: 'Bottom' },
   { value: 'stretch', label: 'Stretch' },
 ]
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function parseRepeat(val?: string, fallback = 1): number {
-  if (!val) return fallback
-  const m = val.match(/repeat\((\d+)/)
-  if (m) return parseInt(m[1])
-  return val.split(',').length
-}
-
-function makeRepeat(n: number): string {
-  return `repeat(${n}, 1fr)`
-}
-
-// ─── Micro styles ────────────────────────────────────────────────────────────
-
-const microBtnStyle: React.CSSProperties = {
-  fontSize: 7, border: 'none', background: 'none', cursor: 'pointer',
-  padding: '0 2px', lineHeight: 1, color: '#888',
-}
 
 // ─── AlignPicker ─────────────────────────────────────────────────────────────
 
@@ -114,55 +126,6 @@ function AlignSelect({ label, value, options, onChange }: {
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
-  )
-}
-
-// ─── Spinner ──────────────────────────────────────────────────────────────────
-
-function Spinner({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-      <div style={{ position: 'relative' }}>
-        <input
-          type="number" min={1} max={12}
-          value={value}
-          onChange={(e) => onChange(Math.max(1, Number(e.target.value)))}
-          style={{
-            width: '100%', padding: '3px 20px 3px 6px',
-            border: '1px solid #e0e0e0', borderRadius: 4,
-            fontSize: 12, background: '#fafafa', outline: 'none',
-            color: '#1a1a1a',
-          }}
-        />
-        <div style={{ position: 'absolute', right: 2, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <button onClick={() => onChange(value + 1)} style={microBtnStyle}>▲</button>
-          <button onClick={() => onChange(Math.max(1, value - 1))} style={microBtnStyle}>▼</button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── GapRow ───────────────────────────────────────────────────────────────────
-
-function GapRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return (
-    <PropertyRow label="Gap">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-        <input
-          type="range" min={0} max={120} value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
-        />
-        <input
-          type="number" min={0} value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          style={{ width: 36, flexShrink: 0, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center', color: '#1a1a1a' }}
-        />
-        <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
-        <button style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#bbb', padding: 0, flexShrink: 0 }}>🔒</button>
-      </div>
-    </PropertyRow>
   )
 }
 
@@ -298,48 +261,245 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
         </div>
       </PropertyRow>
 
-      <GapRow value={gap} onChange={(v) => onUpdate({ gap: v })} />
+      <PropertyRow label="Gap">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+          <input
+            type="range" min={0} max={120} value={gap}
+            onChange={(e) => onUpdate({ gap: Number(e.target.value) })}
+            style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+          />
+          <input
+            type="number" min={0} value={gap}
+            onChange={(e) => onUpdate({ gap: Number(e.target.value) })}
+            style={{ width: 36, flexShrink: 0, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center', color: '#1a1a1a' }}
+          />
+          <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
+        </div>
+      </PropertyRow>
     </>
   )
 }
 
-// ─── GridControls ─────────────────────────────────────────────────────────────
+// ─── TrackList ────────────────────────────────────────────────────────────────
 
-function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
-  const cols = parseRepeat(styles.gridTemplateColumns, 2)
-  const rows = parseRepeat(styles.gridTemplateRows, 2)
-  const gap = styles.gap ?? 0
+function TrackList({ label, tracks, onChange, onAddTrack }: {
+  label: string
+  tracks: GridTrack[]
+  onChange: (tracks: GridTrack[]) => void
+  onAddTrack: () => void
+}) {
+  const updateTrack = (i: number, patch: Partial<GridTrack>) => {
+    const next = tracks.map((t, idx) => idx === i ? { ...t, ...patch } : t)
+    onChange(next)
+  }
+
+  const removeTrack = (i: number) => {
+    onChange(tracks.filter((_, idx) => idx !== i))
+  }
+
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>{label}</span>
+        <button
+          onClick={onAddTrack}
+          title={`Add ${label.toLowerCase()}`}
+          style={{
+            fontSize: 11, border: '1px solid #d0d0d0', borderRadius: 3, padding: '2px 6px',
+            background: '#f5f5f5', cursor: 'pointer', color: '#555',
+            display: 'flex', alignItems: 'center', gap: 2,
+          }}
+        >
+          + Add
+        </button>
+      </div>
+      {tracks.length === 0 ? (
+        <div style={{ fontSize: 11, color: '#bbb', textAlign: 'center', padding: '4px 0' }}>—</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {tracks.map((track, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {/* Value input — hidden when auto */}
+              {track.unit !== 'auto' ? (
+                <input
+                  type="number"
+                  min={0}
+                  value={track.value}
+                  onChange={(e) => updateTrack(i, { value: Number(e.target.value) })}
+                  style={{
+                    flex: 1, minWidth: 0, padding: '3px 5px',
+                    border: '1px solid #e0e0e0', borderRadius: 4,
+                    fontSize: 12, background: '#fafafa', outline: 'none', color: '#1a1a1a',
+                  }}
+                />
+              ) : (
+                <div style={{ flex: 1 }} />
+              )}
+              {/* Unit dropdown */}
+              <select
+                value={track.unit}
+                onChange={(e) => updateTrack(i, { unit: e.target.value as TrackUnit })}
+                style={{
+                  width: 46, padding: '3px 4px', border: '1px solid #e0e0e0',
+                  borderRadius: 4, fontSize: 11, background: '#fafafa',
+                  outline: 'none', cursor: 'pointer', color: '#1a1a1a',
+                }}
+              >
+                <option value="fr">fr</option>
+                <option value="px">px</option>
+                <option value="auto">auto</option>
+              </select>
+              {/* Remove */}
+              <button
+                onClick={() => removeTrack(i)}
+                title="Remove track"
+                data-testid="track-remove"
+                style={{
+                  border: 'none', background: 'none', cursor: 'pointer',
+                  color: '#bbb', fontSize: 14, padding: '0 2px',
+                  lineHeight: 1, flexShrink: 0,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── GridGapRow ──────────────────────────────────────────────────────────────
+
+function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
+  const [locked, setLocked] = useState(true)
+  const colGap = styles.columnGap ?? styles.gap ?? 0
+  const rowGap = styles.rowGap ?? styles.gap ?? 0
+
+  const handleLocked = (v: number) => {
+    onUpdate({ columnGap: v, rowGap: v })
+  }
+
+  const numInputStyle: React.CSSProperties = {
+    width: 36, padding: '3px 4px', border: '1px solid #e0e0e0',
+    borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none',
+    textAlign: 'center', color: '#1a1a1a',
+  }
+
+  return (
+    <PropertyRow label="Gap">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+        {locked ? (
+          <>
+            <input
+              type="range" min={0} max={120} value={colGap}
+              onChange={(e) => handleLocked(Number(e.target.value))}
+              style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+            />
+            <input
+              type="number" min={0} value={colGap}
+              onChange={(e) => handleLocked(Number(e.target.value))}
+              style={numInputStyle}
+            />
+            <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 10, color: '#aaa', width: 20, flexShrink: 0 }}>Col</span>
+                <input
+                  type="number" min={0} value={colGap}
+                  onChange={(e) => onUpdate({ columnGap: Number(e.target.value) })}
+                  style={{ ...numInputStyle, flex: 1, width: 'auto' }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 10, color: '#aaa', width: 20, flexShrink: 0 }}>Row</span>
+                <input
+                  type="number" min={0} value={rowGap}
+                  onChange={(e) => onUpdate({ rowGap: Number(e.target.value) })}
+                  style={{ ...numInputStyle, flex: 1, width: 'auto' }}
+                />
+              </div>
+            </div>
+          </>
+        )}
+        {/* Lock/Unlock toggle */}
+        <button
+          onClick={() => setLocked(!locked)}
+          title={locked ? 'Unlock gap' : 'Lock gap'}
+          style={{
+            border: '1px solid #e0e0e0', background: locked ? '#f5f5f5' : '#e8f0ff',
+            borderRadius: 4, cursor: 'pointer', padding: '3px 5px',
+            fontSize: 12, color: locked ? '#888' : '#0066ff', flexShrink: 0,
+          }}
+        >
+          {locked ? '🔒' : '🔓'}
+        </button>
+      </div>
+    </PropertyRow>
+  )
+}
+
+// ─── GridControls (new Webflow-style) ────────────────────────────────────────
+
+function GridControls({ styles, onUpdate, elementId }: {
+  styles: ElementStyles
+  onUpdate: (p: Partial<ElementStyles>) => void
+  elementId?: string | null
+}) {
+  const { gridEditElementId, setGridEditElementId } = useEditorStore()
+  const colTracks = parseTracks(styles.gridTemplateColumns)
+  const rowTracks = parseTracks(styles.gridTemplateRows)
+  const autoFlow = styles.gridAutoFlow ?? 'row'
+  const isEditMode = !!(elementId && gridEditElementId === elementId)
+
+  const updateCols = (tracks: GridTrack[]) => {
+    onUpdate({ gridTemplateColumns: serializeTracks(tracks) || undefined })
+  }
+  const updateRows = (tracks: GridTrack[]) => {
+    onUpdate({ gridTemplateRows: serializeTracks(tracks) || undefined })
+  }
 
   return (
     <>
-      {/* Grid columns/rows */}
-      <div>
-        <PropertyRow label="Grid">
-          <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0 }}>
-            <Spinner value={cols} onChange={(v) => onUpdate({ gridTemplateColumns: makeRepeat(v) })} />
-            <Spinner value={rows} onChange={(v) => onUpdate({ gridTemplateRows: makeRepeat(v) })} />
-            <button style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#888', fontSize: 14 }}>🔧</button>
-          </div>
-        </PropertyRow>
-        <div style={{ display: 'flex', gap: 6, paddingLeft: 64, marginTop: 2 }}>
-          <span style={{ flex: 1, fontSize: 10, color: '#0066ff', textAlign: 'center' }}>Columns</span>
-          <span style={{ flex: 1, fontSize: 10, color: '#0066ff', textAlign: 'center' }}>Rows</span>
-          <div style={{ width: 22 }} />
-        </div>
-      </div>
+      {/* Columns */}
+      <TrackList
+        label="Columns"
+        tracks={colTracks}
+        onChange={updateCols}
+        onAddTrack={() => updateCols([...colTracks, { value: 1, unit: 'fr' }])}
+      />
 
-      {/* Direction */}
+      {/* Rows */}
+      <TrackList
+        label="Rows"
+        tracks={rowTracks}
+        onChange={updateRows}
+        onAddTrack={() => updateRows([...rowTracks, { value: 1, unit: 'fr' }])}
+      />
+
+      {/* Gap */}
+      <GridGapRow styles={styles} onUpdate={onUpdate} />
+
+      {/* Auto-flow direction */}
       <PropertyRow label="Direction">
         <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
-          {[{ value: 'row', label: '→' }, { value: 'column', label: '↓' }].map(opt => {
-            const active = (styles.flexDirection ?? 'row') === opt.value
+          {[{ value: 'row', label: '→ Row' }, { value: 'column', label: '↓ Column' }].map(opt => {
+            const active = autoFlow === opt.value
             return (
-              <button key={opt.value} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
+              <button
+                key={opt.value}
+                onClick={() => onUpdate({ gridAutoFlow: opt.value as ElementStyles['gridAutoFlow'] })}
                 style={{
-                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
-                  cursor: 'pointer', background: active ? '#1a1a1a' : '#efefef',
+                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4,
+                  fontSize: 11, cursor: 'pointer',
+                  background: active ? '#1a1a1a' : '#efefef',
                   color: active ? '#fff' : '#888',
-                }}>
+                }}
+              >
                 {opt.label}
               </button>
             )
@@ -363,15 +523,33 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
         </div>
       </PropertyRow>
 
-      <GapRow value={gap} onChange={(v) => onUpdate({ gap: v })} />
       <MoreAlignOptions styles={styles} onUpdate={onUpdate} />
+
+      {/* Grid Edit Mode button */}
+      {elementId && (
+        <button
+          onClick={() => setGridEditElementId(isEditMode ? null : elementId)}
+          title="Открыть Grid Edit Mode"
+          style={{
+            width: '100%', marginTop: 6, padding: '6px 10px',
+            border: `1px solid ${isEditMode ? '#0066ff' : '#d0d0d0'}`,
+            borderRadius: 4, fontSize: 11, cursor: 'pointer',
+            background: isEditMode ? '#e8f0ff' : '#f5f5f5',
+            color: isEditMode ? '#0066ff' : '#555',
+            fontWeight: isEditMode ? 600 : 400,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          }}
+        >
+          ⊞ {isEditMode ? 'Exit Edit Mode' : 'Edit Grid'}
+        </button>
+      )}
     </>
   )
 }
 
 // ─── LayoutSection (main export) ─────────────────────────────────────────────
 
-export function LayoutSection({ styles, onUpdate }: Props) {
+export function LayoutSection({ styles, onUpdate, elementId }: Props & { elementId?: string | null }) {
   const display = styles.display ?? 'block'
 
   return (
@@ -396,7 +574,7 @@ export function LayoutSection({ styles, onUpdate }: Props) {
         )}
 
         {display === 'grid' && (
-          <GridControls styles={styles} onUpdate={onUpdate} />
+          <GridControls styles={styles} onUpdate={onUpdate} elementId={elementId} />
         )}
       </div>
     </CollapsibleSection>

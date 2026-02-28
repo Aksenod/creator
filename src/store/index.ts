@@ -26,6 +26,9 @@ type EditorState = {
   // Clipboard (не персистируется)
   clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null
 
+  // Grid Edit Mode
+  gridEditElementId: string | null
+
   // Проект
   createProject: (name: string) => void
   loadProject: (project: Project) => void
@@ -61,6 +64,9 @@ type EditorState = {
   copyElement: () => void
   pasteElement: () => void
   duplicateElement: () => void
+
+  // Grid Edit Mode
+  setGridEditElementId: (id: string | null) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => ({
@@ -86,6 +92,7 @@ export const useEditorStore = create<EditorState>()(
       history: [],
       historyIndex: -1,
       clipboard: null,
+      gridEditElementId: null,
 
       createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)
@@ -449,6 +456,8 @@ export const useEditorStore = create<EditorState>()(
           selectedElementIds: [newRootId],
         }
       }),
+
+      setGridEditElementId: (id) => set({ gridEditElementId: id }),
 
       duplicateElement: () => set((state) => {
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null

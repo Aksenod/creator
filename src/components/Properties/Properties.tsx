@@ -12,7 +12,9 @@ import { BackgroundSection } from './BackgroundSection'
 import { BorderSection } from './BorderSection'
 import { PositionSection } from './PositionSection'
 import { SpacingSection } from './SpacingSection'
+import { GridChildSection } from './GridChildSection'
 import type { PositionMode } from '../../types'
+import { findParentId } from '../../utils/treeUtils'
 
 const getCommonStyles = (
   ids: string[],
@@ -75,6 +77,12 @@ export function Properties() {
   const effectiveStyles = isMultiSelect
     ? (commonStyles ?? {})
     : element ? resolveStyles(element, activeBreakpointId) : {}
+
+  // Grid child: показывать секцию если родитель — grid-контейнер
+  const parentId = artboard && selectedElementId ? findParentId(artboard, selectedElementId) : null
+  const parentEl = parentId && artboard ? artboard.elements[parentId] : null
+  const parentEffectiveStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId) : null
+  const isGridChild = parentEffectiveStyles?.display === 'grid'
 
   // Есть ли BP-overrides на текущем элементе для текущего BP
   const hasBpOverrides = !isMultiSelect && element && activeBreakpointId !== 'desktop'
@@ -193,7 +201,14 @@ export function Properties() {
 
             <Divider />
 
-            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
+            {isGridChild && (
+              <>
+                <GridChildSection styles={effectiveStyles} onUpdate={updateStyle} />
+                <Divider />
+              </>
+            )}
+
+            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} elementId={selectedElementId} />
 
             <Divider />
 
