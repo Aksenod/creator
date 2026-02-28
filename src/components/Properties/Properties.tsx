@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
 import { CollapsibleSection, PropertyRow } from './shared'
 import type { CanvasElement, ElementStyles } from '../../types'
@@ -26,7 +27,7 @@ const getCommonStyles = (
     const val = first[key]
     const allSame = ids.every(id => {
       const s = resolveStyles(elements[id], bpId)
-      return (s[key] as unknown) === (val as unknown)
+      return Object.is(s[key], val)
     })
     if (allSame) (result as Record<string, unknown>)[key] = val
   }
@@ -42,9 +43,14 @@ export function Properties() {
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
   const isMultiSelect = selectedElementIds.length > 1
-  const commonStyles = isMultiSelect && artboard
-    ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId)
-    : null
+  const commonStyles = useMemo(
+    () => isMultiSelect && artboard
+      ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId)
+      : null,
+    // artboard — стабильная ссылка от Zustand, меняется только при изменении данных
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isMultiSelect, selectedElementIds, artboard, activeBreakpointId],
+  )
 
   const updateStyle = (patch: Partial<ElementStyles>) => {
     if (!activeArtboardId) return

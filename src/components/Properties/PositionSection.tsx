@@ -75,7 +75,7 @@ const POS_OPTIONS: {
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 type Props = {
-  positionMode: string
+  positionMode: PositionMode
   styles: Partial<ElementStyles>
   onUpdateMode: (mode: PositionMode) => void
   onUpdateStyle: (patch: Partial<ElementStyles>) => void

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles } from '../types'
+import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles, ElementType } from '../types'
 import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
 import {
@@ -45,6 +45,7 @@ type EditorState = {
   addArtboard: (name: string) => void
 
   // Элементы
+  addElement: (artboardId: string, type: ElementType, parentId: string | null) => void
   updateElement: (artboardId: string, elementId: string, patch: Partial<CanvasElement>) => void
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
   deleteElement: (artboardId: string, elementId: string) => void
@@ -136,6 +137,56 @@ export const useEditorStore = create<EditorState>()(
           return pushHistory(state.history, state.historyIndex, state.project, newProject)
         })
       },
+
+      addElement: (artboardId, type, parentId) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        if (!ab || !state.project) return state
+
+        const id = generateId()
+        const defaults: Record<ElementType, Partial<ElementStyles>> = {
+          div:     { width: '100%',  height: '100px', display: 'flex', backgroundColor: '#f9f9f9' },
+          section: { width: '100%',  height: '200px', display: 'flex', backgroundColor: '#ffffff' },
+          text:    { width: 'auto',  height: 'auto',  fontSize: 16,    color: '#1a1a1a' },
+          image:   { width: '200px', height: '150px', backgroundColor: '#e0e0e0' },
+          button:  { width: 'auto',  height: 'auto',  backgroundColor: '#0066ff' },
+          input:   { width: '200px', height: '40px',  backgroundColor: '#fff' },
+        }
+
+        const name = `${type} ${Object.keys(ab.elements).length + 1}`
+        const newElement: CanvasElement = {
+          id,
+          name,
+          className: slugify(name),
+          type,
+          positionMode: 'static',
+          styles: defaults[type],
+          children: [],
+          content: type === 'text' ? 'Текст' : type === 'button' ? 'Кнопка' : undefined,
+        }
+
+        const updatedElements = { ...ab.elements, [id]: newElement }
+        let updatedRootChildren = ab.rootChildren
+
+        if (parentId && ab.elements[parentId]) {
+          const parent = ab.elements[parentId]
+          updatedElements[parentId] = { ...parent, children: [...parent.children, id] }
+        } else {
+          updatedRootChildren = [...ab.rootChildren, id]
+        }
+
+        const newProject = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: updatedElements, rootChildren: updatedRootChildren },
+          },
+        }
+        return {
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
+          selectedElementId: id,
+          selectedElementIds: [id],
+        }
+      }),
 
       updateElement: (artboardId, elementId, patch) => set((state) => {
         const ab = state.project?.artboards[artboardId]

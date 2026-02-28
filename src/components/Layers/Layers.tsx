@@ -13,6 +13,7 @@ import {
 } from '@dnd-kit/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
+import { CONTAINER_TYPES } from '../../store/helpers'
 import type { Artboard } from '../../types'
 import { findParentId, isDescendantOf, collectDescendantIds } from '../../utils/treeUtils'
 
@@ -33,10 +34,6 @@ type LayerItemProps = {
   onToggleExpand: (id: string, altKey: boolean) => void
   dropIndicator: DropIndicator
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const CONTAINER_TYPES = ['div', 'section']
 
 // ─── Drop line indicator ──────────────────────────────────────────────────────
 
