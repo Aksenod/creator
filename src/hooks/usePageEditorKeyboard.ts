@@ -70,8 +70,10 @@ export function usePageEditorKeyboard({
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
-      // Cmd+Ё (Backquote) — скрыть/показать боковые панели как в Figma
-      if (mod && e.code === 'Backquote') { e.preventDefault(); onTogglePanels() }
+      // Cmd+Ё / Ctrl+\ — скрыть/показать боковые панели как в Figma
+      if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
+        e.preventDefault(); onTogglePanels()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

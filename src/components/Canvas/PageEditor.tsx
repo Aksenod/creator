@@ -89,9 +89,17 @@ export function PageEditor() {
       {/* Основная область */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Панель слоёв */}
-        {!isPreview && !panelsHidden && (
-          <div style={{ width: 240, borderRight: '1px solid #e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
-            <Layers artboard={artboard} />
+        {!isPreview && (
+          <div style={{
+            width: panelsHidden ? 0 : 240,
+            minWidth: 0,
+            flexShrink: 0,
+            overflow: 'hidden',
+            transition: 'width 160ms ease',
+          }}>
+            <div style={{ width: 240, height: '100%', borderRight: '1px solid #e0e0e0' }}>
+              <Layers artboard={artboard} />
+            </div>
           </div>
         )}
 
@@ -101,9 +109,17 @@ export function PageEditor() {
         </div>
 
         {/* Панель свойств */}
-        {!isPreview && !panelsHidden && (
-          <div style={{ width: 240, borderLeft: '1px solid #e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
-            <Properties />
+        {!isPreview && (
+          <div style={{
+            width: panelsHidden ? 0 : 240,
+            minWidth: 0,
+            flexShrink: 0,
+            overflow: 'hidden',
+            transition: 'width 160ms ease',
+          }}>
+            <div style={{ width: 240, height: '100%', borderLeft: '1px solid #e0e0e0' }}>
+              <Properties />
+            </div>
           </div>
         )}
       </div>
