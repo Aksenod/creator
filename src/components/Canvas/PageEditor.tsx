@@ -47,7 +47,7 @@ function MobileIcon({ active }: { active: boolean }) {
   )
 }
 
-// --- Breakpoints config ---
+// --- Breakpoints config (Webflow-style) ---
 
 type BreakpointIcon = (props: { active: boolean }) => JSX.Element
 
@@ -56,13 +56,45 @@ type Breakpoint = {
   label: string
   width: number
   icon: BreakpointIcon
+  isBase?: boolean   // Desktop = Base, стили каскадируют во все стороны
+  cascade: 'up' | 'down' | 'both'
+  tooltip: string
 }
 
 const BREAKPOINTS: Breakpoint[] = [
-  { id: 'desktop', label: 'Desktop', width: 1440, icon: DesktopIcon },
-  { id: 'laptop',  label: 'Laptop',  width: 1280, icon: LaptopIcon },
-  { id: 'tablet',  label: 'Tablet',  width: 768,  icon: TabletIcon },
-  { id: 'mobile',  label: 'Mobile',  width: 375,  icon: MobileIcon },
+  {
+    id: 'desktop',
+    label: 'Desktop',
+    width: 1440,
+    icon: DesktopIcon,
+    isBase: true,
+    cascade: 'both',
+    tooltip: 'Desktop: ✳ Base breakpoint\nСтили Desktop применяются на всех брейкпоинтах, если не переопределены на другом. Начинай дизайн здесь.',
+  },
+  {
+    id: 'laptop',
+    label: 'Laptop',
+    width: 1280,
+    icon: LaptopIcon,
+    cascade: 'down',
+    tooltip: 'Laptop — 1280px\nСтили каскадируют вниз от Desktop.',
+  },
+  {
+    id: 'tablet',
+    label: 'Tablet',
+    width: 768,
+    icon: TabletIcon,
+    cascade: 'down',
+    tooltip: 'Tablet — 768px\nПереопредели стили Desktop для планшетов.',
+  },
+  {
+    id: 'mobile',
+    label: 'Mobile',
+    width: 375,
+    icon: MobileIcon,
+    cascade: 'down',
+    tooltip: 'Mobile — 375px\nПереопредели стили для мобильных устройств.',
+  },
 ]
 
 // --- Auto-breakpoint detection ---
@@ -83,7 +115,9 @@ export function PageEditor() {
   const [isPreview, setIsPreview] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [scale, setScale] = useState(1)
+  const [showCanvasSettings, setShowCanvasSettings] = useState(false)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
+  const canvasSettingsRef = useRef<HTMLDivElement>(null)
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
 
@@ -109,11 +143,34 @@ export function PageEditor() {
     return () => ro.disconnect()
   }, [displayWidth])
 
+  // Закрыть Canvas Settings при клике вне
+  useEffect(() => {
+    if (!showCanvasSettings) return
+    const onClickOutside = (e: MouseEvent) => {
+      if (canvasSettingsRef.current && !canvasSettingsRef.current.contains(e.target as Node)) {
+        setShowCanvasSettings(false)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [showCanvasSettings])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (showCanvasSettings) { setShowCanvasSettings(false); return }
         if (isPreview) setIsPreview(false)
         else exitArtboard()
+      }
+
+      // Keyboard shortcuts для брейкпоинтов (1-4), только если не в input
+      const tag = (e.target as HTMLElement).tagName
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        const idx = parseInt(e.key) - 1
+        if (idx >= 0 && idx < BREAKPOINTS.length) {
+          setViewportWidth(BREAKPOINTS[idx].width)
+          return
+        }
       }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && activeArtboardId) {
         // Не удалять если фокус в input/textarea/select
@@ -133,7 +190,7 @@ export function PageEditor() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [exitArtboard, isPreview, deleteElement, selectedElementId, activeArtboardId, undo, copyElement, pasteElement, duplicateElement])
+  }, [exitArtboard, isPreview, showCanvasSettings, deleteElement, selectedElementId, activeArtboardId, undo, copyElement, pasteElement, duplicateElement])
 
   if (!artboard) return null
 
@@ -170,41 +227,95 @@ export function PageEditor() {
           <span style={{ fontWeight: 600 }}>{artboard.name}</span>
           <Toolbar />
 
-          {/* Breakpoint bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
-            {BREAKPOINTS.map((bp) => {
-              const isActive = displayWidth === bp.width
-              const isDetected = bp.width === detectedWidth
-              return (
-                <button
-                  key={bp.id}
-                  title={`${bp.label} — ${bp.width}px${isDetected ? ' · твой экран' : ''}`}
-                  onClick={() => setViewportWidth(bp.width)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    width: 28, height: 30, border: 'none', borderRadius: 6, cursor: 'pointer',
-                    background: isActive ? '#1a1a1a' : 'transparent',
-                    color: isActive ? '#fff' : '#888',
-                    transition: 'all 0.1s',
-                    gap: 2, position: 'relative',
-                  }}
-                >
-                  <bp.icon active={isActive} />
-                  {/* Точка = реальное разрешение экрана пользователя */}
-                  <span style={{
-                    width: 3, height: 3, borderRadius: '50%',
-                    background: isDetected ? (isActive ? '#fff' : '#1a1a1a') : 'transparent',
-                    flexShrink: 0,
-                  }} />
-                </button>
-              )
-            })}
-          </div>
+          {/* Canvas Settings + Breakpoint bar (Webflow-style) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }} ref={canvasSettingsRef}>
 
-          {/* Текущая ширина */}
-          <span style={{ fontSize: 12, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
-            {displayWidth}px
-          </span>
+            {/* Ширина = кнопка открытия Canvas Settings */}
+            <button
+              onClick={() => setShowCanvasSettings(s => !s)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: showCanvasSettings ? '#1a1a1a' : '#f0f0f0',
+                color: showCanvasSettings ? '#fff' : '#333',
+                fontSize: 12, fontVariantNumeric: 'tabular-nums', fontWeight: 500,
+                transition: 'all 0.1s',
+              }}
+            >
+              {displayWidth}px
+              <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
+                <path d="M1 1l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Canvas Settings popover */}
+            {showCanvasSettings && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 100,
+                background: '#2a2a2a', borderRadius: 8, padding: 12,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)', minWidth: 200,
+                color: '#fff', fontSize: 12,
+              }}>
+                <div style={{ marginBottom: 8, fontWeight: 600, color: '#aaa', letterSpacing: '0.05em', fontSize: 11, textTransform: 'uppercase' }}>
+                  Canvas Settings
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ color: '#ccc' }}>Масштаб</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums', color: '#fff', fontWeight: 500 }}>
+                    {Math.round(scale * 100)}%
+                  </span>
+                </div>
+                <div style={{ height: 1, background: '#3a3a3a', margin: '8px 0' }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#ccc' }}>Ширина артборда</span>
+                  <span style={{ color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{displayWidth}px</span>
+                </div>
+                <div style={{ height: 1, background: '#3a3a3a', margin: '8px 0' }} />
+                <div style={{ color: '#666', fontSize: 11, lineHeight: 1.5 }}>
+                  Shortcuts: 1–4 для переключения брейкпоинтов
+                </div>
+              </div>
+            )}
+
+            {/* Breakpoint buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
+              {BREAKPOINTS.map((bp, idx) => {
+                const isActive = displayWidth === bp.width
+                const isDetected = bp.width === detectedWidth
+                return (
+                  <button
+                    key={bp.id}
+                    title={bp.tooltip + (isDetected ? '\n· Твой экран' : '') + `\nShortcut: ${idx + 1}`}
+                    onClick={() => setViewportWidth(bp.width)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      width: 30, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer',
+                      background: isActive ? '#1a1a1a' : 'transparent',
+                      color: isActive ? '#fff' : '#888',
+                      transition: 'all 0.1s',
+                      gap: 2, position: 'relative',
+                    }}
+                  >
+                    {/* ✳ для Base breakpoint, иконка для остальных */}
+                    {bp.isBase ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <bp.icon active={isActive} />
+                        <span style={{ fontSize: 8, lineHeight: 1, color: isActive ? '#aaa' : '#bbb', fontWeight: 700 }}>✳</span>
+                      </div>
+                    ) : (
+                      <bp.icon active={isActive} />
+                    )}
+                    {/* Точка = реальный экран пользователя */}
+                    <span style={{
+                      width: 3, height: 3, borderRadius: '50%',
+                      background: isDetected ? (isActive ? '#fff' : '#1a1a1a') : 'transparent',
+                      flexShrink: 0,
+                    }} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
           <button
             onClick={() => setIsPreview(!isPreview)}
