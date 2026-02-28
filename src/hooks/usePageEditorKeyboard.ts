@@ -18,6 +18,7 @@ type Options = {
   onCloseSettings: () => void
   onSetViewportWidth: (w: number) => void
   onClearCustomWidth: () => void
+  onTogglePanels: () => void
 }
 
 export function usePageEditorKeyboard({
@@ -31,6 +32,7 @@ export function usePageEditorKeyboard({
   onCloseSettings,
   onSetViewportWidth,
   onClearCustomWidth,
+  onTogglePanels,
 }: Options) {
   const { deleteElement, undo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint } = useEditorStore()
 
@@ -68,6 +70,8 @@ export function usePageEditorKeyboard({
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
+      // Cmd+Ё (Backquote) — скрыть/показать боковые панели как в Figma
+      if (mod && e.code === 'Backquote') { e.preventDefault(); onTogglePanels() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -75,5 +79,6 @@ export function usePageEditorKeyboard({
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId, BREAKPOINTS,
     onExitArtboard, onClosePreview, onCloseSettings, onSetViewportWidth, onClearCustomWidth,
     deleteElement, undo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint,
+    onTogglePanels,
   ])
 }

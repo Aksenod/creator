@@ -12,6 +12,7 @@ import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 export function PageEditor() {
   const { exitArtboard, project, activeArtboardId, selectedElementId, setActiveBreakpoint, activeBreakpointId, gridEditElementId } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
+  const [panelsHidden, setPanelsHidden] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [customWidth, setCustomWidth] = useState<string>('')
   const [scale, setScale] = useState(1)
@@ -57,6 +58,7 @@ export function PageEditor() {
     onCloseSettings: () => setShowCanvasSettings(false),
     onSetViewportWidth: setViewportWidth,
     onClearCustomWidth: () => setCustomWidth(''),
+    onTogglePanels: () => setPanelsHidden(v => !v),
   })
 
   if (!artboard) return null
@@ -87,7 +89,7 @@ export function PageEditor() {
       {/* Основная область */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Панель слоёв */}
-        {!isPreview && (
+        {!isPreview && !panelsHidden && (
           <div style={{ width: 240, borderRight: '1px solid #e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
             <Layers artboard={artboard} />
           </div>
@@ -99,7 +101,7 @@ export function PageEditor() {
         </div>
 
         {/* Панель свойств */}
-        {!isPreview && (
+        {!isPreview && !panelsHidden && (
           <div style={{ width: 240, borderLeft: '1px solid #e0e0e0', flexShrink: 0, overflow: 'hidden' }}>
             <Properties />
           </div>
