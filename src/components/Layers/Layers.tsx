@@ -110,6 +110,8 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
       {/* Строка слоя — единственная droppable-зона */}
       <div
         ref={setRowRef}
+        {...listeners}
+        {...attributes}
         onClick={(e) => {
           if (e.shiftKey) toggleSelectElement(id)
           else selectElement(id)
@@ -117,7 +119,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         style={{
           display: 'flex', alignItems: 'center',
           padding: `4px 8px 4px ${8 + depth * 16}px`,
-          cursor: 'pointer', fontSize: 12,
+          cursor: 'grab', fontSize: 12,
           borderRadius: 3,
           background: isDropInto
             ? 'rgba(0,102,255,0.06)'
@@ -146,19 +148,6 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           }}
         >
           ▶
-        </span>
-
-        {/* Drag handle */}
-        <span
-          {...listeners}
-          {...attributes}
-          style={{
-            marginRight: 4, opacity: 0.3, fontSize: 10,
-            cursor: 'grab', padding: '0 2px',
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          ⠿
         </span>
 
         <span style={{ marginRight: 6, opacity: 0.4, fontSize: 10 }}>{getIcon(el.type)}</span>
