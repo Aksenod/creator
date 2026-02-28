@@ -251,6 +251,73 @@ test('добавление маржинов через Spacing panel', async ({ 
   expect(stored?.marginLeft).toBe(40)
 })
 
+// ─── Тест 10: Черный бордер 10px у div ──────────────────────────────────────
+
+test('установка черного бордера 10px у div', async ({ page }) => {
+  await enterPageEditor(page)
+
+  // Добавить Div и выделить его
+  await page.click('button:has-text("+ Div")')
+  await expect(page.locator('text=div 1')).toBeVisible()
+  await page.click('text=div 1')
+
+  // Секция Borders должна быть видна
+  await expect(page.locator('span').filter({ hasText: 'Borders' })).toBeVisible()
+
+  // Кликнуть кнопку "—" (solid style) в строке Style
+  const styleRow = page.locator('div').filter({ has: page.locator('span').filter({ hasText: /^Style$/ }) })
+  const solidBtn = styleRow.locator('button').filter({ hasText: '—' })
+  await solidBtn.click()
+
+  // Установить Width = 10
+  // .last() → самый внутренний div (BRow), а не внешний контейнер
+  const widthRow = page.locator('div').filter({ has: page.locator('span').filter({ hasText: /^Width$/ }) }).last()
+  const widthInput = widthRow.locator('input[type="number"]')
+  await widthInput.fill('10')
+  await page.keyboard.press('Tab')
+
+  // Ввести Color = #000000 — скопить по Color BRow (.last() → innermost div)
+  const colorRow = page.locator('div').filter({ has: page.locator('span').filter({ hasText: /^Color$/ }) }).last()
+  const colorHexInput = colorRow.locator('input[placeholder="—"]')
+  await colorHexInput.fill('#000000')
+  await page.keyboard.press('Tab')
+
+  // Проверить значения инпутов
+  await expect(widthInput).toHaveValue('10')
+  await expect(colorHexInput).toHaveValue('#000000')
+
+  // Вспомогательная функция для чтения стилей из localStorage
+  const getStoredStyles = () => page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const persisted = JSON.parse(raw)
+    const project = persisted.state?.project
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const elemId = artboard.rootChildren[0]
+    return artboard.elements[elemId]?.styles ?? null
+  })
+
+  // Ждём пока Zustand запишет borderStyle и borderWidth в localStorage
+  await page.waitForFunction(() => {
+    try {
+      const raw = localStorage.getItem('creator-project')
+      if (!raw) return false
+      const p = JSON.parse(raw)
+      const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
+      const elemId = artboard?.rootChildren?.[0]
+      const s = artboard?.elements?.[elemId]?.styles
+      return s?.borderStyle === 'solid' && s?.borderWidth === 10
+    } catch { return false }
+  })
+
+  const stored = await getStoredStyles()
+  expect(stored?.borderStyle).toBe('solid')
+  expect(stored?.borderWidth).toBe(10)
+  // borderColor проверяем через UI (onChange контролируется React)
+  await expect(colorHexInput).toHaveValue('#000000')
+})
+
 // ─── Тест 8: Layout display modes ───────────────────────────────────────────
 
 test('переключение display mode в Layout', async ({ page }) => {
