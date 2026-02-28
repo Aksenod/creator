@@ -82,6 +82,7 @@ export function Canvas({ artboard, transform, previewMode }: Props) {
           minHeight: artboard.height,
           position: 'relative',
           boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+          overflow: 'hidden',
         }}>
           {artboard.rootChildren.length === 0 ? (
             <div style={{

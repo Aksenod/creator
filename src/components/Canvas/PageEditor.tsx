@@ -6,14 +6,79 @@ import { Toolbar } from '../Toolbar/Toolbar'
 import { Canvas } from './Canvas'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 
+// --- SVG icons ---
+
+function DesktopIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M5 14h6M8 12v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function LaptopIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="3" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M1 13h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function TabletIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="13" r="0.8" fill="currentColor" />
+    </svg>
+  )
+}
+
+function MobileIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="4.5" y="1" width="7" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="13" r="0.7" fill="currentColor" />
+    </svg>
+  )
+}
+
+// --- Breakpoints config ---
+
+type BreakpointIcon = (props: { active: boolean }) => JSX.Element
+
+type Breakpoint = {
+  id: string
+  label: string
+  width: number
+  icon: BreakpointIcon
+}
+
+const BREAKPOINTS: Breakpoint[] = [
+  { id: 'desktop', label: 'Desktop', width: 1440, icon: DesktopIcon },
+  { id: 'laptop',  label: 'Laptop',  width: 1280, icon: LaptopIcon },
+  { id: 'tablet',  label: 'Tablet',  width: 768,  icon: TabletIcon },
+  { id: 'mobile',  label: 'Mobile',  width: 375,  icon: MobileIcon },
+]
+
+// --- PageEditor ---
+
 export function PageEditor() {
   const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null)
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
 
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const { transform, fitToScreen, scalePercent } = useCanvasTransform(canvasContainerRef)
+
+  const displayWidth = viewportWidth ?? (artboard?.width ?? 0)
 
   // При входе в page mode — подогнать артборд под экран
   useEffect(() => {
@@ -76,6 +141,41 @@ export function PageEditor() {
           </button>
           <span style={{ fontWeight: 600 }}>{artboard.name}</span>
           <Toolbar />
+
+          {/* Breakpoint bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
+            {BREAKPOINTS.map((bp) => {
+              const isActive = displayWidth === bp.width
+              return (
+                <button
+                  key={bp.id}
+                  title={`${bp.label} — ${bp.width}px`}
+                  onClick={() => {
+                    if (isActive && viewportWidth !== null) {
+                      setViewportWidth(null)
+                    } else {
+                      setViewportWidth(bp.width)
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 28, height: 28, border: 'none', borderRadius: 6, cursor: 'pointer',
+                    background: isActive ? '#1a1a1a' : 'transparent',
+                    color: isActive ? '#fff' : '#888',
+                    transition: 'all 0.1s',
+                  }}
+                >
+                  <bp.icon active={isActive} />
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Текущая ширина */}
+          <span style={{ fontSize: 12, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
+            {displayWidth}px
+          </span>
+
           <button
             onClick={() => setIsPreview(!isPreview)}
             style={{
@@ -112,7 +212,7 @@ export function PageEditor() {
           tabIndex={0}
           style={{ flex: 1, overflow: 'hidden', background: '#f5f5f5', outline: 'none' }}
         >
-          <Canvas artboard={artboard} transform={transform} previewMode={isPreview} />
+          <Canvas artboard={{ ...artboard, width: displayWidth }} transform={transform} previewMode={isPreview} />
         </div>
 
         {/* Панель свойств */}
