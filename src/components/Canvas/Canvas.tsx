@@ -62,6 +62,11 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     )
   }
 
+  // transform: scale() корректно влияет на layout через wrapper-трюк
+  // zoom не используем — ненадёжен в разных браузерах
+  const scaledW = Math.round(artboard.width * scale)
+  const scaledH = Math.round(artboard.height * scale)
+
   return (
     <div
       style={{
@@ -73,26 +78,40 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       }}
       onClick={() => selectElement(null)}
     >
+      {/*
+        Wrapper занимает правильное место в layout (scaledW × scaledH),
+        артборд внутри абсолютно позиционирован и масштабирован через transform.
+        Это позволяет flexbox корректно центрировать артборд.
+      */}
       <div style={{
-        width: artboard.width,
-        background: '#fff',
-        minHeight: artboard.height,
         position: 'relative',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
+        width: scaledW,
+        minHeight: scaledH,
         flexShrink: 0,
-        ...(scale !== 1 ? { zoom: scale } as React.CSSProperties : {}),
       }}>
-        {artboard.rootChildren.length === 0 ? (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: artboard.height, color: '#aaa', fontSize: 13,
-          }}>
-            Добавь первый элемент через панель инструментов
-          </div>
-        ) : (
-          artboard.rootChildren.map(renderElement)
-        )}
+        <div style={{
+          width: artboard.width,
+          minHeight: artboard.height,
+          background: '#fff',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+          overflow: 'hidden',
+          transform: scale !== 1 ? `scale(${scale})` : undefined,
+          transformOrigin: 'top left',
+        }}>
+          {artboard.rootChildren.length === 0 ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              height: artboard.height, color: '#aaa', fontSize: 13,
+            }}>
+              Добавь первый элемент через панель инструментов
+            </div>
+          ) : (
+            artboard.rootChildren.map(renderElement)
+          )}
+        </div>
       </div>
     </div>
   )
