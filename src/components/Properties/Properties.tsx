@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { ElementStyles } from '../../types'
 
@@ -17,6 +18,8 @@ export function Properties() {
     updateElement(activeArtboardId, selectedElementId, patch)
   }
 
+  const display = element?.styles.display ?? 'block'
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{
@@ -30,180 +33,184 @@ export function Properties() {
         {!element ? (
           <div style={{ color: '#aaa', fontSize: 12 }}>Выбери элемент</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
 
-            {/* Имя */}
-            <Section label="Имя">
-              <input
-                value={element.name}
-                onChange={(e) => updateField({ name: e.target.value })}
-                style={inputStyle}
-              />
-            </Section>
-
-            {/* Класс */}
-            <Section label="Класс CSS">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ color: '#888', fontSize: 11 }}>.</span>
-                <input
-                  value={element.className ?? ''}
-                  onChange={(e) => updateField({ className: e.target.value })}
-                  placeholder="auto"
-                  style={{ ...inputStyle, fontFamily: 'monospace', flex: 1 }}
-                />
+            {/* Имя + Класс */}
+            <CollapsibleSection label="Слой" defaultOpen>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Row label="Имя">
+                  <input
+                    value={element.name}
+                    onChange={(e) => updateField({ name: e.target.value })}
+                    style={inputStyle}
+                  />
+                </Row>
+                <Row label="Класс">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                    <span style={{ color: '#aaa', fontSize: 11 }}>.</span>
+                    <input
+                      value={element.className ?? ''}
+                      onChange={(e) => updateField({ className: e.target.value })}
+                      placeholder="auto"
+                      style={{ ...inputStyle, fontFamily: 'monospace' }}
+                    />
+                  </div>
+                </Row>
+                <Row label="Позиция">
+                  <SegmentedControl
+                    value={element.positionMode}
+                    options={[
+                      { value: 'flow', label: 'В потоке' },
+                      { value: 'pinned', label: 'Закреплён' },
+                    ]}
+                    onChange={(v) => updateField({ positionMode: v as 'flow' | 'pinned' })}
+                  />
+                </Row>
               </div>
-            </Section>
+            </CollapsibleSection>
 
-            {/* Тип */}
-            <Section label="Тип">
-              <div style={{ fontSize: 12, color: '#555', padding: '3px 0' }}>{element.type}</div>
-            </Section>
+            <Divider />
 
-            {/* Позиция */}
-            <Section label="Позиция">
-              <div style={{ display: 'flex', gap: 4 }}>
-                {(['flow', 'pinned'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => updateField({ positionMode: mode })}
-                    style={{
-                      padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-                      border: 'none',
-                      background: element.positionMode === mode ? '#0066ff' : '#f0f0f0',
-                      color: element.positionMode === mode ? '#fff' : '#333',
-                    }}
-                  >
-                    {mode === 'flow' ? 'В потоке' : 'Закреплён'}
-                  </button>
-                ))}
+            {/* Layout */}
+            <CollapsibleSection label="Layout" defaultOpen>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Row label="Display">
+                  <SegmentedControl
+                    value={display}
+                    options={[
+                      { value: 'block', label: 'Block' },
+                      { value: 'flex', label: 'Flex' },
+                      { value: 'grid', label: 'Grid' },
+                      { value: 'none', label: 'None' },
+                    ]}
+                    onChange={(v) => updateStyle({ display: v as ElementStyles['display'] })}
+                  />
+                </Row>
+
+                {/* Flex-контролы */}
+                {display === 'flex' && (
+                  <>
+                    <Row label="Direction">
+                      <SegmentedControl
+                        value={element.styles.flexDirection ?? 'row'}
+                        options={[
+                          { value: 'row', label: '→' },
+                          { value: 'column', label: '↓' },
+                          { value: 'row-reverse', label: '←' },
+                          { value: 'column-reverse', label: '↑' },
+                        ]}
+                        onChange={(v) => updateStyle({ flexDirection: v as ElementStyles['flexDirection'] })}
+                      />
+                    </Row>
+                    <Row label="Justify">
+                      <select
+                        value={element.styles.justifyContent ?? ''}
+                        onChange={(e) => updateStyle({ justifyContent: e.target.value as ElementStyles['justifyContent'] })}
+                        style={selectStyle}
+                      >
+                        <option value="">—</option>
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="space-between">Space Between</option>
+                        <option value="space-around">Space Around</option>
+                      </select>
+                    </Row>
+                    <Row label="Align">
+                      <select
+                        value={element.styles.alignItems ?? ''}
+                        onChange={(e) => updateStyle({ alignItems: e.target.value as ElementStyles['alignItems'] })}
+                        style={selectStyle}
+                      >
+                        <option value="">—</option>
+                        <option value="flex-start">Start</option>
+                        <option value="center">Center</option>
+                        <option value="flex-end">End</option>
+                        <option value="stretch">Stretch</option>
+                      </select>
+                    </Row>
+                    <Row label="Gap">
+                      <input
+                        type="number"
+                        value={element.styles.gap ?? ''}
+                        onChange={(e) => updateStyle({ gap: e.target.value ? Number(e.target.value) : undefined })}
+                        style={inputStyle}
+                      />
+                    </Row>
+                  </>
+                )}
+
+                {/* Grid-контролы */}
+                {display === 'grid' && (
+                  <Row label="Columns">
+                    <input
+                      value={element.styles.gridTemplateColumns ?? ''}
+                      onChange={(e) => updateStyle({ gridTemplateColumns: e.target.value })}
+                      placeholder="1fr 1fr"
+                      style={inputStyle}
+                    />
+                  </Row>
+                )}
               </div>
-            </Section>
+            </CollapsibleSection>
+
+            <Divider />
 
             {/* Размеры */}
-            <Section label="Размеры">
+            <CollapsibleSection label="Размеры" defaultOpen>
               <div style={{ display: 'flex', gap: 8 }}>
-                <EditableField
-                  label="W"
-                  value={element.styles.width ?? ''}
-                  onChange={(v) => updateStyle({ width: v })}
-                />
-                <EditableField
-                  label="H"
-                  value={element.styles.height ?? ''}
-                  onChange={(v) => updateStyle({ height: v })}
-                />
+                <NumField label="W" value={element.styles.width ?? ''} onChange={(v) => updateStyle({ width: v })} />
+                <NumField label="H" value={element.styles.height ?? ''} onChange={(v) => updateStyle({ height: v })} />
               </div>
-            </Section>
+            </CollapsibleSection>
 
-            {/* Фон */}
-            <Section label="Фон">
+            <Divider />
+
+            {/* Заливка */}
+            <CollapsibleSection label="Заливка" defaultOpen>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input
                   type="color"
                   value={element.styles.backgroundColor ?? '#ffffff'}
                   onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
-                  style={{ width: 28, height: 28, padding: 2, border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer' }}
+                  style={{ width: 28, height: 28, padding: 2, border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', flexShrink: 0 }}
                 />
                 <input
                   value={element.styles.backgroundColor ?? ''}
                   onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
                   placeholder="—"
-                  style={{ ...inputStyle, flex: 1 }}
+                  style={inputStyle}
                 />
               </div>
-            </Section>
+            </CollapsibleSection>
 
             {/* Текст */}
             {(element.type === 'text' || element.type === 'button') && (
-              <Section label="Текст">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <EditableField
-                      label="Цвет"
-                      value={element.styles.color ?? ''}
-                      onChange={(v) => updateStyle({ color: v })}
-                    />
-                    <EditableField
-                      label="px"
-                      value={element.styles.fontSize !== undefined ? String(element.styles.fontSize) : ''}
-                      onChange={(v) => updateStyle({ fontSize: v ? Number(v) : undefined })}
-                      type="number"
-                    />
+              <>
+                <Divider />
+                <CollapsibleSection label="Текст" defaultOpen>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <NumField label="Цвет" value={element.styles.color ?? ''} onChange={(v) => updateStyle({ color: v })} />
+                      <NumField label="px" value={element.styles.fontSize !== undefined ? String(element.styles.fontSize) : ''} onChange={(v) => updateStyle({ fontSize: v ? Number(v) : undefined })} />
+                    </div>
+                    <Row label="Жирность">
+                      <select
+                        value={element.styles.fontWeight ?? ''}
+                        onChange={(e) => updateStyle({ fontWeight: e.target.value })}
+                        style={selectStyle}
+                      >
+                        <option value="">—</option>
+                        <option value="300">Light</option>
+                        <option value="400">Regular</option>
+                        <option value="500">Medium</option>
+                        <option value="600">SemiBold</option>
+                        <option value="700">Bold</option>
+                      </select>
+                    </Row>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#888', whiteSpace: 'nowrap' }}>Жирность</span>
-                    <select
-                      value={element.styles.fontWeight ?? ''}
-                      onChange={(e) => updateStyle({ fontWeight: e.target.value })}
-                      style={{ ...inputStyle, flex: 1 }}
-                    >
-                      <option value="">—</option>
-                      <option value="300">Light</option>
-                      <option value="400">Regular</option>
-                      <option value="500">Medium</option>
-                      <option value="600">SemiBold</option>
-                      <option value="700">Bold</option>
-                    </select>
-                  </div>
-                </div>
-              </Section>
-            )}
-
-            {/* Flex */}
-            {element.styles.display === 'flex' && (
-              <Section label="Flex">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#888', whiteSpace: 'nowrap', width: 60 }}>Direction</span>
-                    <select
-                      value={element.styles.flexDirection ?? ''}
-                      onChange={(e) => updateStyle({ flexDirection: e.target.value as ElementStyles['flexDirection'] })}
-                      style={{ ...inputStyle, flex: 1 }}
-                    >
-                      <option value="">—</option>
-                      <option value="row">row</option>
-                      <option value="column">column</option>
-                      <option value="row-reverse">row-reverse</option>
-                      <option value="column-reverse">column-reverse</option>
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#888', whiteSpace: 'nowrap', width: 60 }}>Justify</span>
-                    <select
-                      value={element.styles.justifyContent ?? ''}
-                      onChange={(e) => updateStyle({ justifyContent: e.target.value as ElementStyles['justifyContent'] })}
-                      style={{ ...inputStyle, flex: 1 }}
-                    >
-                      <option value="">—</option>
-                      <option value="flex-start">flex-start</option>
-                      <option value="center">center</option>
-                      <option value="flex-end">flex-end</option>
-                      <option value="space-between">space-between</option>
-                      <option value="space-around">space-around</option>
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: '#888', whiteSpace: 'nowrap', width: 60 }}>Align</span>
-                    <select
-                      value={element.styles.alignItems ?? ''}
-                      onChange={(e) => updateStyle({ alignItems: e.target.value as ElementStyles['alignItems'] })}
-                      style={{ ...inputStyle, flex: 1 }}
-                    >
-                      <option value="">—</option>
-                      <option value="flex-start">flex-start</option>
-                      <option value="center">center</option>
-                      <option value="flex-end">flex-end</option>
-                      <option value="stretch">stretch</option>
-                    </select>
-                  </div>
-                  <EditableField
-                    label="Gap"
-                    value={element.styles.gap !== undefined ? String(element.styles.gap) : ''}
-                    onChange={(v) => updateStyle({ gap: v ? Number(v) : undefined })}
-                    type="number"
-                  />
-                </div>
-              </Section>
+                </CollapsibleSection>
+              </>
             )}
 
           </div>
@@ -213,36 +220,107 @@ export function Properties() {
   )
 }
 
+// ─── Базовые стили ─────────────────────────────────────────────────────────────
+
 const inputStyle: React.CSSProperties = {
-  flex: 1, padding: '3px 6px', border: '1px solid #ddd', borderRadius: 4,
+  flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
   fontSize: 12, background: '#fafafa', outline: 'none', width: '100%',
+  color: '#1a1a1a',
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+const selectStyle: React.CSSProperties = {
+  ...inputStyle, cursor: 'pointer', appearance: 'auto',
+}
+
+// ─── Компоненты ────────────────────────────────────────────────────────────────
+
+function Divider() {
+  return <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
+}
+
+function CollapsibleSection({ label, children, defaultOpen = true }: {
+  label: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <div>
-      <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>{label}</div>
+    <div style={{ padding: '8px 0' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '100%', padding: 0, border: 'none', background: 'none',
+          cursor: 'pointer', marginBottom: open ? 10 : 0,
+        }}
+      >
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
+        <span style={{
+          fontSize: 9, color: '#aaa',
+          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+          transition: 'transform 0.15s',
+          display: 'inline-block',
+        }}>▼</span>
+      </button>
+      {open && children}
+    </div>
+  )
+}
+
+function SegmentedControl({ value, options, onChange }: {
+  value: string
+  options: { value: string; label: string }[]
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', background: '#efefef', borderRadius: 6,
+      padding: 2, gap: 1, flex: 1,
+    }}>
+      {options.map((opt) => {
+        const active = value === opt.value
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            style={{
+              flex: 1, padding: '3px 4px', fontSize: 11, border: 'none',
+              borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
+              background: active ? '#1a1a1a' : 'transparent',
+              color: active ? '#fff' : '#888',
+              fontWeight: active ? 500 : 400,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
       {children}
     </div>
   )
 }
 
-function EditableField({
-  label, value, onChange, type = 'text',
-}: {
+function NumField({ label, value, onChange }: {
   label: string
   value: string
   onChange: (v: string) => void
-  type?: 'text' | 'number'
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
-      <span style={{ fontSize: 11, color: '#888', width: 14, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>{label}</span>
       <input
-        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{ ...inputStyle }}
+        style={inputStyle}
       />
     </div>
   )
