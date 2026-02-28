@@ -9,6 +9,8 @@ import { SizeSection } from './SizeSection'
 import { TypographySection } from './TypographySection'
 import { BackgroundSection } from './BackgroundSection'
 import { BorderSection } from './BorderSection'
+import { PositionSection } from './PositionSection'
+import type { PositionMode } from '../../types'
 
 const getCommonStyles = (
   ids: string[],
@@ -55,6 +57,11 @@ export function Properties() {
   const updateField = (patch: Parameters<typeof updateElement>[2]) => {
     if (!activeArtboardId || !selectedElementId) return
     updateElement(activeArtboardId, selectedElementId, patch)
+  }
+
+  const updatePositionMode = (mode: PositionMode) => {
+    if (!activeArtboardId || !selectedElementId) return
+    updateElement(activeArtboardId, selectedElementId, { positionMode: mode })
   }
 
   // Эффективные стили с учётом cascade
@@ -157,18 +164,17 @@ export function Properties() {
                     />
                   </div>
                 </Row>
-                <Row label="Позиция">
-                  <SegmentedControl
-                    value={element.positionMode}
-                    options={[
-                      { value: 'flow', label: 'В потоке' },
-                      { value: 'pinned', label: 'Закреплён' },
-                    ]}
-                    onChange={(v) => updateField({ positionMode: v as 'flow' | 'pinned' })}
-                  />
-                </Row>
               </div>
             </CollapsibleSection>
+
+            <Divider />
+
+            <PositionSection
+              positionMode={element.positionMode}
+              styles={effectiveStyles}
+              onUpdateMode={updatePositionMode}
+              onUpdateStyle={updateStyle}
+            />
 
             <Divider />
 
@@ -236,39 +242,6 @@ function CollapsibleSection({ label, children, defaultOpen = true }: {
         }}>▼</span>
       </button>
       {open && children}
-    </div>
-  )
-}
-
-function SegmentedControl({ value, options, onChange }: {
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (v: string) => void
-}) {
-  return (
-    <div style={{
-      display: 'flex', background: '#efefef', borderRadius: 6,
-      padding: 2, gap: 1, flex: 1, minWidth: 0,
-    }}>
-      {options.map((opt) => {
-        const active = value === opt.value
-        return (
-          <button
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-            style={{
-              flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
-              borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
-              background: active ? '#1a1a1a' : 'transparent',
-              color: active ? '#fff' : '#888',
-              fontWeight: active ? 500 : 400,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {opt.label}
-          </button>
-        )
-      })}
     </div>
   )
 }

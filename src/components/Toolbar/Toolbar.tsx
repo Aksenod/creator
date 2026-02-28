@@ -36,7 +36,7 @@ export function Toolbar() {
       name,
       className: slugify(name),
       type,
-      positionMode: 'flow',
+      positionMode: 'static',
       styles: defaults[type],
       children: [],
       content: type === 'text' ? 'Текст' : type === 'button' ? 'Кнопка' : undefined,

@@ -1,7 +1,7 @@
 export type { BreakpointId } from '../constants/breakpoints'
 
 // Режим позиционирования элемента
-export type PositionMode = 'flow' | 'pinned'
+export type PositionMode = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky'
 
 // Привязка для pinned-элементов
 export type PinAnchor = {
@@ -49,6 +49,13 @@ export type ElementStyles = {
   borderStyle?: string
   borderRadius?: number
   overflow?: 'visible' | 'hidden' | 'scroll' | 'auto'
+
+  // Position offsets (top/right/bottom/left in px, for relative/absolute/fixed/sticky)
+  top?: number
+  right?: number
+  bottom?: number
+  left?: number
+  zIndex?: number
 
   // Typography
   fontFamily?: string

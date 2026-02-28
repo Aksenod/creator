@@ -116,8 +116,19 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     // Эффективные стили с учётом cascade (base + BP overrides)
     const s = resolveStyles(el, activeBreakpointId)
 
+    // Маппинг positionMode → CSS position (поддержка legacy 'flow'/'pinned')
+    const getCSSPosition = (mode: string): React.CSSProperties['position'] => {
+      if (mode === 'static' || mode === 'flow') return 'static'
+      if (mode === 'relative') return 'relative'
+      if (mode === 'absolute' || mode === 'pinned') return 'absolute'
+      if (mode === 'fixed') return 'fixed'
+      if (mode === 'sticky') return 'sticky'
+      return 'static'
+    }
+    const cssPosition = getCSSPosition(el.positionMode)
+
     const style: React.CSSProperties = {
-      position: el.positionMode === 'pinned' ? 'absolute' : 'relative',
+      position: cssPosition,
       width: s.width ?? 'auto',
       height: s.height ?? 'auto',
       display: s.display ?? 'block',
@@ -135,6 +146,7 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       padding: s.paddingTop !== undefined
         ? `${s.paddingTop}px ${s.paddingRight ?? 0}px ${s.paddingBottom ?? 0}px ${s.paddingLeft ?? 0}px`
         : undefined,
+      zIndex: s.zIndex,
       outline: previewMode ? 'none' : (isSelected ? '2px solid #0066ff' : '1px dashed #ddd'),
       outlineOffset: previewMode ? undefined : (isSelected ? -2 : -1),
       minHeight: 20,
@@ -142,11 +154,12 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       boxSizing: 'border-box',
     }
 
-    if (el.positionMode === 'pinned' && el.pin) {
-      if (el.pin.top !== undefined) style.top = el.pin.top
-      if (el.pin.right !== undefined) style.right = el.pin.right
-      if (el.pin.bottom !== undefined) style.bottom = el.pin.bottom
-      if (el.pin.left !== undefined) style.left = el.pin.left
+    // Применяем offsets: сначала из styles (новый способ), потом из pin (legacy)
+    if (cssPosition !== 'static') {
+      style.top = s.top !== undefined ? s.top : (el.pin?.top !== undefined ? el.pin.top : undefined)
+      style.right = s.right !== undefined ? s.right : (el.pin?.right !== undefined ? el.pin.right : undefined)
+      style.bottom = s.bottom !== undefined ? s.bottom : (el.pin?.bottom !== undefined ? el.pin.bottom : undefined)
+      style.left = s.left !== undefined ? s.left : (el.pin?.left !== undefined ? el.pin.left : undefined)
     }
 
     return (

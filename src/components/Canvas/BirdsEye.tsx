@@ -12,8 +12,18 @@ function renderThumbnailElement(
   const el: CanvasElement | undefined = elements[id]
   if (!el) return null
 
+  const getCSSPosition = (mode: string): React.CSSProperties['position'] => {
+    if (mode === 'static' || mode === 'flow') return 'static'
+    if (mode === 'relative') return 'relative'
+    if (mode === 'absolute' || mode === 'pinned') return 'absolute'
+    if (mode === 'fixed') return 'fixed'
+    if (mode === 'sticky') return 'sticky'
+    return 'static'
+  }
+  const cssPosition = getCSSPosition(el.positionMode)
+
   const style: React.CSSProperties = {
-    position: el.positionMode === 'pinned' ? 'absolute' : 'relative',
+    position: cssPosition,
     width: el.styles.width ?? 'auto',
     height: el.styles.height ?? 'auto',
     display: el.styles.display ?? 'block',
@@ -36,11 +46,15 @@ function renderThumbnailElement(
     pointerEvents: 'none',
   }
 
-  if (el.positionMode === 'pinned' && el.pin) {
-    if (el.pin.top !== undefined) style.top = el.pin.top
-    if (el.pin.right !== undefined) style.right = el.pin.right
-    if (el.pin.bottom !== undefined) style.bottom = el.pin.bottom
-    if (el.pin.left !== undefined) style.left = el.pin.left
+  if (cssPosition !== 'static') {
+    if (el.styles.top !== undefined) style.top = el.styles.top
+    else if (el.pin?.top !== undefined) style.top = el.pin.top
+    if (el.styles.right !== undefined) style.right = el.styles.right
+    else if (el.pin?.right !== undefined) style.right = el.pin.right
+    if (el.styles.bottom !== undefined) style.bottom = el.styles.bottom
+    else if (el.pin?.bottom !== undefined) style.bottom = el.pin.bottom
+    if (el.styles.left !== undefined) style.left = el.styles.left
+    else if (el.pin?.left !== undefined) style.left = el.pin.left
   }
 
   return (
