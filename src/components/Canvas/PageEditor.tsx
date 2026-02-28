@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
 import { Layers } from '../Layers/Layers'
 import { Properties } from '../Properties/Properties'
@@ -65,16 +65,49 @@ const BREAKPOINTS: Breakpoint[] = [
   { id: 'mobile',  label: 'Mobile',  width: 375,  icon: MobileIcon },
 ]
 
+// --- Auto-breakpoint detection ---
+
+// Определяем по реальному разрешению экрана пользователя, а не по размеру окна браузера
+const detectBreakpoint = () => {
+  const w = window.screen.width
+  if (w >= 1440) return 1440
+  if (w >= 1280) return 1280
+  if (w >= 768) return 768
+  return 375
+}
+
 // --- PageEditor ---
 
 export function PageEditor() {
-  const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId } = useEditorStore()
+  const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId, undo, copyElement, pasteElement, duplicateElement } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
-  const [viewportWidth, setViewportWidth] = useState<number | null>(null)
+  const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
+  const [scale, setScale] = useState(1)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
 
-  const displayWidth = viewportWidth ?? (artboard?.width ?? 0)
+  const displayWidth = viewportWidth
+
+  // Реальное разрешение экрана пользователя → его рабочий брейкпоинт
+  const detectedWidth = detectBreakpoint()
+
+  // Авто-масштабирование артборда под доступную ширину canvas
+  useEffect(() => {
+    const el = canvasContainerRef.current
+    if (!el) return
+
+    const recalc = () => {
+      const available = el.clientWidth - 80 // 40px padding с каждой стороны
+      if (available <= 0) return
+      setScale(Math.min(1, available / displayWidth))
+    }
+
+    recalc()
+    const ro = new ResizeObserver(recalc)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [displayWidth])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -89,10 +122,18 @@ export function PageEditor() {
           deleteElement(activeArtboardId, selectedElementId)
         }
       }
+
+      const isMac = navigator.platform.includes('Mac')
+      const mod = isMac ? e.metaKey : e.ctrlKey
+
+      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
+      if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
+      if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
+      if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [exitArtboard, isPreview, deleteElement, selectedElementId, activeArtboardId])
+  }, [exitArtboard, isPreview, deleteElement, selectedElementId, activeArtboardId, undo, copyElement, pasteElement, duplicateElement])
 
   if (!artboard) return null
 
@@ -133,26 +174,28 @@ export function PageEditor() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
             {BREAKPOINTS.map((bp) => {
               const isActive = displayWidth === bp.width
+              const isDetected = bp.width === detectedWidth
               return (
                 <button
                   key={bp.id}
-                  title={`${bp.label} — ${bp.width}px`}
-                  onClick={() => {
-                    if (isActive && viewportWidth !== null) {
-                      setViewportWidth(null)
-                    } else {
-                      setViewportWidth(bp.width)
-                    }
-                  }}
+                  title={`${bp.label} — ${bp.width}px${isDetected ? ' · твой экран' : ''}`}
+                  onClick={() => setViewportWidth(bp.width)}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: 28, height: 28, border: 'none', borderRadius: 6, cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    width: 28, height: 30, border: 'none', borderRadius: 6, cursor: 'pointer',
                     background: isActive ? '#1a1a1a' : 'transparent',
                     color: isActive ? '#fff' : '#888',
                     transition: 'all 0.1s',
+                    gap: 2, position: 'relative',
                   }}
                 >
                   <bp.icon active={isActive} />
+                  {/* Точка = реальное разрешение экрана пользователя */}
+                  <span style={{
+                    width: 3, height: 3, borderRadius: '50%',
+                    background: isDetected ? (isActive ? '#fff' : '#1a1a1a') : 'transparent',
+                    flexShrink: 0,
+                  }} />
                 </button>
               )
             })}
@@ -187,8 +230,8 @@ export function PageEditor() {
         )}
 
         {/* Canvas */}
-        <div style={{ flex: 1, overflow: 'auto', background: '#f5f5f5' }}>
-          <Canvas artboard={{ ...artboard, width: displayWidth }} previewMode={isPreview} />
+        <div ref={canvasContainerRef} style={{ flex: 1, overflow: 'auto', background: '#f5f5f5' }}>
+          <Canvas artboard={{ ...artboard, width: displayWidth }} previewMode={isPreview} scale={scale} />
         </div>
 
         {/* Панель свойств */}

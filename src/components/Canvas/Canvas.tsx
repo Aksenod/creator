@@ -1,9 +1,10 @@
+import React from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 
-type Props = { artboard: Artboard; previewMode?: boolean }
+type Props = { artboard: Artboard; previewMode?: boolean; scale?: number }
 
-export function Canvas({ artboard, previewMode }: Props) {
+export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
   const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
 
   const renderElement = (id: string): React.ReactNode => {
@@ -63,7 +64,13 @@ export function Canvas({ artboard, previewMode }: Props) {
 
   return (
     <div
-      style={{ padding: 40 }}
+      style={{
+        minHeight: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '40px 0',
+      }}
       onClick={() => selectElement(null)}
     >
       <div style={{
@@ -73,6 +80,8 @@ export function Canvas({ artboard, previewMode }: Props) {
         position: 'relative',
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
         overflow: 'hidden',
+        flexShrink: 0,
+        ...(scale !== 1 ? { zoom: scale } as React.CSSProperties : {}),
       }}>
         {artboard.rootChildren.length === 0 ? (
           <div style={{
