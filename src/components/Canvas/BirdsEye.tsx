@@ -22,24 +22,32 @@ function renderThumbnailElement(
   }
   const cssPosition = getCSSPosition(el.positionMode)
 
+  const s = el.styles
   const style: React.CSSProperties = {
     position: cssPosition,
-    width: el.styles.width ?? 'auto',
-    height: el.styles.height ?? 'auto',
-    display: el.styles.display ?? 'block',
-    flexDirection: el.styles.flexDirection,
-    flexWrap: el.styles.flexWrap,
-    justifyContent: el.styles.justifyContent,
-    alignItems: el.styles.alignItems,
-    gap: el.styles.gap,
-    backgroundColor: el.styles.backgroundColor,
-    color: el.styles.color,
-    fontSize: el.styles.fontSize,
-    fontWeight: el.styles.fontWeight,
-    lineHeight: el.styles.lineHeight,
-    borderRadius: el.styles.borderRadius,
-    padding: el.styles.paddingTop !== undefined
-      ? `${el.styles.paddingTop}px ${el.styles.paddingRight ?? 0}px ${el.styles.paddingBottom ?? 0}px ${el.styles.paddingLeft ?? 0}px`
+    width: s.width ?? 'auto',
+    height: s.height ?? 'auto',
+    display: s.display ?? 'block',
+    flexDirection: s.flexDirection,
+    flexWrap: s.flexWrap,
+    justifyContent: s.justifyContent,
+    alignItems: s.alignItems,
+    gap: s.gap,
+    backgroundColor: s.backgroundColor,
+    color: s.color,
+    fontSize: s.fontSize,
+    fontWeight: s.fontWeight,
+    lineHeight: s.lineHeight,
+    borderRadius: s.borderRadius,
+    borderWidth: s.borderWidth,
+    borderColor: s.borderColor,
+    borderStyle: s.borderStyle as React.CSSProperties['borderStyle'],
+    overflow: s.overflow,
+    padding: s.paddingTop !== undefined
+      ? `${s.paddingTop}px ${s.paddingRight ?? 0}px ${s.paddingBottom ?? 0}px ${s.paddingLeft ?? 0}px`
+      : undefined,
+    margin: s.marginTop !== undefined || s.marginRight !== undefined || s.marginBottom !== undefined || s.marginLeft !== undefined
+      ? `${s.marginTop ?? 0}px ${s.marginRight ?? 0}px ${s.marginBottom ?? 0}px ${s.marginLeft ?? 0}px`
       : undefined,
     minHeight: 20,
     boxSizing: 'border-box',
@@ -47,13 +55,13 @@ function renderThumbnailElement(
   }
 
   if (cssPosition !== 'static') {
-    if (el.styles.top !== undefined) style.top = el.styles.top
+    if (s.top !== undefined) style.top = s.top
     else if (el.pin?.top !== undefined) style.top = el.pin.top
-    if (el.styles.right !== undefined) style.right = el.styles.right
+    if (s.right !== undefined) style.right = s.right
     else if (el.pin?.right !== undefined) style.right = el.pin.right
-    if (el.styles.bottom !== undefined) style.bottom = el.styles.bottom
+    if (s.bottom !== undefined) style.bottom = s.bottom
     else if (el.pin?.bottom !== undefined) style.bottom = el.pin.bottom
-    if (el.styles.left !== undefined) style.left = el.styles.left
+    if (s.left !== undefined) style.left = s.left
     else if (el.pin?.left !== undefined) style.left = el.pin.left
   }
 
