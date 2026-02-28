@@ -1,3 +1,5 @@
+export type { BreakpointId } from '../constants/breakpoints'
+
 // Режим позиционирования элемента
 export type PositionMode = 'flow' | 'pinned'
 
@@ -81,7 +83,10 @@ export type CanvasElement = {
   type: ElementType
   positionMode: PositionMode
   pin?: PinAnchor
-  styles: ElementStyles
+  styles: ElementStyles  // Base (Desktop) стили
+  // Переопределения для конкретных брейкпоинтов (только delta, не полная копия)
+  // Cascade: base → laptop → tablet → mobile
+  breakpointStyles?: Partial<Record<import('../constants/breakpoints').BreakpointId, Partial<ElementStyles>>>
   children: string[] // id дочерних элементов
   content?: string   // для text/button
 }

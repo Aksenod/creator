@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles } from '../types'
+import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
 
 type EditorState = {
@@ -9,6 +10,7 @@ type EditorState = {
   activeArtboardId: string | null
   selectedElementId: string | null
   selectedElementIds: string[]
+  activeBreakpointId: BreakpointId  // Текущий редактируемый брейкпоинт
 
   // История для undo/redo (не персистируется)
   history: Project[]
@@ -29,6 +31,9 @@ type EditorState = {
   selectElement: (id: string | null) => void
   toggleSelectElement: (id: string) => void
 
+  // Брейкпоинты
+  setActiveBreakpoint: (bpId: BreakpointId) => void
+
   // Артборды
   addArtboard: (name: string) => void
 
@@ -37,6 +42,8 @@ type EditorState = {
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
   deleteElement: (artboardId: string, elementId: string) => void
   updateSelectedElements: (artboardId: string, patch: Partial<ElementStyles>) => void
+  // Удалить все BP-переопределения элемента для конкретного BP
+  clearBreakpointStyle: (artboardId: string, elementId: string, bpId: BreakpointId) => void
 
   // Undo/Redo
   undo: () => void
@@ -69,6 +76,7 @@ export const useEditorStore = create<EditorState>()(
       activeArtboardId: null,
       selectedElementId: null,
       selectedElementIds: [],
+      activeBreakpointId: 'desktop' as BreakpointId,
       history: [],
       historyIndex: -1,
       clipboard: null,
@@ -109,6 +117,8 @@ export const useEditorStore = create<EditorState>()(
         }
       }),
 
+      setActiveBreakpoint: (bpId) => set({ activeBreakpointId: bpId }),
+
       addArtboard: (name) => {
         set((state) => {
           if (!state.project) return state
@@ -131,16 +141,40 @@ export const useEditorStore = create<EditorState>()(
         const ab = state.project?.artboards[artboardId]
         const el = ab?.elements[elementId]
         if (!ab || !el || !state.project) return state
-        // Если меняется имя и className не переопределён вручную — авто-обновить slug
+
         const newClassName = patch.name && !patch.className
           ? slugify(patch.name)
           : (patch.className ?? el.className)
-        const updated: CanvasElement = {
-          ...el,
-          ...patch,
-          className: newClassName,
-          styles: patch.styles ? { ...el.styles, ...patch.styles } : el.styles,
+
+        const activeBpId = state.activeBreakpointId
+
+        let updated: CanvasElement
+        if (patch.styles && activeBpId !== 'desktop') {
+          // На не-базовом BP: стили пишем в breakpointStyles[bpId], не в base
+          // Не-стилевые поля (name, className, positionMode) всегда в base
+          const { styles: stylesPatch, ...nonStylePatch } = patch
+          updated = {
+            ...el,
+            ...nonStylePatch,
+            className: newClassName,
+            breakpointStyles: {
+              ...el.breakpointStyles,
+              [activeBpId]: {
+                ...el.breakpointStyles?.[activeBpId],
+                ...stylesPatch,
+              },
+            },
+          }
+        } else {
+          // Desktop (base) или не-стилевые изменения: пишем в base styles
+          updated = {
+            ...el,
+            ...patch,
+            className: newClassName,
+            styles: patch.styles ? { ...el.styles, ...patch.styles } : el.styles,
+          }
         }
+
         const newProject = {
           ...state.project,
           artboards: {
@@ -154,6 +188,26 @@ export const useEditorStore = create<EditorState>()(
           history: newHistory,
           historyIndex: newHistory.length - 1,
         }
+      }),
+
+      clearBreakpointStyle: (artboardId, elementId, bpId) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        const el = ab?.elements[elementId]
+        if (!ab || !el || !state.project) return state
+
+        const newBpStyles = { ...el.breakpointStyles }
+        delete newBpStyles[bpId]
+
+        const updated: CanvasElement = { ...el, breakpointStyles: newBpStyles }
+        const newProject = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
+          },
+        }
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return { project: newProject, history: newHistory, historyIndex: newHistory.length - 1 }
       }),
 
       deleteElement: (artboardId, elementId) => set((state) => {
@@ -201,12 +255,23 @@ export const useEditorStore = create<EditorState>()(
         const ab = state.project?.artboards[artboardId]
         if (!ab || !state.project) return state
         const ids = state.selectedElementIds.length > 0 ? state.selectedElementIds : (state.selectedElementId ? [state.selectedElementId] : [])
+        const activeBpId = state.activeBreakpointId
 
         const newElements = { ...ab.elements }
         for (const id of ids) {
           const el = newElements[id]
           if (el) {
-            newElements[id] = { ...el, styles: { ...el.styles, ...patch } }
+            if (activeBpId !== 'desktop') {
+              newElements[id] = {
+                ...el,
+                breakpointStyles: {
+                  ...el.breakpointStyles,
+                  [activeBpId]: { ...el.breakpointStyles?.[activeBpId], ...patch },
+                },
+              }
+            } else {
+              newElements[id] = { ...el, styles: { ...el.styles, ...patch } }
+            }
           }
         }
         const newProject = {
@@ -433,6 +498,7 @@ export const useEditorStore = create<EditorState>()(
         activeArtboardId: state.activeArtboardId,
         selectedElementId: state.selectedElementId,
         selectedElementIds: state.selectedElementIds,
+        activeBreakpointId: state.activeBreakpointId,
       }),
     }
   )

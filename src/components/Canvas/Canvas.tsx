@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
+import { resolveStyles } from '../../utils/resolveStyles'
 
 // --- Resize handles ---
 
@@ -39,7 +40,7 @@ type Props = { artboard: Artboard; previewMode?: boolean; scale?: number }
 export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
   const {
     selectElement, selectedElementId, selectedElementIds,
-    toggleSelectElement, updateElement, activeArtboardId,
+    toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
   } = useEditorStore()
 
   const resizeRef = useRef<ResizeState | null>(null)
@@ -112,24 +113,27 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
 
     const isSelected = selectedElementIds.includes(id) || selectedElementId === id
 
+    // Эффективные стили с учётом cascade (base + BP overrides)
+    const s = resolveStyles(el, activeBreakpointId)
+
     const style: React.CSSProperties = {
       position: el.positionMode === 'pinned' ? 'absolute' : 'relative',
-      width: el.styles.width ?? 'auto',
-      height: el.styles.height ?? 'auto',
-      display: el.styles.display ?? 'block',
-      flexDirection: el.styles.flexDirection,
-      flexWrap: el.styles.flexWrap,
-      justifyContent: el.styles.justifyContent,
-      alignItems: el.styles.alignItems,
-      gap: el.styles.gap,
-      backgroundColor: el.styles.backgroundColor,
-      color: el.styles.color,
-      fontSize: el.styles.fontSize,
-      fontWeight: el.styles.fontWeight,
-      lineHeight: el.styles.lineHeight,
-      borderRadius: el.styles.borderRadius,
-      padding: el.styles.paddingTop !== undefined
-        ? `${el.styles.paddingTop}px ${el.styles.paddingRight ?? 0}px ${el.styles.paddingBottom ?? 0}px ${el.styles.paddingLeft ?? 0}px`
+      width: s.width ?? 'auto',
+      height: s.height ?? 'auto',
+      display: s.display ?? 'block',
+      flexDirection: s.flexDirection,
+      flexWrap: s.flexWrap,
+      justifyContent: s.justifyContent,
+      alignItems: s.alignItems,
+      gap: s.gap,
+      backgroundColor: s.backgroundColor,
+      color: s.color,
+      fontSize: s.fontSize,
+      fontWeight: s.fontWeight,
+      lineHeight: s.lineHeight,
+      borderRadius: s.borderRadius,
+      padding: s.paddingTop !== undefined
+        ? `${s.paddingTop}px ${s.paddingRight ?? 0}px ${s.paddingBottom ?? 0}px ${s.paddingLeft ?? 0}px`
         : undefined,
       outline: previewMode ? 'none' : (isSelected ? '2px solid #0066ff' : '1px dashed #ddd'),
       outlineOffset: previewMode ? undefined : (isSelected ? -2 : -1),

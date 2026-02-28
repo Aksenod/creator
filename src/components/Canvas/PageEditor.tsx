@@ -111,9 +111,10 @@ const detectBreakpoint = () => {
 // --- PageEditor ---
 
 export function PageEditor() {
-  const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId, undo, copyElement, pasteElement, duplicateElement } = useEditorStore()
+  const { exitArtboard, project, activeArtboardId, deleteElement, selectedElementId, undo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint, activeBreakpointId } = useEditorStore()
   const [isPreview, setIsPreview] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
+  const [customWidth, setCustomWidth] = useState<string>('')  // Task 3: ручной ввод ширины
   const [scale, setScale] = useState(1)
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
@@ -121,7 +122,9 @@ export function PageEditor() {
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
 
-  const displayWidth = viewportWidth
+  // Task 3: кастомная ширина overrides брейкпоинт
+  const parsedCustom = parseInt(customWidth)
+  const displayWidth = customWidth && !isNaN(parsedCustom) && parsedCustom > 0 ? parsedCustom : viewportWidth
 
   // Реальное разрешение экрана пользователя → его рабочий брейкпоинт
   const detectedWidth = detectBreakpoint()
@@ -168,7 +171,10 @@ export function PageEditor() {
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
         const idx = parseInt(e.key) - 1
         if (idx >= 0 && idx < BREAKPOINTS.length) {
-          setViewportWidth(BREAKPOINTS[idx].width)
+          const bp = BREAKPOINTS[idx]
+          setViewportWidth(bp.width)
+          setCustomWidth('')
+          setActiveBreakpoint(bp.id as import('../../constants/breakpoints').BreakpointId)
           return
         }
       }
@@ -248,31 +254,61 @@ export function PageEditor() {
               </svg>
             </button>
 
-            {/* Canvas Settings popover */}
+            {/* Canvas Settings popover (Task 3) */}
             {showCanvasSettings && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 100,
                 background: '#2a2a2a', borderRadius: 8, padding: 12,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.3)', minWidth: 200,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)', minWidth: 220,
                 color: '#fff', fontSize: 12,
               }}>
-                <div style={{ marginBottom: 8, fontWeight: 600, color: '#aaa', letterSpacing: '0.05em', fontSize: 11, textTransform: 'uppercase' }}>
+                <div style={{ marginBottom: 10, fontWeight: 600, color: '#aaa', letterSpacing: '0.05em', fontSize: 10, textTransform: 'uppercase' }}>
                   Canvas Settings
                 </div>
+
+                {/* Ширина (custom override) */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                  <span style={{ color: '#ccc', flexShrink: 0 }}>Ширина</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <input
+                      type="number"
+                      value={customWidth || viewportWidth}
+                      min={320}
+                      max={3840}
+                      onChange={e => setCustomWidth(e.target.value)}
+                      onBlur={e => {
+                        const v = parseInt(e.target.value)
+                        if (!v || isNaN(v)) setCustomWidth('')
+                      }}
+                      style={{
+                        width: 64, padding: '3px 6px', background: '#3a3a3a',
+                        border: customWidth ? '1px solid #0066ff' : '1px solid #555',
+                        borderRadius: 4, color: '#fff', fontSize: 12,
+                        textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+                      }}
+                    />
+                    <span style={{ color: '#666' }}>px</span>
+                    {customWidth && (
+                      <button
+                        onClick={() => setCustomWidth('')}
+                        style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 11, padding: '0 2px' }}
+                        title="Сбросить к брейкпоинту"
+                      >↺</button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Масштаб */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ color: '#ccc' }}>Масштаб</span>
                   <span style={{ fontVariantNumeric: 'tabular-nums', color: '#fff', fontWeight: 500 }}>
                     {Math.round(scale * 100)}%
                   </span>
                 </div>
+
                 <div style={{ height: 1, background: '#3a3a3a', margin: '8px 0' }} />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#ccc' }}>Ширина артборда</span>
-                  <span style={{ color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{displayWidth}px</span>
-                </div>
-                <div style={{ height: 1, background: '#3a3a3a', margin: '8px 0' }} />
-                <div style={{ color: '#666', fontSize: 11, lineHeight: 1.5 }}>
-                  Shortcuts: 1–4 для переключения брейкпоинтов
+                <div style={{ color: '#555', fontSize: 10, lineHeight: 1.5 }}>
+                  Shortcuts: 1–4 для переключения BP
                 </div>
               </div>
             )}
@@ -280,13 +316,17 @@ export function PageEditor() {
             {/* Breakpoint buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
               {BREAKPOINTS.map((bp, idx) => {
-                const isActive = displayWidth === bp.width
+                const isActive = activeBreakpointId === bp.id
                 const isDetected = bp.width === detectedWidth
                 return (
                   <button
                     key={bp.id}
                     title={bp.tooltip + (isDetected ? '\n· Твой экран' : '') + `\nShortcut: ${idx + 1}`}
-                    onClick={() => setViewportWidth(bp.width)}
+                    onClick={() => {
+                      setViewportWidth(bp.width)
+                      setCustomWidth('')
+                      setActiveBreakpoint(bp.id as import('../../constants/breakpoints').BreakpointId)
+                    }}
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                       width: 30, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer',

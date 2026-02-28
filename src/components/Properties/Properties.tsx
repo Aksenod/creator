@@ -1,22 +1,29 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { CanvasElement, ElementStyles } from '../../types'
+import { BREAKPOINT_LABELS } from '../../constants/breakpoints'
+import type { BreakpointId } from '../../constants/breakpoints'
+import { resolveStyles } from '../../utils/resolveStyles'
 import { LayoutSection } from './LayoutSection'
 import { SizeSection } from './SizeSection'
 import { TypographySection } from './TypographySection'
 import { BackgroundSection } from './BackgroundSection'
 import { BorderSection } from './BorderSection'
 
-const getCommonStyles = (ids: string[], elements: Record<string, CanvasElement>): Partial<ElementStyles> => {
+const getCommonStyles = (
+  ids: string[],
+  elements: Record<string, CanvasElement>,
+  bpId: BreakpointId,
+): Partial<ElementStyles> => {
   if (ids.length === 0) return {}
-  const first = elements[ids[0]]?.styles ?? {}
+  const first = resolveStyles(elements[ids[0]], bpId)
   const result: Partial<ElementStyles> = {}
 
   for (const key of Object.keys(first) as (keyof ElementStyles)[]) {
     const val = first[key]
     const allSame = ids.every(id => {
-      const s = elements[id]?.styles
-      return s && (s[key] as unknown) === (val as unknown)
+      const s = resolveStyles(elements[id], bpId)
+      return (s[key] as unknown) === (val as unknown)
     })
     if (allSame) (result as Record<string, unknown>)[key] = val
   }
@@ -24,12 +31,17 @@ const getCommonStyles = (ids: string[], elements: Record<string, CanvasElement>)
 }
 
 export function Properties() {
-  const { selectedElementId, selectedElementIds, project, activeArtboardId, updateElement, updateSelectedElements } = useEditorStore()
+  const {
+    selectedElementId, selectedElementIds, project, activeArtboardId,
+    updateElement, updateSelectedElements, activeBreakpointId, clearBreakpointStyle,
+  } = useEditorStore()
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
   const isMultiSelect = selectedElementIds.length > 1
-  const commonStyles = isMultiSelect && artboard ? getCommonStyles(selectedElementIds, artboard.elements) : null
+  const commonStyles = isMultiSelect && artboard
+    ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId)
+    : null
 
   const updateStyle = (patch: Partial<ElementStyles>) => {
     if (!activeArtboardId) return
@@ -45,7 +57,15 @@ export function Properties() {
     updateElement(activeArtboardId, selectedElementId, patch)
   }
 
-  const effectiveStyles = isMultiSelect ? (commonStyles ?? {}) : (element?.styles ?? {})
+  // Эффективные стили с учётом cascade
+  const effectiveStyles = isMultiSelect
+    ? (commonStyles ?? {})
+    : element ? resolveStyles(element, activeBreakpointId) : {}
+
+  // Есть ли BP-overrides на текущем элементе для текущего BP
+  const hasBpOverrides = !isMultiSelect && element && activeBreakpointId !== 'desktop'
+    ? !!(element.breakpointStyles?.[activeBreakpointId] && Object.keys(element.breakpointStyles[activeBreakpointId]!).length > 0)
+    : false
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -56,6 +76,33 @@ export function Properties() {
       }}>
         Свойства
       </div>
+      {/* BP banner — показываем когда не на Desktop */}
+      {activeBreakpointId !== 'desktop' && (
+        <div style={{
+          padding: '6px 12px',
+          background: hasBpOverrides ? '#fff3cd' : '#f0f4ff',
+          borderBottom: '1px solid #e0e0e0',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        }}>
+          <span style={{ fontSize: 11, color: hasBpOverrides ? '#8a6000' : '#3355aa', fontWeight: 500 }}>
+            ✎ {BREAKPOINT_LABELS[activeBreakpointId]}
+            {hasBpOverrides ? ' · есть переопределения' : ''}
+          </span>
+          {hasBpOverrides && element && (
+            <button
+              onClick={() => clearBreakpointStyle(activeArtboardId!, selectedElementId!, activeBreakpointId)}
+              title={`Удалить все переопределения ${BREAKPOINT_LABELS[activeBreakpointId]}`}
+              style={{
+                fontSize: 10, padding: '2px 6px', border: '1px solid #e0b000',
+                borderRadius: 3, cursor: 'pointer', background: '#fff', color: '#8a6000',
+              }}
+            >
+              Сбросить
+            </button>
+          )}
+        </div>
+      )}
+
       <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', padding: 12 }}>
         {isMultiSelect ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
