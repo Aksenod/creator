@@ -66,8 +66,8 @@ export function usePageEditorKeyboard({
       const isMac = navigator.userAgent.includes('Mac')
       const mod = isMac ? e.metaKey : e.ctrlKey
 
-      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
-      if (mod && e.key === 'z' && e.shiftKey) { e.preventDefault(); redo() }
+      if (mod && e.code === 'KeyZ' && !e.shiftKey) { e.preventDefault(); undo() }
+      if (mod && e.code === 'KeyZ' && e.shiftKey) { e.preventDefault(); redo() }
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
