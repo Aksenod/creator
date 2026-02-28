@@ -74,12 +74,13 @@ export function SpacingSection({ styles, onUpdate }: Props) {
             border: '1px solid #b8ccf0',
             borderRadius: 3,
             background: '#eef3ff',
-            padding: '20px 38px',
+            padding: '22px 38px',
           }}>
             <span style={{
-              position: 'absolute', top: 3, left: 6,
+              position: 'absolute', bottom: 4, left: 6,
               fontSize: 8, color: '#7090c8', letterSpacing: '0.06em',
               userSelect: 'none', fontWeight: 600,
+              pointerEvents: 'none',
             }}>
               PADDING
             </span>
