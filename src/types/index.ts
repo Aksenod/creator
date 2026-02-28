@@ -15,6 +15,8 @@ export type ElementStyles = {
   height?: string
   minWidth?: string
   minHeight?: string
+  maxWidth?: string
+  maxHeight?: string
   paddingTop?: number
   paddingRight?: number
   paddingBottom?: number

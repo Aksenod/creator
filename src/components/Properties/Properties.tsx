@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { ElementStyles } from '../../types'
 import { LayoutSection } from './LayoutSection'
+import { SizeSection } from './SizeSection'
 
 export function Properties() {
   const { selectedElementId, project, activeArtboardId, updateElement, deleteElement } = useEditorStore()
@@ -74,13 +75,7 @@ export function Properties() {
 
             <Divider />
 
-            {/* Размеры */}
-            <CollapsibleSection label="Размеры" defaultOpen>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <NumField label="W" value={element.styles.width ?? ''} onChange={(v) => updateStyle({ width: v })} />
-                <NumField label="H" value={element.styles.height ?? ''} onChange={(v) => updateStyle({ height: v })} />
-              </div>
-            </CollapsibleSection>
+            <SizeSection styles={element.styles} onUpdate={updateStyle} />
 
             <Divider />
 
