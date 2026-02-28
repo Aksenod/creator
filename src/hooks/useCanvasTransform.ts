@@ -4,7 +4,6 @@ export type Transform = { x: number; y: number; scale: number }
 
 const MIN_SCALE = 0.05
 const MAX_SCALE = 4
-const ZOOM_SPEED = 0.001
 
 export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
   const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 })
@@ -14,7 +13,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
 
   const zoom = useCallback((delta: number, originX: number, originY: number) => {
     setTransform((t) => {
-      const factor = 1 - delta * ZOOM_SPEED * 100
+      const factor = Math.pow(0.999, delta)
       const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.scale * factor))
       const ratio = newScale / t.scale
       return {
@@ -29,9 +28,16 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     setTransform({ x: 0, y: 0, scale: 1 })
   }, [])
 
-  const fitToScreen = useCallback(() => {
+  const fitToScreen = useCallback((contentWidth = 1440) => {
     if (!containerRef.current) return
-    setTransform({ x: 60, y: 60, scale: 0.5 })
+    const { offsetWidth } = containerRef.current
+    const hPadding = 80
+    const vPadding = 60
+    const scaleX = (offsetWidth - hPadding) / contentWidth
+    const scale = Math.min(scaleX, 1) // не зумить больше 100%
+    const x = Math.max(hPadding / 2, (offsetWidth - contentWidth * scale) / 2)
+    const y = vPadding / 2
+    setTransform({ x, y, scale })
   }, [containerRef])
 
   useEffect(() => {
@@ -45,7 +51,12 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
       const originY = e.clientY - rect.top
 
       if (e.ctrlKey || e.metaKey) {
-        zoom(e.deltaY, originX, originY)
+        // Pinch gesture (trackpad) или Cmd+scroll
+        // Pinch даёт дробные deltaY (-3..3), колесо — крупные (100+)
+        const normalizedDelta = Math.abs(e.deltaY) < 10
+          ? e.deltaY * 100   // pinch: усиливаем чтобы 0.999^delta работал
+          : e.deltaY         // колесо: используем как есть
+        zoom(normalizedDelta, originX, originY)
       } else {
         // Pan с колесом
         setTransform((t) => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }))
@@ -109,5 +120,5 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
   }, [containerRef, zoom, fitToScreen, resetZoom])
 
-  return { transform, zoom, resetZoom, fitToScreen }
+  return { transform, zoom, resetZoom, fitToScreen, scalePercent: Math.round(transform.scale * 100) }
 }

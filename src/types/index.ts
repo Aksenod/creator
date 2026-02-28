@@ -50,6 +50,7 @@ export type ElementType = 'div' | 'text' | 'image' | 'section' | 'button' | 'inp
 export type CanvasElement = {
   id: string
   name: string
+  className?: string  // CSS-класс (slug из имени или переопределённый вручную)
   type: ElementType
   positionMode: PositionMode
   pin?: PinAnchor

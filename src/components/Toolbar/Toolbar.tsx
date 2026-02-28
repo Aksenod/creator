@@ -1,5 +1,6 @@
 import { useEditorStore } from '../../store'
 import type { ElementType, CanvasElement } from '../../types'
+import { slugify } from '../../utils/slugify'
 
 const ELEMENTS: { type: ElementType; label: string }[] = [
   { type: 'div', label: 'Div' },
@@ -29,9 +30,11 @@ export function Toolbar() {
       input: { width: '200px', height: '40px', backgroundColor: '#fff' },
     }
 
+    const name = `${type} ${Object.keys(artboard.elements).length + 1}`
     const newElement: CanvasElement = {
       id,
-      name: `${type} ${Object.keys(artboard.elements).length + 1}`,
+      name,
+      className: slugify(name),
       type,
       positionMode: 'flow',
       styles: defaults[type],
@@ -76,7 +79,7 @@ export function Toolbar() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
+    <div style={{ display: 'flex', gap: 4 }}>
       {ELEMENTS.map(({ type, label }) => (
         <button
           key={type}

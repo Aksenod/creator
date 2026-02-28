@@ -1,9 +1,10 @@
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
+import type { Transform } from '../../hooks/useCanvasTransform'
 
-type Props = { artboard: Artboard }
+type Props = { artboard: Artboard; transform?: Transform; previewMode?: boolean }
 
-export function Canvas({ artboard }: Props) {
+export function Canvas({ artboard, transform, previewMode }: Props) {
   const { selectElement, selectedElementId } = useEditorStore()
 
   const renderElement = (id: string): React.ReactNode => {
@@ -31,8 +32,8 @@ export function Canvas({ artboard }: Props) {
       padding: el.styles.paddingTop !== undefined
         ? `${el.styles.paddingTop}px ${el.styles.paddingRight ?? 0}px ${el.styles.paddingBottom ?? 0}px ${el.styles.paddingLeft ?? 0}px`
         : undefined,
-      outline: isSelected ? '2px solid #0066ff' : '1px dashed #ddd',
-      outlineOffset: isSelected ? -2 : -1,
+      outline: previewMode ? 'none' : (isSelected ? '2px solid #0066ff' : '1px dashed #ddd'),
+      outlineOffset: previewMode ? undefined : (isSelected ? -2 : -1),
       minHeight: 20,
       cursor: 'default',
       boxSizing: 'border-box',
@@ -49,7 +50,7 @@ export function Canvas({ artboard }: Props) {
       <div
         key={id}
         style={style}
-        onClick={(e) => { e.stopPropagation(); selectElement(id) }}
+        onClick={previewMode ? undefined : (e) => { e.stopPropagation(); selectElement(id) }}
       >
         {el.content && <span>{el.content}</span>}
         {el.children.map(renderElement)}
@@ -57,28 +58,38 @@ export function Canvas({ artboard }: Props) {
     )
   }
 
+  const t = transform ?? { x: 0, y: 0, scale: 1 }
+
   return (
     <div
       style={{ padding: 40 }}
       onClick={() => selectElement(null)}
     >
-      <div style={{
-        width: artboard.width,
-        background: '#fff',
-        minHeight: artboard.height,
-        position: 'relative',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-      }}>
-        {artboard.rootChildren.length === 0 ? (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: artboard.height, color: '#aaa', fontSize: 13,
-          }}>
-            Добавь первый элемент через панель инструментов
-          </div>
-        ) : (
-          artboard.rootChildren.map(renderElement)
-        )}
+      <div
+        style={{
+          transformOrigin: '0 0',
+          transform: `translate(${t.x}px, ${t.y}px) scale(${t.scale})`,
+          willChange: 'transform',
+        }}
+      >
+        <div style={{
+          width: artboard.width,
+          background: '#fff',
+          minHeight: artboard.height,
+          position: 'relative',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+        }}>
+          {artboard.rootChildren.length === 0 ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              height: artboard.height, color: '#aaa', fontSize: 13,
+            }}>
+              Добавь первый элемент через панель инструментов
+            </div>
+          ) : (
+            artboard.rootChildren.map(renderElement)
+          )}
+        </div>
       </div>
     </div>
   )
