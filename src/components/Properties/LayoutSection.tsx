@@ -67,25 +67,46 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
   onChangeJustify: (v: string) => void
   onChangeAlign: (v: string) => void
 }) {
-  const jIdx = Math.max(0, JUSTIFY.indexOf(justifyContent ?? 'flex-start'))
-  const aIdx = Math.max(0, ALIGN.indexOf(alignItems ?? 'flex-start'))
+  const jIdx = JUSTIFY.indexOf(justifyContent ?? 'flex-start')
+  const aIdx = ALIGN.indexOf(alignItems ?? 'flex-start')
+
+  const handleClick = (e: React.MouseEvent, justifyVal: string, alignVal: string) => {
+    if (e.altKey) {
+      // Alt+click → align-items: stretch (justify не трогаем)
+      onChangeAlign('stretch')
+      return
+    }
+    if (e.metaKey || e.ctrlKey || e.detail === 2) {
+      // Cmd/Ctrl+click или double-click → justify-content: space-between (align не трогаем)
+      onChangeJustify('space-between')
+      return
+    }
+    // Single click → устанавливаем оба
+    onChangeJustify(justifyVal)
+    onChangeAlign(alignVal)
+  }
 
   return (
-    <div style={{
-      width: 72, height: 72,
-      border: '1px solid #e0e0e0', borderRadius: 6,
-      background: '#f5f5f5',
-      display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-      gridTemplateRows: 'repeat(3, 1fr)',
-      overflow: 'hidden', flexShrink: 0,
-    }}>
+    <div
+      title="Click — set align&#10;Double-click / ⌘ — space-between&#10;Alt — stretch"
+      style={{
+        width: 72, height: 72,
+        border: '1px solid #e0e0e0', borderRadius: 6,
+        background: '#f5f5f5',
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(3, 1fr)',
+        overflow: 'hidden', flexShrink: 0,
+      }}
+    >
       {ALIGN.flatMap((alignVal, row) =>
         JUSTIFY.map((justifyVal, col) => {
           const isActive = row === aIdx && col === jIdx
+          const isSpaceBetween = justifyContent === 'space-between'
+          const isStretch = alignItems === 'stretch'
           return (
             <div
               key={`${row}-${col}`}
-              onClick={() => { onChangeJustify(justifyVal); onChangeAlign(alignVal) }}
+              onClick={(e) => handleClick(e, justifyVal, alignVal)}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
@@ -93,9 +114,10 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
               }}
             >
               <div style={{
-                width: isActive ? 8 : 4, height: isActive ? 8 : 4,
-                borderRadius: '50%',
-                background: isActive ? '#0066ff' : '#ccc',
+                width: isActive ? 8 : 4,
+                height: isActive ? 8 : 4,
+                borderRadius: isSpaceBetween && !isActive ? '1px' : '50%',
+                background: isActive ? '#0066ff' : isStretch && !isActive ? 'rgba(0,102,255,0.3)' : '#ccc',
                 transition: 'all 0.1s',
               }} />
             </div>
