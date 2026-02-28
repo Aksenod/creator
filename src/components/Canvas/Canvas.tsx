@@ -209,9 +209,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     )
   }
 
-  const scaledW = Math.round(artboard.width * scale)
-  const scaledH = Math.round(artboard.height * scale)
-
   return (
     <div
       style={{
@@ -219,43 +216,31 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        paddingBottom: 80,
       }}
       onClick={() => selectElement(null)}
     >
-      {/*
-        Wrapper занимает правильное место в layout (scaledW × scaledH),
-        артборд внутри абсолютно позиционирован и масштабирован через transform.
-        Это позволяет flexbox корректно центрировать артборд.
-      */}
       <div style={{
-        position: 'relative',
-        width: scaledW,
-        minHeight: scaledH,
+        width: artboard.width,
+        minHeight: artboard.height,
+        background: '#fff',
         flexShrink: 0,
+        boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
+        // CSS zoom масштабирует layout-пространство вместе с визуалом,
+        // поэтому scroll-контейнер корректно видит реальную высоту контента.
+        // В отличие от transform:scale(), zoom не отрывает элемент от потока.
+        zoom: scale !== 1 ? scale : undefined,
       }}>
-        <div style={{
-          width: artboard.width,
-          minHeight: artboard.height,
-          background: '#fff',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-          transform: scale !== 1 ? `scale(${scale})` : undefined,
-          transformOrigin: 'top left',
-        }}>
-          {artboard.rootChildren.length === 0 ? (
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              height: artboard.height, color: '#aaa', fontSize: 13,
-            }}>
-              Добавь первый элемент через панель инструментов
-            </div>
-          ) : (
-            artboard.rootChildren.map(renderElement)
-          )}
-        </div>
+        {artboard.rootChildren.length === 0 ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: artboard.height, color: '#aaa', fontSize: 13,
+          }}>
+            Добавь первый элемент через панель инструментов
+          </div>
+        ) : (
+          artboard.rootChildren.map(renderElement)
+        )}
       </div>
     </div>
   )
