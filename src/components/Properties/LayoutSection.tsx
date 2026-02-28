@@ -100,9 +100,13 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
     >
       {ALIGN.flatMap((alignVal, row) =>
         JUSTIFY.map((justifyVal, col) => {
-          const isActive = row === aIdx && col === jIdx
           const isSpaceBetween = justifyContent === 'space-between'
           const isStretch = alignItems === 'stretch'
+          // Для space-between: показываем вертикальные бары в ряду alignItems
+          const stretchRow = isStretch ? null : (ALIGN.indexOf(alignItems ?? 'flex-start'))
+          const isSbBar = isSpaceBetween && row === (stretchRow ?? 1)
+          const isActive = !isSpaceBetween && row === aIdx && col === jIdx
+
           return (
             <div
               key={`${row}-${col}`}
@@ -113,13 +117,20 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
                 background: isActive ? 'rgba(0,102,255,0.08)' : 'transparent',
               }}
             >
-              <div style={{
-                width: isActive ? 8 : 4,
-                height: isActive ? 8 : 4,
-                borderRadius: isSpaceBetween && !isActive ? '1px' : '50%',
-                background: isActive ? '#0066ff' : isStretch && !isActive ? 'rgba(0,102,255,0.3)' : '#ccc',
-                transition: 'all 0.1s',
-              }} />
+              {isSbBar ? (
+                // Вертикальный бар — иконка space-between
+                <div style={{
+                  width: 3, height: 14,
+                  borderRadius: 1.5,
+                  background: '#0066ff',
+                }} />
+              ) : isActive ? (
+                // Активная точка
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0066ff' }} />
+              ) : (
+                // Обычная точка
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#ccc' }} />
+              )}
             </div>
           )
         })
