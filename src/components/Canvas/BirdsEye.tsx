@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { useEditorStore } from '../../store'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 import type { Artboard, CanvasElement } from '../../types'
+import { getCSSPosition } from '../../utils/cssUtils'
 
 // --- Thumbnail renderer (без интерактивности, без padding) ---
 
@@ -12,14 +13,6 @@ function renderThumbnailElement(
   const el: CanvasElement | undefined = elements[id]
   if (!el) return null
 
-  const getCSSPosition = (mode: string): React.CSSProperties['position'] => {
-    if (mode === 'static' || mode === 'flow') return 'static'
-    if (mode === 'relative') return 'relative'
-    if (mode === 'absolute' || mode === 'pinned') return 'absolute'
-    if (mode === 'fixed') return 'fixed'
-    if (mode === 'sticky') return 'sticky'
-    return 'static'
-  }
   const cssPosition = getCSSPosition(el.positionMode)
 
   const s = el.styles

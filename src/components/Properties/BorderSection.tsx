@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import type { ElementStyles } from '../../types'
+import { CollapsibleSection, PropertyRow, ColorInput } from './shared'
 
 type Props = {
   styles: ElementStyles
@@ -7,15 +7,14 @@ type Props = {
 }
 
 export function BorderSection({ styles, onUpdate }: Props) {
-  const [open, setOpen] = useState(true)
   const radius = styles.borderRadius ?? 0
 
   return (
-    <CollapsibleSection label="Borders" open={open} onToggle={() => setOpen(!open)}>
+    <CollapsibleSection label="Borders" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Radius */}
-        <BRow label="Radius">
+        <PropertyRow label="Radius" labelWidth={44}>
           <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <input
               type="range"
@@ -34,14 +33,14 @@ export function BorderSection({ styles, onUpdate }: Props) {
             />
             <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>PX</span>
           </div>
-        </BRow>
+        </PropertyRow>
 
         {/* Border section */}
         <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Border</span>
 
           {/* Style */}
-          <BRow label="Style">
+          <PropertyRow label="Style" labelWidth={44}>
             <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
               {([
                 { value: 'none', label: '×' },
@@ -63,10 +62,10 @@ export function BorderSection({ styles, onUpdate }: Props) {
                 </button>
               ))}
             </div>
-          </BRow>
+          </PropertyRow>
 
           {/* Width */}
-          <BRow label="Width">
+          <PropertyRow label="Width" labelWidth={44}>
             <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
               <input
                 type="number"
@@ -77,68 +76,20 @@ export function BorderSection({ styles, onUpdate }: Props) {
               />
               <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>PX</span>
             </div>
-          </BRow>
+          </PropertyRow>
 
           {/* Color */}
-          <BRow label="Color">
-            <div style={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0, alignItems: 'center' }}>
-              <input
-                type="color"
-                value={styles.borderColor ?? '#000000'}
-                onChange={e => onUpdate({ borderColor: e.target.value })}
-                style={{ width: 28, height: 28, padding: 2, border: 'none', borderRight: '1px solid #e0e0e0', cursor: 'pointer', flexShrink: 0 }}
-              />
-              <input
-                value={styles.borderColor ?? ''}
-                onChange={e => onUpdate({ borderColor: e.target.value })}
-                placeholder="—"
-                style={{ flex: 1, minWidth: 0, border: 'none', padding: '3px 6px', fontSize: 12, background: 'transparent', outline: 'none' }}
-              />
-            </div>
-          </BRow>
+          <PropertyRow label="Color" labelWidth={44}>
+            <ColorInput
+              value={styles.borderColor}
+              onChange={v => onUpdate({ borderColor: v })}
+              placeholder="—"
+              fallback="#000000"
+            />
+          </PropertyRow>
         </div>
 
       </div>
     </CollapsibleSection>
-  )
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function CollapsibleSection({ label, open, onToggle, children }: {
-  label: string
-  open: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <div style={{ padding: '8px 0' }}>
-      <button
-        onClick={onToggle}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
-        <span style={{
-          fontSize: 9, color: '#aaa',
-          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          transition: 'transform 0.15s',
-          display: 'inline-block',
-        }}>▼</span>
-      </button>
-      {open && children}
-    </div>
-  )
-}
-
-function BRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-      <span style={{ fontSize: 11, color: '#999', width: 44, flexShrink: 0 }}>{label}</span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>{children}</div>
-    </div>
   )
 }

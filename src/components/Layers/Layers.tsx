@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
+import { findParentId, isDescendantOf, collectDescendantIds } from '../../utils/treeUtils'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,27 +37,6 @@ type LayerItemProps = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const CONTAINER_TYPES = ['div', 'section']
-
-function findParentId(ab: Artboard, id: string): string | null {
-  if (ab.rootChildren.includes(id)) return null
-  for (const [pid, pel] of Object.entries(ab.elements)) {
-    if (pel.children.includes(id)) return pid
-  }
-  return null
-}
-
-function isDescendantOf(ab: Artboard, ancestorId: string, descendantId: string): boolean {
-  const el = ab.elements[ancestorId]
-  if (!el) return false
-  if (el.children.includes(descendantId)) return true
-  return el.children.some((c) => isDescendantOf(ab, c, descendantId))
-}
-
-function collectSubtree(ab: Artboard, id: string): string[] {
-  const el = ab.elements[id]
-  if (!el || el.children.length === 0) return [id]
-  return [id, ...el.children.flatMap((c) => collectSubtree(ab, c))]
-}
 
 // ─── Drop line indicator ──────────────────────────────────────────────────────
 
@@ -230,7 +210,7 @@ export function Layers({ artboard }: Props) {
     setExpandedLayers((prev) => {
       const next = new Set(prev)
       if (altKey) {
-        const ids = collectSubtree(artboard, id)
+        const ids = [...collectDescendantIds(artboard.elements, id)]
         const isCurrentlyExpanded = prev.has(id)
         ids.forEach((descId) => {
           if (isCurrentlyExpanded) next.delete(descId)
@@ -280,7 +260,7 @@ export function Layers({ artboard }: Props) {
     const activeDragId = String(active.id)
 
     // Нельзя дропнуть на себя или собственного потомка
-    if (targetId === activeDragId || isDescendantOf(artboard, activeDragId, targetId)) {
+    if (targetId === activeDragId || isDescendantOf(artboard.elements, targetId, activeDragId)) {
       setDropIndicator(null)
       clearExpandTimer()
       return
@@ -331,7 +311,7 @@ export function Layers({ artboard }: Props) {
     const { targetId, position } = indicator
 
     if (targetId === draggedId) return
-    if (isDescendantOf(artboard, draggedId, targetId)) return
+    if (isDescendantOf(artboard.elements, targetId, draggedId)) return
 
     if (position === 'into') {
       // Вставить как последнего ребёнка контейнера

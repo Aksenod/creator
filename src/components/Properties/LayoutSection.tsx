@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ElementStyles } from '../../types'
+import { CollapsibleSection, PropertyRow, SegmentedControl } from './shared'
 
 type Props = {
   styles: ElementStyles
@@ -44,83 +45,6 @@ function makeRepeat(n: number): string {
 const microBtnStyle: React.CSSProperties = {
   fontSize: 7, border: 'none', background: 'none', cursor: 'pointer',
   padding: '0 2px', lineHeight: 1, color: '#888',
-}
-
-// ─── Row ─────────────────────────────────────────────────────────────────────
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflow: 'hidden' }}>
-      <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
-      {children}
-    </div>
-  )
-}
-
-// ─── SegmentedControl ────────────────────────────────────────────────────────
-
-function SegmentedControl({ value, options, onChange }: {
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (v: string) => void
-}) {
-  return (
-    <div style={{
-      display: 'flex', background: '#efefef', borderRadius: 6,
-      padding: 2, gap: 1, flex: 1, minWidth: 0,
-    }}>
-      {options.map((opt) => {
-        const active = value === opt.value
-        return (
-          <button
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-            style={{
-              flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
-              borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
-              background: active ? '#1a1a1a' : 'transparent',
-              color: active ? '#fff' : '#888',
-              fontWeight: active ? 500 : 400,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {opt.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// ─── CollapsibleSection ──────────────────────────────────────────────────────
-
-function CollapsibleSection({ label, children, defaultOpen = true }: {
-  label: string
-  children: React.ReactNode
-  defaultOpen?: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div style={{ padding: '8px 0' }}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
-        <span style={{
-          fontSize: 9, color: '#aaa',
-          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          transition: 'transform 0.15s',
-          display: 'inline-block',
-        }}>▼</span>
-      </button>
-      {open && children}
-    </div>
-  )
 }
 
 // ─── AlignPicker ─────────────────────────────────────────────────────────────
@@ -223,7 +147,7 @@ function Spinner({ value, onChange }: { value: number; onChange: (v: number) => 
 
 function GapRow({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
-    <Row label="Gap">
+    <PropertyRow label="Gap">
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         <input
           type="range" min={0} max={120} value={value}
@@ -238,7 +162,7 @@ function GapRow({ value, onChange }: { value: number; onChange: (v: number) => v
         <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
         <button style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#bbb', padding: 0, flexShrink: 0 }}>🔒</button>
       </div>
-    </Row>
+    </PropertyRow>
   )
 }
 
@@ -330,7 +254,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
   return (
     <>
       {/* Direction */}
-      <Row label="Direction">
+      <PropertyRow label="Direction">
         <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
           {dirOptions.map(opt => {
             const active = dir === opt.value
@@ -346,10 +270,10 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
             )
           })}
         </div>
-      </Row>
+      </PropertyRow>
 
       {/* Align */}
-      <Row label="Align">
+      <PropertyRow label="Align">
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -372,7 +296,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
             />
           </div>
         </div>
-      </Row>
+      </PropertyRow>
 
       <GapRow value={gap} onChange={(v) => onUpdate({ gap: v })} />
     </>
@@ -390,13 +314,13 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
     <>
       {/* Grid columns/rows */}
       <div>
-        <Row label="Grid">
+        <PropertyRow label="Grid">
           <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0 }}>
             <Spinner value={cols} onChange={(v) => onUpdate({ gridTemplateColumns: makeRepeat(v) })} />
             <Spinner value={rows} onChange={(v) => onUpdate({ gridTemplateRows: makeRepeat(v) })} />
             <button style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#888', fontSize: 14 }}>🔧</button>
           </div>
-        </Row>
+        </PropertyRow>
         <div style={{ display: 'flex', gap: 6, paddingLeft: 64, marginTop: 2 }}>
           <span style={{ flex: 1, fontSize: 10, color: '#0066ff', textAlign: 'center' }}>Columns</span>
           <span style={{ flex: 1, fontSize: 10, color: '#0066ff', textAlign: 'center' }}>Rows</span>
@@ -405,7 +329,7 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </div>
 
       {/* Direction */}
-      <Row label="Direction">
+      <PropertyRow label="Direction">
         <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
           {[{ value: 'row', label: '→' }, { value: 'column', label: '↓' }].map(opt => {
             const active = (styles.flexDirection ?? 'row') === opt.value
@@ -421,10 +345,10 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
             )
           })}
         </div>
-      </Row>
+      </PropertyRow>
 
       {/* Align */}
-      <Row label="Align">
+      <PropertyRow label="Align">
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -437,7 +361,7 @@ function GridControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
             <AlignSelect label="Y" value={styles.alignItems ?? ''} options={ALIGN_OPTIONS} onChange={(v) => onUpdate({ alignItems: v as ElementStyles['alignItems'] })} />
           </div>
         </div>
-      </Row>
+      </PropertyRow>
 
       <GapRow value={gap} onChange={(v) => onUpdate({ gap: v })} />
       <MoreAlignOptions styles={styles} onUpdate={onUpdate} />
@@ -454,7 +378,7 @@ export function LayoutSection({ styles, onUpdate }: Props) {
     <CollapsibleSection label="Layout" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {/* Display */}
-        <Row label="Display">
+        <PropertyRow label="Display">
           <SegmentedControl
             value={display}
             options={[
@@ -465,7 +389,7 @@ export function LayoutSection({ styles, onUpdate }: Props) {
             ]}
             onChange={(v) => onUpdate({ display: v as ElementStyles['display'] })}
           />
-        </Row>
+        </PropertyRow>
 
         {display === 'flex' && (
           <FlexControls styles={styles} onUpdate={onUpdate} />

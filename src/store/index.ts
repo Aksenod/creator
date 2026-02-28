@@ -3,6 +3,14 @@ import { persist } from 'zustand/middleware'
 import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles } from '../types'
 import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
+import {
+  generateId,
+  CONTAINER_TYPES,
+  findParentId,
+  pushHistory,
+  applyStyleUpdate,
+  collectDescendantIds,
+} from './helpers'
 
 type EditorState = {
   project: Project | null
@@ -54,20 +62,6 @@ type EditorState = {
   pasteElement: () => void
   duplicateElement: () => void
 }
-
-const generateId = () => Math.random().toString(36).slice(2, 10)
-
-// Найти родителя элемента (null = корень артборда)
-const findParentId = (ab: Artboard, id: string): string | null => {
-  if (ab.rootChildren.includes(id)) return null
-  for (const [pid, pel] of Object.entries(ab.elements)) {
-    if (pel.children.includes(id)) return pid
-  }
-  return null
-}
-
-// Типы-контейнеры, которые принимают дочерние элементы
-const CONTAINER_TYPES = ['div', 'section']
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => ({
   id: generateId(),
@@ -140,12 +134,7 @@ export const useEditorStore = create<EditorState>()(
             artboards: { ...state.project.artboards, [artboard.id]: artboard },
             artboardOrder: [...state.project.artboardOrder, artboard.id],
           }
-          const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
-          return {
-            project: newProject,
-            history: newHistory,
-            historyIndex: newHistory.length - 1,
-          }
+          return pushHistory(state.history, state.historyIndex, state.project, newProject)
         })
       },
 
@@ -165,18 +154,7 @@ export const useEditorStore = create<EditorState>()(
           // На не-базовом BP: стили пишем в breakpointStyles[bpId], не в base
           // Не-стилевые поля (name, className, positionMode) всегда в base
           const { styles: stylesPatch, ...nonStylePatch } = patch
-          updated = {
-            ...el,
-            ...nonStylePatch,
-            className: newClassName,
-            breakpointStyles: {
-              ...el.breakpointStyles,
-              [activeBpId]: {
-                ...el.breakpointStyles?.[activeBpId],
-                ...stylesPatch,
-              },
-            },
-          }
+          updated = applyStyleUpdate(el, stylesPatch, activeBpId, { ...nonStylePatch, className: newClassName })
         } else {
           // Desktop (base) или не-стилевые изменения: пишем в base styles
           updated = {
@@ -194,12 +172,7 @@ export const useEditorStore = create<EditorState>()(
             [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
           },
         }
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
-        return {
-          project: newProject,
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
-        }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       clearBreakpointStyle: (artboardId, elementId, bpId) => set((state) => {
@@ -218,8 +191,7 @@ export const useEditorStore = create<EditorState>()(
             [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
           },
         }
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
-        return { project: newProject, history: newHistory, historyIndex: newHistory.length - 1 }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       deleteElement: (artboardId, elementId) => set((state) => {
@@ -227,13 +199,9 @@ export const useEditorStore = create<EditorState>()(
         if (!ab || !state.project) return state
 
         // Собрать все id для удаления (рекурсивно), включая все выделенные
-        const toDelete = new Set<string>()
-        const collect = (id: string) => {
-          toDelete.add(id)
-          ab.elements[id]?.children.forEach(collect)
-        }
         const idsToDelete = state.selectedElementIds.length > 0 ? state.selectedElementIds : [elementId]
-        idsToDelete.forEach(collect)
+        const toDelete = new Set<string>()
+        idsToDelete.forEach(id => collectDescendantIds(ab.elements, id).forEach(d => toDelete.add(d)))
 
         // Новый elements без удалённых
         const newElements: typeof ab.elements = {}
@@ -253,11 +221,8 @@ export const useEditorStore = create<EditorState>()(
             [artboardId]: { ...ab, elements: newElements, rootChildren: newRootChildren },
           },
         }
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
         return {
-          project: newProject,
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: toDelete.has(state.selectedElementId ?? '') ? null : state.selectedElementId,
           selectedElementIds: state.selectedElementIds.filter(id => !toDelete.has(id)),
         }
@@ -273,17 +238,7 @@ export const useEditorStore = create<EditorState>()(
         for (const id of ids) {
           const el = newElements[id]
           if (el) {
-            if (activeBpId !== 'desktop') {
-              newElements[id] = {
-                ...el,
-                breakpointStyles: {
-                  ...el.breakpointStyles,
-                  [activeBpId]: { ...el.breakpointStyles?.[activeBpId], ...patch },
-                },
-              }
-            } else {
-              newElements[id] = { ...el, styles: { ...el.styles, ...patch } }
-            }
+            newElements[id] = applyStyleUpdate(el, patch, activeBpId)
           }
         }
         const newProject = {
@@ -293,46 +248,25 @@ export const useEditorStore = create<EditorState>()(
             [artboardId]: { ...ab, elements: newElements },
           },
         }
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
-        return {
-          project: newProject,
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
-        }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       moveElement: (artboardId, elementId, newParentId, newIndex) => set((state) => {
         const ab = state.project?.artboards[artboardId]
         if (!ab || !state.project) return state
 
-        // Найти старого родителя
-        let oldParentId: string | null = null
-        if (ab.rootChildren.includes(elementId)) {
-          oldParentId = null
-        } else {
-          for (const [pid, pel] of Object.entries(ab.elements)) {
-            if (pel.children.includes(elementId)) {
-              oldParentId = pid
-              break
-            }
-          }
-        }
-
+        const oldParentId = findParentId(ab, elementId)
         const elements = { ...ab.elements }
 
-        const saveHistory = (newProject: Project) => {
-          const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project!].slice(-50)
-          return { project: newProject, history: newHistory, historyIndex: newHistory.length - 1 }
-        }
+        const save = (newProject: Project) =>
+          pushHistory(state.history, state.historyIndex, state.project!, newProject)
 
-        // Удалить из старого места
         if (oldParentId === null) {
           const oldArr = ab.rootChildren.filter((id) => id !== elementId)
-          // Вставить в новое место
           if (newParentId === null) {
             const newArr = [...oldArr]
             newArr.splice(newIndex, 0, elementId)
-            return saveHistory({
+            return save({
               ...state.project,
               artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
             })
@@ -342,7 +276,7 @@ export const useEditorStore = create<EditorState>()(
             const newChildren = [...parent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...parent, children: newChildren }
-            return saveHistory({
+            return save({
               ...state.project,
               artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: oldArr } },
             })
@@ -356,7 +290,7 @@ export const useEditorStore = create<EditorState>()(
           if (newParentId === null) {
             const newArr = [...ab.rootChildren]
             newArr.splice(newIndex, 0, elementId)
-            return saveHistory({
+            return save({
               ...state.project,
               artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
             })
@@ -366,7 +300,7 @@ export const useEditorStore = create<EditorState>()(
             const newChildren = [...newParent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...newParent, children: newChildren }
-            return saveHistory({
+            return save({
               ...state.project,
               artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: ab.rootChildren } },
             })
@@ -395,15 +329,10 @@ export const useEditorStore = create<EditorState>()(
         const id = state.selectedElementId
         if (!ab || !id || !ab.elements[id]) return state
 
-        // Собрать элемент и всех потомков
         const descendants: Record<string, CanvasElement> = {}
-        const collect = (eid: string) => {
-          const el = ab.elements[eid]
-          if (!el) return
-          descendants[eid] = el
-          el.children.forEach(collect)
-        }
-        collect(id)
+        collectDescendantIds(ab.elements, id).forEach(eid => {
+          descendants[eid] = ab.elements[eid]
+        })
 
         return { clipboard: { element: ab.elements[id], descendants } }
       }),
@@ -412,15 +341,11 @@ export const useEditorStore = create<EditorState>()(
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
         if (!ab || !state.clipboard || !state.project) return state
 
-        // Создать новые ID для всех элементов
         const idMap: Record<string, string> = {}
-        const genId = () => Math.random().toString(36).slice(2, 10)
-
         Object.keys(state.clipboard.descendants).forEach(oldId => {
-          idMap[oldId] = genId()
+          idMap[oldId] = generateId()
         })
 
-        // Клонировать с новыми ID
         const newElements: Record<string, CanvasElement> = {}
         Object.entries(state.clipboard.descendants).forEach(([oldId, el]) => {
           const newId = idMap[oldId]
@@ -438,15 +363,13 @@ export const useEditorStore = create<EditorState>()(
         const selectedEl = state.selectedElementId ? ab.elements[state.selectedElementId] : null
         let newAb: Artboard
 
-        if (selectedEl && CONTAINER_TYPES.includes(selectedEl.type)) {
-          // Вставить внутрь выбранного контейнера
+        if (selectedEl && CONTAINER_TYPES.includes(selectedEl.type as typeof CONTAINER_TYPES[number])) {
           mergedElements[selectedEl.id] = {
             ...selectedEl,
             children: [...selectedEl.children, newRootId],
           }
           newAb = { ...ab, elements: mergedElements }
         } else if (selectedEl) {
-          // Вставить рядом с выбранным элементом (тот же родитель)
           const parentId = findParentId(ab, selectedEl.id)
           if (parentId) {
             const parent = mergedElements[parentId]
@@ -462,7 +385,6 @@ export const useEditorStore = create<EditorState>()(
             newAb = { ...ab, elements: mergedElements, rootChildren: newRoot }
           }
         } else {
-          // Ничего не выбрано — вставить в корень
           newAb = { ...ab, elements: mergedElements, rootChildren: [...ab.rootChildren, newRootId] }
         }
 
@@ -471,11 +393,8 @@ export const useEditorStore = create<EditorState>()(
           artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
         }
 
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
         return {
-          project: newProject,
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: newRootId,
           selectedElementIds: [newRootId],
         }
@@ -486,14 +405,10 @@ export const useEditorStore = create<EditorState>()(
         const id = state.selectedElementId
         if (!ab || !id || !ab.elements[id] || !state.project) return state
 
-        const genId = () => Math.random().toString(36).slice(2, 10)
         const idMap: Record<string, string> = {}
-
-        const collectIds = (eid: string) => {
-          idMap[eid] = genId()
-          ab.elements[eid]?.children.forEach(collectIds)
-        }
-        collectIds(id)
+        collectDescendantIds(ab.elements, id).forEach(eid => {
+          idMap[eid] = generateId()
+        })
 
         const newElements: Record<string, CanvasElement> = {}
         Object.entries(idMap).forEach(([oldId, newId]) => {
@@ -510,7 +425,6 @@ export const useEditorStore = create<EditorState>()(
         const newRootId = idMap[id]
         const mergedElements = { ...ab.elements, ...newElements }
 
-        // Вставить дубликат сразу после оригинала в том же родителе
         const parentId = findParentId(ab, id)
         let newAb: Artboard
 
@@ -522,7 +436,6 @@ export const useEditorStore = create<EditorState>()(
           mergedElements[parentId] = { ...parent, children: newChildren }
           newAb = { ...ab, elements: mergedElements }
         } else {
-          // Корневой элемент — вставить после оригинала в rootChildren
           const idx = ab.rootChildren.indexOf(id)
           const newRootChildren = [...ab.rootChildren]
           newRootChildren.splice(idx + 1, 0, newRootId)
@@ -534,11 +447,8 @@ export const useEditorStore = create<EditorState>()(
           artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
         }
 
-        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
         return {
-          project: newProject,
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: newRootId,
           selectedElementIds: [newRootId],
         }

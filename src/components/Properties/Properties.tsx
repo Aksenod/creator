@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { useEditorStore } from '../../store'
+import { CollapsibleSection, PropertyRow } from './shared'
 import type { CanvasElement, ElementStyles } from '../../types'
 import { BREAKPOINT_LABELS } from '../../constants/breakpoints'
 import type { BreakpointId } from '../../constants/breakpoints'
@@ -151,14 +151,14 @@ export function Properties() {
             {/* Имя + Класс */}
             <CollapsibleSection label="Слой" defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Row label="Имя">
+                <PropertyRow label="Имя">
                   <input
                     value={element.name}
                     onChange={(e) => updateField({ name: e.target.value })}
                     style={inputStyle}
                   />
-                </Row>
-                <Row label="Класс">
+                </PropertyRow>
+                <PropertyRow label="Класс">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
                     <span style={{ color: '#aaa', fontSize: 11 }}>.</span>
                     <input
@@ -168,7 +168,7 @@ export function Properties() {
                       style={{ ...inputStyle, fontFamily: 'monospace' }}
                     />
                   </div>
-                </Row>
+                </PropertyRow>
               </div>
             </CollapsibleSection>
 
@@ -224,42 +224,4 @@ const inputStyle: React.CSSProperties = {
 
 function Divider() {
   return <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
-}
-
-function CollapsibleSection({ label, children, defaultOpen = true }: {
-  label: string
-  children: React.ReactNode
-  defaultOpen?: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div style={{ padding: '8px 0' }}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
-        <span style={{
-          fontSize: 9, color: '#aaa',
-          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          transition: 'transform 0.15s',
-          display: 'inline-block',
-        }}>▼</span>
-      </button>
-      {open && children}
-    </div>
-  )
-}
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflow: 'hidden' }}>
-      <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
-      {children}
-    </div>
-  )
 }

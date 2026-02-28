@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
+import { getCSSPosition } from '../../utils/cssUtils'
 
 // --- Resize handles ---
 
@@ -116,15 +117,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     // Эффективные стили с учётом cascade (base + BP overrides)
     const s = resolveStyles(el, activeBreakpointId)
 
-    // Маппинг positionMode → CSS position (поддержка legacy 'flow'/'pinned')
-    const getCSSPosition = (mode: string): React.CSSProperties['position'] => {
-      if (mode === 'static' || mode === 'flow') return 'static'
-      if (mode === 'relative') return 'relative'
-      if (mode === 'absolute' || mode === 'pinned') return 'absolute'
-      if (mode === 'fixed') return 'fixed'
-      if (mode === 'sticky') return 'sticky'
-      return 'static'
-    }
     const cssPosition = getCSSPosition(el.positionMode)
 
     const style: React.CSSProperties = {

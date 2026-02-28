@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import type { ElementStyles } from '../../types'
+import { CollapsibleSection, PropertyRow, ColorInput } from './shared'
 
 type Props = {
   styles: ElementStyles
@@ -12,15 +12,18 @@ const FONT_FAMILIES = [
   'Arial', 'Georgia', 'Times New Roman', 'Helvetica',
 ]
 
-export function TypographySection({ styles, onUpdate }: Props) {
-  const [open, setOpen] = useState(true)
+const selectStyle: React.CSSProperties = {
+  flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0',
+  borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'pointer',
+}
 
+export function TypographySection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Typography" open={open} onToggle={() => setOpen(!open)}>
+    <CollapsibleSection label="Typography" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Font */}
-        <TypoRow label="Font">
+        <PropertyRow label="Font" labelWidth={44}>
           <select
             value={styles.fontFamily ?? ''}
             onChange={e => onUpdate({ fontFamily: e.target.value || undefined })}
@@ -29,10 +32,10 @@ export function TypographySection({ styles, onUpdate }: Props) {
             <option value="">—</option>
             {FONT_FAMILIES.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
-        </TypoRow>
+        </PropertyRow>
 
         {/* Weight */}
-        <TypoRow label="Weight">
+        <PropertyRow label="Weight" labelWidth={44}>
           <select
             value={styles.fontWeight ?? ''}
             onChange={e => onUpdate({ fontWeight: e.target.value || undefined })}
@@ -49,10 +52,10 @@ export function TypographySection({ styles, onUpdate }: Props) {
             <option value="800">800 – ExtraBold</option>
             <option value="900">900 – Black</option>
           </select>
-        </TypoRow>
+        </PropertyRow>
 
         {/* Size + Line Height */}
-        <TypoRow label="Size">
+        <PropertyRow label="Size" labelWidth={44}>
           <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <div style={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0 }}>
               <input
@@ -82,28 +85,20 @@ export function TypographySection({ styles, onUpdate }: Props) {
               </button>
             </div>
           </div>
-        </TypoRow>
+        </PropertyRow>
 
         {/* Color */}
-        <TypoRow label="Color">
-          <div style={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0, alignItems: 'center' }}>
-            <input
-              type="color"
-              value={styles.color ?? '#000000'}
-              onChange={e => onUpdate({ color: e.target.value })}
-              style={{ width: 28, height: 28, padding: 2, border: 'none', borderRight: '1px solid #e0e0e0', cursor: 'pointer', flexShrink: 0 }}
-            />
-            <input
-              value={styles.color ?? ''}
-              onChange={e => onUpdate({ color: e.target.value })}
-              placeholder="—"
-              style={{ flex: 1, minWidth: 0, border: 'none', padding: '3px 6px', fontSize: 12, background: 'transparent', outline: 'none' }}
-            />
-          </div>
-        </TypoRow>
+        <PropertyRow label="Color" labelWidth={44}>
+          <ColorInput
+            value={styles.color}
+            onChange={v => onUpdate({ color: v })}
+            placeholder="—"
+            fallback="#000000"
+          />
+        </PropertyRow>
 
         {/* Align */}
-        <TypoRow label="Align">
+        <PropertyRow label="Align" labelWidth={44}>
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {(['left', 'center', 'right', 'justify'] as const).map(align => {
               const icons: Record<typeof align, string> = { left: '⊜', center: '≡', right: '⊝', justify: '☰' }
@@ -124,10 +119,10 @@ export function TypographySection({ styles, onUpdate }: Props) {
               )
             })}
           </div>
-        </TypoRow>
+        </PropertyRow>
 
         {/* Decor */}
-        <TypoRow label="Decor">
+        <PropertyRow label="Decor" labelWidth={44}>
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {([
               { value: 'none', label: '×' },
@@ -148,54 +143,9 @@ export function TypographySection({ styles, onUpdate }: Props) {
               </button>
             ))}
           </div>
-        </TypoRow>
+        </PropertyRow>
 
       </div>
     </CollapsibleSection>
   )
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function CollapsibleSection({ label, open, onToggle, children }: {
-  label: string
-  open: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <div style={{ padding: '8px 0' }}>
-      <button
-        onClick={onToggle}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
-        <span style={{
-          fontSize: 9, color: '#aaa',
-          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          transition: 'transform 0.15s',
-          display: 'inline-block',
-        }}>▼</span>
-      </button>
-      {open && children}
-    </div>
-  )
-}
-
-function TypoRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-      <span style={{ fontSize: 11, color: '#999', width: 44, flexShrink: 0 }}>{label}</span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>{children}</div>
-    </div>
-  )
-}
-
-const selectStyle: React.CSSProperties = {
-  flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0',
-  borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'pointer',
 }

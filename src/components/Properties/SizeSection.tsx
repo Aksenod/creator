@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import type { ElementStyles } from '../../types'
+import { CollapsibleSection } from './shared'
 
 // ─── CSS Unit utilities ──────────────────────────────────────────────────────
 
@@ -41,94 +42,74 @@ type Props = {
 }
 
 export function SizeSection({ styles, onUpdate }: Props) {
-  const [open, setOpen] = useState(true)
-
   return (
-    <div style={{ padding: '8px 0' }}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
-        }}
-      >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>Size</span>
-        <span style={{
-          fontSize: 9, color: '#aaa',
-          transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          transition: 'transform 0.15s', display: 'inline-block',
-        }}>▼</span>
-      </button>
+    <CollapsibleSection label="Size" defaultOpen>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
-      {open && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-
-          {/* Width + Height */}
-          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-            <SizeInput
-              label="Width"
-              value={styles.width ?? ''}
-              placeholder="Auto"
-              allowAuto
-              onReset={() => onUpdate({ width: 'auto' })}
-              onChange={(v) => onUpdate({ width: v || undefined })}
-            />
-            <SizeInput
-              label="Height"
-              value={styles.height ?? ''}
-              placeholder="Auto"
-              allowAuto
-              onReset={() => onUpdate({ height: 'auto' })}
-              onChange={(v) => onUpdate({ height: v || undefined })}
-            />
-          </div>
-
-          {/* Min W + Min H */}
-          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-            <SizeInput
-              label="Min W"
-              value={styles.minWidth ?? ''}
-              placeholder="0"
-              onChange={(v) => onUpdate({ minWidth: v || undefined })}
-            />
-            <SizeInput
-              label="Min H"
-              value={styles.minHeight ?? ''}
-              placeholder="0"
-              onChange={(v) => onUpdate({ minHeight: v || undefined })}
-            />
-          </div>
-
-          {/* Max W + Max H */}
-          <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-            <SizeInput
-              label="Max W"
-              value={styles.maxWidth ?? ''}
-              placeholder="None"
-              allowNone
-              onReset={() => onUpdate({ maxWidth: undefined })}
-              onChange={(v) => onUpdate({ maxWidth: v || undefined })}
-            />
-            <SizeInput
-              label="Max H"
-              value={styles.maxHeight ?? ''}
-              placeholder="None"
-              allowNone
-              onReset={() => onUpdate({ maxHeight: undefined })}
-              onChange={(v) => onUpdate({ maxHeight: v || undefined })}
-            />
-          </div>
-
-          {/* Overflow */}
-          <OverflowRow
-            value={styles.overflow}
-            onChange={(v) => onUpdate({ overflow: v })}
+        {/* Width + Height */}
+        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
+          <SizeInput
+            label="Width"
+            value={styles.width ?? ''}
+            placeholder="Auto"
+            allowAuto
+            onReset={() => onUpdate({ width: 'auto' })}
+            onChange={(v) => onUpdate({ width: v || undefined })}
           />
-
+          <SizeInput
+            label="Height"
+            value={styles.height ?? ''}
+            placeholder="Auto"
+            allowAuto
+            onReset={() => onUpdate({ height: 'auto' })}
+            onChange={(v) => onUpdate({ height: v || undefined })}
+          />
         </div>
-      )}
-    </div>
+
+        {/* Min W + Min H */}
+        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
+          <SizeInput
+            label="Min W"
+            value={styles.minWidth ?? ''}
+            placeholder="0"
+            onChange={(v) => onUpdate({ minWidth: v || undefined })}
+          />
+          <SizeInput
+            label="Min H"
+            value={styles.minHeight ?? ''}
+            placeholder="0"
+            onChange={(v) => onUpdate({ minHeight: v || undefined })}
+          />
+        </div>
+
+        {/* Max W + Max H */}
+        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
+          <SizeInput
+            label="Max W"
+            value={styles.maxWidth ?? ''}
+            placeholder="None"
+            allowNone
+            onReset={() => onUpdate({ maxWidth: undefined })}
+            onChange={(v) => onUpdate({ maxWidth: v || undefined })}
+          />
+          <SizeInput
+            label="Max H"
+            value={styles.maxHeight ?? ''}
+            placeholder="None"
+            allowNone
+            onReset={() => onUpdate({ maxHeight: undefined })}
+            onChange={(v) => onUpdate({ maxHeight: v || undefined })}
+          />
+        </div>
+
+        {/* Overflow */}
+        <OverflowRow
+          value={styles.overflow}
+          onChange={(v) => onUpdate({ overflow: v })}
+        />
+
+      </div>
+    </CollapsibleSection>
   )
 }
 
