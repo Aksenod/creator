@@ -135,7 +135,7 @@ export function PageEditor() {
     if (!el) return
 
     const recalc = () => {
-      const available = el.clientWidth - 80 // 40px padding с каждой стороны
+      const available = el.clientWidth
       if (available <= 0) return
       setScale(Math.min(1, available / displayWidth))
     }

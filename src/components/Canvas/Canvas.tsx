@@ -195,7 +195,6 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '40px 0',
       }}
       onClick={() => selectElement(null)}
     >
