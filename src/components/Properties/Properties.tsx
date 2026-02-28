@@ -10,6 +10,7 @@ import { TypographySection } from './TypographySection'
 import { BackgroundSection } from './BackgroundSection'
 import { BorderSection } from './BorderSection'
 import { PositionSection } from './PositionSection'
+import { SpacingSection } from './SpacingSection'
 import type { PositionMode } from '../../types'
 
 const getCommonStyles = (
@@ -119,6 +120,10 @@ export function Properties() {
 
             <Divider />
 
+            <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            <Divider />
+
             <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
@@ -175,6 +180,10 @@ export function Properties() {
               onUpdateMode={updatePositionMode}
               onUpdateStyle={updateStyle}
             />
+
+            <Divider />
+
+            <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
