@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project, EditorMode, Artboard, CanvasElement } from '../types'
+import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles } from '../types'
 import { slugify } from '../utils/slugify'
 
 type EditorState = {
@@ -8,6 +8,7 @@ type EditorState = {
   mode: EditorMode
   activeArtboardId: string | null
   selectedElementId: string | null
+  selectedElementIds: string[]
 
   // Проект
   createProject: (name: string) => void
@@ -19,6 +20,7 @@ type EditorState = {
 
   // Выделение
   selectElement: (id: string | null) => void
+  toggleSelectElement: (id: string) => void
 
   // Артборды
   addArtboard: (name: string) => void
@@ -27,6 +29,7 @@ type EditorState = {
   updateElement: (artboardId: string, elementId: string, patch: Partial<CanvasElement>) => void
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
   deleteElement: (artboardId: string, elementId: string) => void
+  updateSelectedElements: (artboardId: string, patch: Partial<ElementStyles>) => void
 }
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
@@ -49,6 +52,7 @@ export const useEditorStore = create<EditorState>()(
       mode: 'birdseye',
       activeArtboardId: null,
       selectedElementId: null,
+      selectedElementIds: [],
 
       createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)
@@ -58,24 +62,33 @@ export const useEditorStore = create<EditorState>()(
           artboards: { [artboard.id]: artboard },
           artboardOrder: [artboard.id],
         }
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [] })
       },
 
       loadProject: (project) => {
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [] })
       },
 
       enterArtboard: (artboardId) => {
-        set({ mode: 'page', activeArtboardId: artboardId, selectedElementId: null })
+        set({ mode: 'page', activeArtboardId: artboardId, selectedElementId: null, selectedElementIds: [] })
       },
 
       exitArtboard: () => {
-        set({ mode: 'birdseye', activeArtboardId: null, selectedElementId: null })
+        set({ mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [] })
       },
 
       selectElement: (id) => {
-        set({ selectedElementId: id })
+        set({ selectedElementId: id, selectedElementIds: id ? [id] : [] })
       },
+
+      toggleSelectElement: (id) => set((state) => {
+        const ids = state.selectedElementIds
+        const next = ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]
+        return {
+          selectedElementIds: next,
+          selectedElementId: next.length > 0 ? next[next.length - 1] : null,
+        }
+      }),
 
       addArtboard: (name) => {
         set((state) => {
@@ -120,13 +133,14 @@ export const useEditorStore = create<EditorState>()(
         const ab = state.project?.artboards[artboardId]
         if (!ab || !state.project) return state
 
-        // Собрать все id для удаления (рекурсивно)
+        // Собрать все id для удаления (рекурсивно), включая все выделенные
         const toDelete = new Set<string>()
         const collect = (id: string) => {
           toDelete.add(id)
           ab.elements[id]?.children.forEach(collect)
         }
-        collect(elementId)
+        const idsToDelete = state.selectedElementIds.length > 0 ? state.selectedElementIds : [elementId]
+        idsToDelete.forEach(collect)
 
         // Новый elements без удалённых
         const newElements: typeof ab.elements = {}
@@ -148,6 +162,30 @@ export const useEditorStore = create<EditorState>()(
             },
           },
           selectedElementId: toDelete.has(state.selectedElementId ?? '') ? null : state.selectedElementId,
+          selectedElementIds: state.selectedElementIds.filter(id => !toDelete.has(id)),
+        }
+      }),
+
+      updateSelectedElements: (artboardId, patch) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        if (!ab || !state.project) return state
+        const ids = state.selectedElementIds.length > 0 ? state.selectedElementIds : (state.selectedElementId ? [state.selectedElementId] : [])
+
+        const newElements = { ...ab.elements }
+        for (const id of ids) {
+          const el = newElements[id]
+          if (el) {
+            newElements[id] = { ...el, styles: { ...el.styles, ...patch } }
+          }
+        }
+        return {
+          project: {
+            ...state.project,
+            artboards: {
+              ...state.project.artboards,
+              [artboardId]: { ...ab, elements: newElements },
+            },
+          },
         }
       }),
 

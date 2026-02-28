@@ -5,13 +5,13 @@ import type { Transform } from '../../hooks/useCanvasTransform'
 type Props = { artboard: Artboard; transform?: Transform; previewMode?: boolean }
 
 export function Canvas({ artboard, transform, previewMode }: Props) {
-  const { selectElement, selectedElementId } = useEditorStore()
+  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
 
   const renderElement = (id: string): React.ReactNode => {
     const el = artboard.elements[id]
     if (!el) return null
 
-    const isSelected = selectedElementId === id
+    const isSelected = selectedElementIds.includes(id) || selectedElementId === id
 
     const style: React.CSSProperties = {
       position: el.positionMode === 'pinned' ? 'absolute' : 'relative',
@@ -50,7 +50,11 @@ export function Canvas({ artboard, transform, previewMode }: Props) {
       <div
         key={id}
         style={style}
-        onClick={previewMode ? undefined : (e) => { e.stopPropagation(); selectElement(id) }}
+        onClick={previewMode ? undefined : (e) => {
+          e.stopPropagation()
+          if (e.shiftKey) toggleSelectElement(id)
+          else selectElement(id)
+        }}
       >
         {el.content && <span>{el.content}</span>}
         {el.children.map(renderElement)}

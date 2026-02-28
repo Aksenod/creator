@@ -1,24 +1,48 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../store'
-import type { ElementStyles } from '../../types'
+import type { CanvasElement, ElementStyles } from '../../types'
 import { LayoutSection } from './LayoutSection'
 import { SizeSection } from './SizeSection'
 
+const getCommonStyles = (ids: string[], elements: Record<string, CanvasElement>): Partial<ElementStyles> => {
+  if (ids.length === 0) return {}
+  const first = elements[ids[0]]?.styles ?? {}
+  const result: Partial<ElementStyles> = {}
+
+  for (const key of Object.keys(first) as (keyof ElementStyles)[]) {
+    const val = first[key]
+    const allSame = ids.every(id => {
+      const s = elements[id]?.styles
+      return s && (s[key] as unknown) === (val as unknown)
+    })
+    if (allSame) (result as Record<string, unknown>)[key] = val
+  }
+  return result
+}
+
 export function Properties() {
-  const { selectedElementId, project, activeArtboardId, updateElement, deleteElement } = useEditorStore()
+  const { selectedElementId, selectedElementIds, project, activeArtboardId, updateElement, deleteElement, updateSelectedElements } = useEditorStore()
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
+  const isMultiSelect = selectedElementIds.length > 1
+  const commonStyles = isMultiSelect && artboard ? getCommonStyles(selectedElementIds, artboard.elements) : null
 
   const updateStyle = (patch: Partial<ElementStyles>) => {
-    if (!activeArtboardId || !selectedElementId) return
-    updateElement(activeArtboardId, selectedElementId, { styles: patch })
+    if (!activeArtboardId) return
+    if (isMultiSelect) {
+      updateSelectedElements(activeArtboardId, patch)
+    } else if (selectedElementId) {
+      updateElement(activeArtboardId, selectedElementId, { styles: patch })
+    }
   }
 
   const updateField = (patch: Parameters<typeof updateElement>[2]) => {
     if (!activeArtboardId || !selectedElementId) return
     updateElement(activeArtboardId, selectedElementId, patch)
   }
+
+  const effectiveStyles = isMultiSelect ? (commonStyles ?? {}) : (element?.styles ?? {})
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -30,7 +54,56 @@ export function Properties() {
         Свойства
       </div>
       <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
-        {!element ? (
+        {isMultiSelect ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div style={{ padding: '6px 0', fontSize: 12, color: '#555', fontWeight: 500 }}>
+              Выбрано: {selectedElementIds.length} элемента
+            </div>
+
+            <Divider />
+
+            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            <Divider />
+
+            <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            <Divider />
+
+            {/* Заливка */}
+            <CollapsibleSection label="Заливка" defaultOpen>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="color"
+                  value={effectiveStyles.backgroundColor ?? '#ffffff'}
+                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
+                  style={{ width: 28, height: 28, padding: 2, border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', flexShrink: 0 }}
+                />
+                <input
+                  value={effectiveStyles.backgroundColor ?? ''}
+                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
+                  placeholder="—"
+                  style={inputStyle}
+                />
+              </div>
+            </CollapsibleSection>
+
+            <button
+              onClick={() => {
+                if (activeArtboardId && selectedElementIds.length > 0) {
+                  deleteElement(activeArtboardId, selectedElementIds[0])
+                }
+              }}
+              style={{
+                marginTop: 8, width: '100%', padding: '6px 0', border: '1px solid #fcc',
+                borderRadius: 4, fontSize: 12, cursor: 'pointer',
+                background: '#fff5f5', color: '#cc0000',
+              }}
+            >
+              Удалить элементы
+            </button>
+          </div>
+        ) : !element ? (
           <div style={{ color: '#aaa', fontSize: 12 }}>Выбери элемент</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

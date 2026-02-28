@@ -15,7 +15,7 @@ import type { Artboard } from '../../types'
 type Props = { artboard: Artboard }
 
 function SortableLayerItem({ id, artboard, depth }: { id: string; artboard: Artboard; depth: number }) {
-  const { selectElement, selectedElementId } = useEditorStore()
+  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
   const el = artboard.elements[id]
 
   const {
@@ -29,7 +29,7 @@ function SortableLayerItem({ id, artboard, depth }: { id: string; artboard: Artb
 
   if (!el) return null
 
-  const isSelected = selectedElementId === id
+  const isSelected = selectedElementIds.includes(id) || selectedElementId === id
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -40,7 +40,10 @@ function SortableLayerItem({ id, artboard, depth }: { id: string; artboard: Artb
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div
-        onClick={() => selectElement(id)}
+        onClick={(e) => {
+          if (e.shiftKey) toggleSelectElement(id)
+          else selectElement(id)
+        }}
         style={{
           display: 'flex', alignItems: 'center',
           padding: `4px 8px 4px ${12 + depth * 16}px`,
