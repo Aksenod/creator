@@ -6,6 +6,28 @@ type Props = {
   onUpdate: (patch: Partial<ElementStyles>) => void
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// "span N" → "N"; иначе ""
+function getSpan(val?: string): string {
+  if (!val) return ''
+  const m = val.match(/^span\s*(\d+)$/)
+  return m ? m[1] : ''
+}
+
+// N → "span N" (если N>1), иначе undefined
+function spanVal(n: string): string | undefined {
+  const num = parseInt(n, 10)
+  if (!n || isNaN(num) || num <= 1) return undefined
+  return `span ${num}`
+}
+
+// Определить режим: auto = нет значения ИЛИ только "span N"; manual = есть явная стартовая линия
+function detectMode(gridColumn?: string, gridRow?: string): 'auto' | 'manual' {
+  const isAuto = (v?: string) => !v || /^span\s*\d+$/.test(v.trim())
+  return isAuto(gridColumn) && isAuto(gridRow) ? 'auto' : 'manual'
+}
+
 // Parse "start / end" or "start / span N" → { start, end, isSpan }
 function parseGridLine(val?: string): { start: string; end: string; isSpan: boolean } {
   if (!val) return { start: '', end: '', isSpan: false }
@@ -24,6 +46,8 @@ function serializeGridLine(start: string, end: string, isSpan: boolean): string 
   return `${start} / ${isSpan ? `span ${endVal}` : endVal}`
 }
 
+// ─── Стили ───────────────────────────────────────────────────────────────────
+
 const selectStyle: React.CSSProperties = {
   padding: '3px 5px', border: '1px solid #e0e0e0', borderRadius: 4,
   fontSize: 11, background: '#fafafa', outline: 'none',
@@ -36,7 +60,7 @@ const numInputStyle: React.CSSProperties = {
   color: '#1a1a1a', textAlign: 'center',
 }
 
-// ─── GridLineInput ─────────────────────────────────────────────────────────────
+// ─── GridLineInput (Manual mode) ──────────────────────────────────────────────
 
 function GridLineInput({ label, value, onChange }: {
   label: string
@@ -45,45 +69,30 @@ function GridLineInput({ label, value, onChange }: {
 }) {
   const { start, end, isSpan } = parseGridLine(value)
 
-  const handleStart = (v: string) => {
-    onChange(serializeGridLine(v, end, isSpan))
-  }
-
-  const handleEnd = (v: string) => {
-    onChange(serializeGridLine(start, v, isSpan))
-  }
-
-  const handleSpanToggle = (span: boolean) => {
-    onChange(serializeGridLine(start, end, span))
-  }
-
   return (
     <PropertyRow label={label}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-        {/* start */}
         <input
           type="number"
           value={start}
           placeholder="1"
-          onChange={(e) => handleStart(e.target.value)}
+          onChange={(e) => onChange(serializeGridLine(e.target.value, end, isSpan))}
           style={numInputStyle}
         />
-        {/* span toggle */}
         <select
           value={isSpan ? 'span' : 'end'}
-          onChange={(e) => handleSpanToggle(e.target.value === 'span')}
+          onChange={(e) => onChange(serializeGridLine(start, end, e.target.value === 'span'))}
           data-testid={`grid-line-span-${label.toLowerCase()}`}
           style={{ ...selectStyle, width: 52 }}
         >
           <option value="end">/</option>
           <option value="span">span</option>
         </select>
-        {/* end */}
         <input
           type="number"
           value={end}
           placeholder={isSpan ? '1' : '2'}
-          onChange={(e) => handleEnd(e.target.value)}
+          onChange={(e) => onChange(serializeGridLine(start, e.target.value, isSpan))}
           style={numInputStyle}
         />
       </div>
@@ -97,22 +106,97 @@ const ALIGN_SELF_OPTIONS = ['auto', 'start', 'end', 'center', 'stretch', 'baseli
 const JUSTIFY_SELF_OPTIONS = ['auto', 'start', 'end', 'center', 'stretch']
 
 export function GridChildSection({ styles, onUpdate }: Props) {
+  const mode = detectMode(styles.gridColumn, styles.gridRow)
+
+  const switchToAuto = () => {
+    // Сохраняем span если был в manual ("1 / span 2" → "span 2")
+    const { isSpan: colSpan, end: colEnd } = parseGridLine(styles.gridColumn)
+    const { isSpan: rowSpan, end: rowEnd } = parseGridLine(styles.gridRow)
+    onUpdate({
+      gridColumn: colSpan && colEnd ? `span ${colEnd}` : undefined,
+      gridRow: rowSpan && rowEnd ? `span ${rowEnd}` : undefined,
+    })
+  }
+
+  const switchToManual = () => {
+    // Сохраняем span, добавляем start = 1
+    const colSpan = getSpan(styles.gridColumn)
+    const rowSpan = getSpan(styles.gridRow)
+    onUpdate({
+      gridColumn: colSpan && parseInt(colSpan) > 1 ? `1 / span ${colSpan}` : '1',
+      gridRow: rowSpan && parseInt(rowSpan) > 1 ? `1 / span ${rowSpan}` : '1',
+    })
+  }
+
   return (
     <CollapsibleSection label="Grid child" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {/* Column placement */}
-        <GridLineInput
-          label="Column"
-          value={styles.gridColumn}
-          onChange={(v) => onUpdate({ gridColumn: v })}
-        />
 
-        {/* Row placement */}
-        <GridLineInput
-          label="Row"
-          value={styles.gridRow}
-          onChange={(v) => onUpdate({ gridRow: v })}
-        />
+        {/* Auto / Manual toggle */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            onClick={switchToAuto}
+            title="Автоматическое размещение по DOM-порядку"
+            style={{
+              flex: 1, padding: '4px 0', fontSize: 11, fontWeight: mode === 'auto' ? 600 : 400,
+              border: '1px solid #e0e0e0', borderRadius: 4, cursor: 'pointer',
+              background: mode === 'auto' ? '#0066ff' : '#fafafa',
+              color: mode === 'auto' ? '#fff' : '#555',
+            }}
+          >
+            Auto
+          </button>
+          <button
+            onClick={switchToManual}
+            title="Явное задание позиции в сетке"
+            style={{
+              flex: 1, padding: '4px 0', fontSize: 11, fontWeight: mode === 'manual' ? 600 : 400,
+              border: '1px solid #e0e0e0', borderRadius: 4, cursor: 'pointer',
+              background: mode === 'manual' ? '#0066ff' : '#fafafa',
+              color: mode === 'manual' ? '#fff' : '#555',
+            }}
+          >
+            Manual
+          </button>
+        </div>
+
+        {mode === 'auto' ? (
+          /* Auto mode: только span */
+          <>
+            <PropertyRow label="Column span">
+              <input
+                type="number"
+                min={1}
+                value={getSpan(styles.gridColumn) || '1'}
+                onChange={(e) => onUpdate({ gridColumn: spanVal(e.target.value) })}
+                style={{ ...numInputStyle, width: 60 }}
+              />
+            </PropertyRow>
+            <PropertyRow label="Row span">
+              <input
+                type="number"
+                min={1}
+                value={getSpan(styles.gridRow) || '1'}
+                onChange={(e) => onUpdate({ gridRow: spanVal(e.target.value) })}
+                style={{ ...numInputStyle, width: 60 }}
+              />
+            </PropertyRow>
+          </>
+        ) : (
+          /* Manual mode: явные start / end */
+          <>
+            <GridLineInput
+              label="Column"
+              value={styles.gridColumn}
+              onChange={(v) => onUpdate({ gridColumn: v })}
+            />
+            <GridLineInput
+              label="Row"
+              value={styles.gridRow}
+              onChange={(v) => onUpdate({ gridRow: v })}
+            />
+          </>
+        )}
 
         {/* Align self / Justify self */}
         <PropertyRow label="Align">

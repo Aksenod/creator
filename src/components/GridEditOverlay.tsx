@@ -114,14 +114,16 @@ export function GridEditOverlay({ artboardId }: Props) {
             if (t.unit === 'fr') {
               // fr → сохраняем пропорцию: newFr = origFr * (newPx / origPx)
               const origPx = prevPx || 1
-              return { ...t, value: Math.max(0.1, t.value * newPrev / origPx) }
+              const raw = Math.max(0.1, t.value * newPrev / origPx)
+              return { ...t, value: Math.round(raw * 100) / 100 }
             }
             return { ...t, value: Math.round(newPrev) }
           }
           if (i === drag.index) {
             if (t.unit === 'fr') {
               const origPx = nextPx || 1
-              return { ...t, value: Math.max(0.1, t.value * newNext / origPx) }
+              const raw = Math.max(0.1, t.value * newNext / origPx)
+              return { ...t, value: Math.round(raw * 100) / 100 }
             }
             return { ...t, value: Math.round(newNext) }
           }
@@ -266,7 +268,7 @@ export function GridEditOverlay({ artboardId }: Props) {
       }} />
 
       {/* Vertical column dividers */}
-      {colLines.slice(0, -1).map((x, i) => (
+      {colLines.map((x, i) => (
         <div
           key={`col-line-${i}`}
           onMouseDown={(e) => startColDrag(i + 1, e)}
@@ -290,7 +292,7 @@ export function GridEditOverlay({ artboardId }: Props) {
       ))}
 
       {/* Horizontal row dividers */}
-      {rowLines.slice(0, -1).map((y, i) => (
+      {rowLines.map((y, i) => (
         <div
           key={`row-line-${i}`}
           onMouseDown={(e) => startRowDrag(i + 1, e)}
