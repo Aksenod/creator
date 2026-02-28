@@ -1,6 +1,57 @@
-import { useRef } from 'react'
+import React, { useRef } from 'react'
 import { useEditorStore } from '../../store'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
+import type { Artboard, CanvasElement } from '../../types'
+
+// --- Thumbnail renderer (без интерактивности, без padding) ---
+
+function renderThumbnailElement(
+  id: string,
+  elements: Artboard['elements'],
+): React.ReactNode {
+  const el: CanvasElement | undefined = elements[id]
+  if (!el) return null
+
+  const style: React.CSSProperties = {
+    position: el.positionMode === 'pinned' ? 'absolute' : 'relative',
+    width: el.styles.width ?? 'auto',
+    height: el.styles.height ?? 'auto',
+    display: el.styles.display ?? 'block',
+    flexDirection: el.styles.flexDirection,
+    flexWrap: el.styles.flexWrap,
+    justifyContent: el.styles.justifyContent,
+    alignItems: el.styles.alignItems,
+    gap: el.styles.gap,
+    backgroundColor: el.styles.backgroundColor,
+    color: el.styles.color,
+    fontSize: el.styles.fontSize,
+    fontWeight: el.styles.fontWeight,
+    lineHeight: el.styles.lineHeight,
+    borderRadius: el.styles.borderRadius,
+    padding: el.styles.paddingTop !== undefined
+      ? `${el.styles.paddingTop}px ${el.styles.paddingRight ?? 0}px ${el.styles.paddingBottom ?? 0}px ${el.styles.paddingLeft ?? 0}px`
+      : undefined,
+    minHeight: 20,
+    boxSizing: 'border-box',
+    pointerEvents: 'none',
+  }
+
+  if (el.positionMode === 'pinned' && el.pin) {
+    if (el.pin.top !== undefined) style.top = el.pin.top
+    if (el.pin.right !== undefined) style.right = el.pin.right
+    if (el.pin.bottom !== undefined) style.bottom = el.pin.bottom
+    if (el.pin.left !== undefined) style.left = el.pin.left
+  }
+
+  return (
+    <div key={id} style={style}>
+      {el.content && <span>{el.content}</span>}
+      {el.children.map(childId => renderThumbnailElement(childId, elements))}
+    </div>
+  )
+}
+
+// --- BirdsEye ---
 
 export function BirdsEye() {
   const { project, enterArtboard, addArtboard } = useEditorStore()
@@ -65,6 +116,7 @@ export function BirdsEye() {
                   gap: 10,
                 }}
               >
+                {/* Артборд-карточка с реальным превью элементов */}
                 <div
                   onDoubleClick={() => enterArtboard(id)}
                   style={{
@@ -73,14 +125,28 @@ export function BirdsEye() {
                     background: '#fff',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
                     cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#aaa', fontSize: 14,
+                    position: 'relative',
+                    overflow: 'hidden',
                     userSelect: 'none',
                   }}
                 >
-                  {artboard.rootChildren.length === 0 ? 'Пусто — двойной клик чтобы войти' : `${artboard.rootChildren.length} элементов`}
+                  {artboard.rootChildren.length === 0 ? (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      height: '100%', color: '#aaa', fontSize: 14, pointerEvents: 'none',
+                    }}>
+                      Пусто
+                    </div>
+                  ) : (
+                    artboard.rootChildren.map(childId =>
+                      renderThumbnailElement(childId, artboard.elements)
+                    )
+                  )}
                 </div>
-                <span style={{ fontSize: 13, color: '#555', background: 'transparent' }}>{artboard.name}</span>
+
+                <span style={{ fontSize: 13, color: '#555', background: 'transparent' }}>
+                  {artboard.name}
+                </span>
               </div>
             )
           })}

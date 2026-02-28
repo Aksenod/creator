@@ -1,11 +1,110 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
+
+// --- Resize handles ---
+
+type HandleDir = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
+
+type ResizeState = {
+  elementId: string
+  handle: HandleDir
+  startMouseX: number
+  startMouseY: number
+  startW: number
+  startH: number
+}
+
+const HANDLE_CURSORS: Record<HandleDir, string> = {
+  nw: 'nwse-resize', n: 'ns-resize', ne: 'nesw-resize',
+  e: 'ew-resize', se: 'nwse-resize', s: 'ns-resize',
+  sw: 'nesw-resize', w: 'ew-resize',
+}
+
+const HANDLES: Array<{ id: HandleDir; style: React.CSSProperties }> = [
+  { id: 'nw', style: { top: -4, left: -4 } },
+  { id: 'n',  style: { top: -4, left: 'calc(50% - 4px)' } },
+  { id: 'ne', style: { top: -4, right: -4 } },
+  { id: 'e',  style: { top: 'calc(50% - 4px)', right: -4 } },
+  { id: 'se', style: { bottom: -4, right: -4 } },
+  { id: 's',  style: { bottom: -4, left: 'calc(50% - 4px)' } },
+  { id: 'sw', style: { bottom: -4, left: -4 } },
+  { id: 'w',  style: { top: 'calc(50% - 4px)', left: -4 } },
+]
+
+// --- Canvas ---
 
 type Props = { artboard: Artboard; previewMode?: boolean; scale?: number }
 
 export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
-  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
+  const {
+    selectElement, selectedElementId, selectedElementIds,
+    toggleSelectElement, updateElement, activeArtboardId,
+  } = useEditorStore()
+
+  const resizeRef = useRef<ResizeState | null>(null)
+
+  // Глобальные обработчики resize (mousemove/mouseup)
+  useEffect(() => {
+    if (previewMode) return
+
+    const onMouseMove = (e: MouseEvent) => {
+      const state = resizeRef.current
+      if (!state || !activeArtboardId) return
+
+      // Конвертируем screen-delta → design-delta с учётом scale
+      const dx = (e.clientX - state.startMouseX) / scale
+      const dy = (e.clientY - state.startMouseY) / scale
+
+      let newW = state.startW
+      let newH = state.startH
+
+      if (['se', 'ne', 'e'].includes(state.handle)) newW = Math.max(20, state.startW + dx)
+      if (['sw', 'nw', 'w'].includes(state.handle)) newW = Math.max(20, state.startW - dx)
+      if (['se', 'sw', 's'].includes(state.handle)) newH = Math.max(20, state.startH + dy)
+      if (['ne', 'nw', 'n'].includes(state.handle)) newH = Math.max(20, state.startH - dy)
+
+      updateElement(activeArtboardId, state.elementId, {
+        styles: { width: `${Math.round(newW)}px`, height: `${Math.round(newH)}px` },
+      })
+    }
+
+    const onMouseUp = () => {
+      resizeRef.current = null
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [previewMode, scale, activeArtboardId, updateElement])
+
+  const startResize = (e: React.MouseEvent, id: string, handle: HandleDir) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    // Берём реальные rendered размеры элемента через DOM
+    const elDom = document.querySelector(`[data-element-id="${id}"]`) as HTMLElement
+    if (!elDom) return
+    const rect = elDom.getBoundingClientRect()
+
+    resizeRef.current = {
+      elementId: id,
+      handle,
+      startMouseX: e.clientX,
+      startMouseY: e.clientY,
+      // rect уже в screen pixels (с учётом scale), делим обратно → design pixels
+      startW: rect.width / scale,
+      startH: rect.height / scale,
+    }
+
+    document.body.style.cursor = HANDLE_CURSORS[handle]
+    document.body.style.userSelect = 'none'
+  }
 
   const renderElement = (id: string): React.ReactNode => {
     const el = artboard.elements[id]
@@ -49,6 +148,7 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     return (
       <div
         key={id}
+        data-element-id={id}
         style={style}
         onClick={previewMode ? undefined : (e) => {
           e.stopPropagation()
@@ -58,12 +158,29 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
       >
         {el.content && <span>{el.content}</span>}
         {el.children.map(renderElement)}
+
+        {/* Resize handles — только для выбранного элемента, не в preview */}
+        {isSelected && !previewMode && HANDLES.map(h => (
+          <div
+            key={h.id}
+            style={{
+              position: 'absolute',
+              width: 8,
+              height: 8,
+              background: '#fff',
+              border: '1.5px solid #0066ff',
+              borderRadius: 1,
+              zIndex: 10,
+              cursor: HANDLE_CURSORS[h.id],
+              ...h.style,
+            }}
+            onMouseDown={(e) => startResize(e, id, h.id)}
+          />
+        ))}
       </div>
     )
   }
 
-  // transform: scale() корректно влияет на layout через wrapper-трюк
-  // zoom не используем — ненадёжен в разных браузерах
   const scaledW = Math.round(artboard.width * scale)
   const scaledH = Math.round(artboard.height * scale)
 
