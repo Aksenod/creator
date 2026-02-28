@@ -108,8 +108,8 @@ test('выделение элемента и редактирование в Pro
   await expect(page.locator('span').filter({ hasText: /^Слой$/ })).toBeVisible()
   await expect(page.locator('span').filter({ hasText: /^Имя$/ })).toBeVisible()
 
-  // Кнопка "Удалить элемент"
-  await expect(page.locator('button:has-text("Удалить элемент")')).toBeVisible()
+  // Секция Позиция должна быть видна
+  await expect(page.locator('span').filter({ hasText: /^Позиция$/ })).toBeVisible()
 
   // Изменить имя элемента
   const nameInput = page.locator('input').first()
@@ -156,11 +156,8 @@ test('удаление элемента', async ({ page }) => {
   // Выделить его в Layers
   await page.click('text=div 1')
 
-  // Кнопка "Удалить элемент" должна появиться
-  await expect(page.locator('button:has-text("Удалить элемент")')).toBeVisible()
-
-  // Нажать кнопку удаления
-  await page.click('button:has-text("Удалить элемент")')
+  // Удалить через клавишу Delete
+  await page.keyboard.press('Delete')
 
   // Элемент должен исчезнуть из Layers
   await expect(page.locator('text=div 1')).toHaveCount(0)
@@ -186,12 +183,13 @@ test('переключение брейкпоинтов', async ({ page }) => {
   // Кликнуть на Mobile
   await mobileBtn.click()
 
-  // В топбаре должна появиться надпись "375px"
-  await expect(page.locator('span:has-text("375px")')).toBeVisible()
+  // В топбаре должна появиться надпись "375px" (внутри button Canvas Settings)
+  await expect(page.locator('button:has-text("375px")')).toBeVisible()
 
-  // Кликнуть снова — вернуться к оригинальной ширине (артборд 1440px по умолчанию)
-  await mobileBtn.click()
-  await expect(page.locator('span:has-text("1440px")')).toBeVisible()
+  // Кликнуть Desktop — вернуться к 1440px (title начинается с "Desktop:")
+  const desktopBtn = page.locator('button[title^="Desktop"]')
+  await desktopBtn.click()
+  await expect(page.locator('button:has-text("1440px")')).toBeVisible()
 })
 
 // ─── Тест 8: Layout display modes ───────────────────────────────────────────
@@ -212,7 +210,7 @@ test('переключение display mode в Layout', async ({ page }) => {
 
   // Должны появиться Direction / Align / Gap поля
   await expect(page.locator('span').filter({ hasText: 'Direction' })).toBeVisible()
-  await expect(page.locator('span').filter({ hasText: 'Align' })).toBeVisible()
+  await expect(page.locator('span').filter({ hasText: 'Align' }).first()).toBeVisible()
   await expect(page.locator('span').filter({ hasText: 'Gap' })).toBeVisible()
 
   // Нажать "Grid"
