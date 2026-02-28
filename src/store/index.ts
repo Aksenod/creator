@@ -10,6 +10,13 @@ type EditorState = {
   selectedElementId: string | null
   selectedElementIds: string[]
 
+  // История для undo/redo (не персистируется)
+  history: Project[]
+  historyIndex: number
+
+  // Clipboard (не персистируется)
+  clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null
+
   // Проект
   createProject: (name: string) => void
   loadProject: (project: Project) => void
@@ -30,6 +37,15 @@ type EditorState = {
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
   deleteElement: (artboardId: string, elementId: string) => void
   updateSelectedElements: (artboardId: string, patch: Partial<ElementStyles>) => void
+
+  // Undo/Redo
+  undo: () => void
+  redo: () => void
+
+  // Clipboard
+  copyElement: () => void
+  pasteElement: () => void
+  duplicateElement: () => void
 }
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
@@ -53,6 +69,9 @@ export const useEditorStore = create<EditorState>()(
       activeArtboardId: null,
       selectedElementId: null,
       selectedElementIds: [],
+      history: [],
+      historyIndex: -1,
+      clipboard: null,
 
       createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)
@@ -62,11 +81,11 @@ export const useEditorStore = create<EditorState>()(
           artboards: { [artboard.id]: artboard },
           artboardOrder: [artboard.id],
         }
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [] })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1 })
       },
 
       loadProject: (project) => {
-        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [] })
+        set({ project, mode: 'birdseye', activeArtboardId: null, selectedElementId: null, selectedElementIds: [], history: [], historyIndex: -1 })
       },
 
       enterArtboard: (artboardId) => {
@@ -94,12 +113,16 @@ export const useEditorStore = create<EditorState>()(
         set((state) => {
           if (!state.project) return state
           const artboard = createDefaultArtboard(name, 100 + state.project.artboardOrder.length * 1600, 100)
+          const newProject = {
+            ...state.project,
+            artboards: { ...state.project.artboards, [artboard.id]: artboard },
+            artboardOrder: [...state.project.artboardOrder, artboard.id],
+          }
+          const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
           return {
-            project: {
-              ...state.project,
-              artboards: { ...state.project.artboards, [artboard.id]: artboard },
-              artboardOrder: [...state.project.artboardOrder, artboard.id],
-            },
+            project: newProject,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
           }
         })
       },
@@ -118,14 +141,18 @@ export const useEditorStore = create<EditorState>()(
           className: newClassName,
           styles: patch.styles ? { ...el.styles, ...patch.styles } : el.styles,
         }
-        return {
-          project: {
-            ...state.project,
-            artboards: {
-              ...state.project.artboards,
-              [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
-            },
+        const newProject = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
           },
+        }
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return {
+          project: newProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
         }
       }),
 
@@ -153,14 +180,18 @@ export const useEditorStore = create<EditorState>()(
         // Убрать из rootChildren
         const newRootChildren = ab.rootChildren.filter(id => !toDelete.has(id))
 
-        return {
-          project: {
-            ...state.project,
-            artboards: {
-              ...state.project.artboards,
-              [artboardId]: { ...ab, elements: newElements, rootChildren: newRootChildren },
-            },
+        const newProject = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: newElements, rootChildren: newRootChildren },
           },
+        }
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return {
+          project: newProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
           selectedElementId: toDelete.has(state.selectedElementId ?? '') ? null : state.selectedElementId,
           selectedElementIds: state.selectedElementIds.filter(id => !toDelete.has(id)),
         }
@@ -178,14 +209,18 @@ export const useEditorStore = create<EditorState>()(
             newElements[id] = { ...el, styles: { ...el.styles, ...patch } }
           }
         }
-        return {
-          project: {
-            ...state.project,
-            artboards: {
-              ...state.project.artboards,
-              [artboardId]: { ...ab, elements: newElements },
-            },
+        const newProject = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: newElements },
           },
+        }
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return {
+          project: newProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
         }
       }),
 
@@ -208,6 +243,11 @@ export const useEditorStore = create<EditorState>()(
 
         const elements = { ...ab.elements }
 
+        const saveHistory = (newProject: Project) => {
+          const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project!].slice(-50)
+          return { project: newProject, history: newHistory, historyIndex: newHistory.length - 1 }
+        }
+
         // Удалить из старого места
         if (oldParentId === null) {
           const oldArr = ab.rootChildren.filter((id) => id !== elementId)
@@ -215,24 +255,20 @@ export const useEditorStore = create<EditorState>()(
           if (newParentId === null) {
             const newArr = [...oldArr]
             newArr.splice(newIndex, 0, elementId)
-            return {
-              project: {
-                ...state.project,
-                artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
-              },
-            }
+            return saveHistory({
+              ...state.project,
+              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
+            })
           } else {
             const parent = elements[newParentId]
             if (!parent) return state
             const newChildren = [...parent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...parent, children: newChildren }
-            return {
-              project: {
-                ...state.project,
-                artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: oldArr } },
-              },
-            }
+            return saveHistory({
+              ...state.project,
+              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: oldArr } },
+            })
           }
         } else {
           const oldParent = elements[oldParentId]
@@ -243,30 +279,161 @@ export const useEditorStore = create<EditorState>()(
           if (newParentId === null) {
             const newArr = [...ab.rootChildren]
             newArr.splice(newIndex, 0, elementId)
-            return {
-              project: {
-                ...state.project,
-                artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
-              },
-            }
+            return saveHistory({
+              ...state.project,
+              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
+            })
           } else {
             const newParent = elements[newParentId]
             if (!newParent) return state
             const newChildren = [...newParent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...newParent, children: newChildren }
-            return {
-              project: {
-                ...state.project,
-                artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: ab.rootChildren } },
-              },
-            }
+            return saveHistory({
+              ...state.project,
+              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: ab.rootChildren } },
+            })
           }
+        }
+      }),
+
+      undo: () => set((state) => {
+        if (state.historyIndex < 0 || state.history.length === 0) return state
+        const project = state.history[state.historyIndex]
+        return {
+          project,
+          historyIndex: state.historyIndex - 1,
+          selectedElementId: null,
+          selectedElementIds: [],
+        }
+      }),
+
+      redo: () => set((state) => {
+        // Redo не реализован полноценно (нужен future stack), заглушка
+        return state
+      }),
+
+      copyElement: () => set((state) => {
+        const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
+        const id = state.selectedElementId
+        if (!ab || !id || !ab.elements[id]) return state
+
+        // Собрать элемент и всех потомков
+        const descendants: Record<string, CanvasElement> = {}
+        const collect = (eid: string) => {
+          const el = ab.elements[eid]
+          if (!el) return
+          descendants[eid] = el
+          el.children.forEach(collect)
+        }
+        collect(id)
+
+        return { clipboard: { element: ab.elements[id], descendants } }
+      }),
+
+      pasteElement: () => set((state) => {
+        const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
+        if (!ab || !state.clipboard || !state.project) return state
+
+        // Создать новые ID для всех элементов
+        const idMap: Record<string, string> = {}
+        const genId = () => Math.random().toString(36).slice(2, 10)
+
+        Object.keys(state.clipboard.descendants).forEach(oldId => {
+          idMap[oldId] = genId()
+        })
+
+        // Клонировать с новыми ID
+        const newElements: Record<string, CanvasElement> = {}
+        Object.entries(state.clipboard.descendants).forEach(([oldId, el]) => {
+          const newId = idMap[oldId]
+          newElements[newId] = {
+            ...el,
+            id: newId,
+            name: el.id === state.clipboard!.element.id ? el.name + ' (copy)' : el.name,
+            children: el.children.map(c => idMap[c] ?? c),
+          }
+        })
+
+        const newRootId = idMap[state.clipboard.element.id]
+        const newAb = {
+          ...ab,
+          elements: { ...ab.elements, ...newElements },
+          rootChildren: [...ab.rootChildren, newRootId],
+        }
+
+        const newProject = {
+          ...state.project,
+          artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
+        }
+
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return {
+          project: newProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
+          selectedElementId: newRootId,
+          selectedElementIds: [newRootId],
+        }
+      }),
+
+      duplicateElement: () => set((state) => {
+        const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
+        const id = state.selectedElementId
+        if (!ab || !id || !ab.elements[id] || !state.project) return state
+
+        const genId = () => Math.random().toString(36).slice(2, 10)
+        const idMap: Record<string, string> = {}
+
+        const collectIds = (eid: string) => {
+          idMap[eid] = genId()
+          ab.elements[eid]?.children.forEach(collectIds)
+        }
+        collectIds(id)
+
+        const newElements: Record<string, CanvasElement> = {}
+        Object.entries(idMap).forEach(([oldId, newId]) => {
+          const el = ab.elements[oldId]
+          if (!el) return
+          newElements[newId] = {
+            ...el,
+            id: newId,
+            name: oldId === id ? el.name + ' copy' : el.name,
+            children: el.children.map(c => idMap[c] ?? c),
+          }
+        })
+
+        const newRootId = idMap[id]
+        const newAb = {
+          ...ab,
+          elements: { ...ab.elements, ...newElements },
+          rootChildren: [...ab.rootChildren, newRootId],
+        }
+
+        const newProject = {
+          ...state.project,
+          artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
+        }
+
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project].slice(-50)
+        return {
+          project: newProject,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
+          selectedElementId: newRootId,
+          selectedElementIds: [newRootId],
         }
       }),
     }),
     {
       name: 'creator-project',
+      partialize: (state) => ({
+        project: state.project,
+        mode: state.mode,
+        activeArtboardId: state.activeArtboardId,
+        selectedElementId: state.selectedElementId,
+        selectedElementIds: state.selectedElementIds,
+      }),
     }
   )
 )

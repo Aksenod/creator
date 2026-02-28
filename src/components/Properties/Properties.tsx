@@ -3,6 +3,9 @@ import { useEditorStore } from '../../store'
 import type { CanvasElement, ElementStyles } from '../../types'
 import { LayoutSection } from './LayoutSection'
 import { SizeSection } from './SizeSection'
+import { TypographySection } from './TypographySection'
+import { BackgroundSection } from './BackgroundSection'
+import { BorderSection } from './BorderSection'
 
 const getCommonStyles = (ids: string[], elements: Record<string, CanvasElement>): Partial<ElementStyles> => {
   if (ids.length === 0) return {}
@@ -21,7 +24,7 @@ const getCommonStyles = (ids: string[], elements: Record<string, CanvasElement>)
 }
 
 export function Properties() {
-  const { selectedElementId, selectedElementIds, project, activeArtboardId, updateElement, deleteElement, updateSelectedElements } = useEditorStore()
+  const { selectedElementId, selectedElementIds, project, activeArtboardId, updateElement, updateSelectedElements } = useEditorStore()
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
@@ -70,38 +73,16 @@ export function Properties() {
 
             <Divider />
 
-            {/* Заливка */}
-            <CollapsibleSection label="Заливка" defaultOpen>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input
-                  type="color"
-                  value={effectiveStyles.backgroundColor ?? '#ffffff'}
-                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
-                  style={{ width: 28, height: 28, padding: 2, border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', flexShrink: 0 }}
-                />
-                <input
-                  value={effectiveStyles.backgroundColor ?? ''}
-                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
-                  placeholder="—"
-                  style={inputStyle}
-                />
-              </div>
-            </CollapsibleSection>
+            <BackgroundSection styles={effectiveStyles} onUpdate={updateStyle} />
 
-            <button
-              onClick={() => {
-                if (activeArtboardId && selectedElementIds.length > 0) {
-                  deleteElement(activeArtboardId, selectedElementIds[0])
-                }
-              }}
-              style={{
-                marginTop: 8, width: '100%', padding: '6px 0', border: '1px solid #fcc',
-                borderRadius: 4, fontSize: 12, cursor: 'pointer',
-                background: '#fff5f5', color: '#cc0000',
-              }}
-            >
-              Удалить элементы
-            </button>
+            <Divider />
+
+            <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            <Divider />
+
+            <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
+
           </div>
         ) : !element ? (
           <div style={{ color: '#aaa', fontSize: 12 }}>Выбери элемент</div>
@@ -152,67 +133,15 @@ export function Properties() {
 
             <Divider />
 
-            {/* Заливка */}
-            <CollapsibleSection label="Заливка" defaultOpen>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input
-                  type="color"
-                  value={element.styles.backgroundColor ?? '#ffffff'}
-                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
-                  style={{ width: 28, height: 28, padding: 2, border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', flexShrink: 0 }}
-                />
-                <input
-                  value={element.styles.backgroundColor ?? ''}
-                  onChange={(e) => updateStyle({ backgroundColor: e.target.value })}
-                  placeholder="—"
-                  style={inputStyle}
-                />
-              </div>
-            </CollapsibleSection>
+            <BackgroundSection styles={element.styles} onUpdate={updateStyle} />
 
-            {/* Текст */}
-            {(element.type === 'text' || element.type === 'button') && (
-              <>
-                <Divider />
-                <CollapsibleSection label="Текст" defaultOpen>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <NumField label="Цвет" value={element.styles.color ?? ''} onChange={(v) => updateStyle({ color: v })} />
-                      <NumField label="px" value={element.styles.fontSize !== undefined ? String(element.styles.fontSize) : ''} onChange={(v) => updateStyle({ fontSize: v ? Number(v) : undefined })} />
-                    </div>
-                    <Row label="Жирность">
-                      <select
-                        value={element.styles.fontWeight ?? ''}
-                        onChange={(e) => updateStyle({ fontWeight: e.target.value })}
-                        style={selectStyle}
-                      >
-                        <option value="">—</option>
-                        <option value="300">Light</option>
-                        <option value="400">Regular</option>
-                        <option value="500">Medium</option>
-                        <option value="600">SemiBold</option>
-                        <option value="700">Bold</option>
-                      </select>
-                    </Row>
-                  </div>
-                </CollapsibleSection>
-              </>
-            )}
+            <Divider />
 
-            <button
-              onClick={() => {
-                if (activeArtboardId && selectedElementId) {
-                  deleteElement(activeArtboardId, selectedElementId)
-                }
-              }}
-              style={{
-                marginTop: 8, width: '100%', padding: '6px 0', border: '1px solid #fcc',
-                borderRadius: 4, fontSize: 12, cursor: 'pointer',
-                background: '#fff5f5', color: '#cc0000',
-              }}
-            >
-              Удалить элемент
-            </button>
+            <BorderSection styles={element.styles} onUpdate={updateStyle} />
+
+            <Divider />
+
+            <TypographySection styles={element.styles} onUpdate={updateStyle} />
 
           </div>
         )}
@@ -227,10 +156,6 @@ const inputStyle: React.CSSProperties = {
   flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
   fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
   color: '#1a1a1a',
-}
-
-const selectStyle: React.CSSProperties = {
-  ...inputStyle, cursor: 'pointer', appearance: 'auto',
 }
 
 // ─── Компоненты ────────────────────────────────────────────────────────────────
@@ -306,23 +231,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflow: 'hidden' }}>
       <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>{label}</span>
       {children}
-    </div>
-  )
-}
-
-function NumField({ label, value, onChange }: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
-      <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={inputStyle}
-      />
     </div>
   )
 }

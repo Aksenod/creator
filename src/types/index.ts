@@ -47,6 +47,27 @@ export type ElementStyles = {
   borderStyle?: string
   borderRadius?: number
   overflow?: 'visible' | 'hidden' | 'scroll' | 'auto'
+
+  // Typography
+  fontFamily?: string
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
+  textDecoration?: 'none' | 'line-through' | 'underline' | 'overline'
+  letterSpacing?: number
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize'
+
+  // Background
+  backgroundImage?: string
+  backgroundClip?: 'border-box' | 'padding-box' | 'content-box' | 'text'
+
+  // Borders (individual sides)
+  borderTopWidth?: number
+  borderRightWidth?: number
+  borderBottomWidth?: number
+  borderLeftWidth?: number
+  borderTopLeftRadius?: number
+  borderTopRightRadius?: number
+  borderBottomRightRadius?: number
+  borderBottomLeftRadius?: number
 }
 
 // Тип элемента
