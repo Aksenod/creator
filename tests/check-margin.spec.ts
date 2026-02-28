@@ -13,13 +13,30 @@ async function enterPageEditor(page: Page) {
   await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
 }
 
+async function addElement(page: Page, type: string) {
+  await page.hover('[data-testid="add-element-trigger"]')
+  await page.click(`[data-testid="add-${type}"]`)
+}
+
+/** Хелпер: кликнуть на триггер spacing, ввести значение в попапе и применить */
+async function setSpacingValue(page: Page, triggerIndex: number, value: number) {
+  const triggers = page.locator('[data-spacing-trigger]')
+  await triggers.nth(triggerIndex).click()
+  // Дождаться попапа
+  const popoverInput = page.locator('[data-spacing-popover] input')
+  await expect(popoverInput).toBeVisible()
+  await popoverInput.fill(String(value))
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(50)
+}
+
 test('margin-top moves element visually away from sibling', async ({ page }) => {
   await enterPageEditor(page)
 
   // Add two divs
-  await page.click('button:has-text("+ Div")')
+  await addElement(page, 'div')
   await page.waitForTimeout(100)
-  await page.click('button:has-text("+ Div")')
+  await addElement(page, 'div')
   await page.waitForTimeout(200)
 
   // Select second div (div 2): elements(0)=body, elements(1)=div1, elements(2)=div2
@@ -32,10 +49,8 @@ test('margin-top moves element visually away from sibling', async ({ page }) => 
   const initialBox = await secondEl.boundingBox()
   console.log('Initial box:', JSON.stringify(initialBox))
 
-  // Set marginTop = 80 on second div
-  const spacingInputs = page.locator('input[placeholder="–"]')
-  await spacingInputs.nth(0).fill('80')
-  await page.keyboard.press('Tab')
+  // Set marginTop = 80 on second div (trigger index 0 = marginTop)
+  await setSpacingValue(page, 0, 80)
   await page.waitForTimeout(300)
 
   // Get position after margin applied
