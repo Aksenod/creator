@@ -12,6 +12,69 @@ import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
 import type { CanvasPattern } from '../../types'
 
+// ─── Snap logic ─────────────────────────────────────────────────────────────
+
+type SnapLine =
+  | { axis: 'x'; x: number; y1: number; y2: number }
+  | { axis: 'y'; y: number; x1: number; x2: number }
+
+const SNAP_THRESHOLD_PX = 8
+
+function computeSnap(
+  dragId: string,
+  rawX: number,
+  rawY: number,
+  artboards: Record<string, { x: number; y: number; width: number; height: number }>,
+  artboardOrder: string[],
+  scale: number,
+): { x: number; y: number; lines: SnapLine[] } {
+  const dragging = artboards[dragId]
+  if (!dragging) return { x: rawX, y: rawY, lines: [] }
+  const threshold = SNAP_THRESHOLD_PX / scale
+  const dragW = dragging.width
+  const dragH = dragging.height
+
+  interface XCand { delta: number; targetVal: number; otherT: number; otherB: number }
+  interface YCand { delta: number; targetVal: number; otherL: number; otherR: number }
+  let bestX: XCand | null = null
+  let bestY: YCand | null = null
+
+  for (const otherId of artboardOrder) {
+    if (otherId === dragId) continue
+    const other = artboards[otherId]
+    if (!other) continue
+    const oL = other.x, oR = other.x + other.width
+    const oT = other.y, oB = other.y + other.height
+    const oCX = (oL + oR) / 2, oCY = (oT + oB) / 2
+    const dL = rawX, dR = rawX + dragW, dCX = rawX + dragW / 2
+    const dT = rawY, dB = rawY + dragH, dCY = rawY + dragH / 2
+
+    for (const [drag, target] of [
+      [dL, oL], [dL, oR], [dR, oL], [dR, oR], [dCX, oCX],
+    ] as [number, number][]) {
+      const delta = target - drag
+      if (Math.abs(delta) <= threshold && (!bestX || Math.abs(delta) < Math.abs(bestX.delta)))
+        bestX = { delta, targetVal: target, otherT: oT, otherB: oB }
+    }
+    for (const [drag, target] of [
+      [dT, oT], [dT, oB], [dB, oT], [dB, oB], [dCY, oCY],
+    ] as [number, number][]) {
+      const delta = target - drag
+      if (Math.abs(delta) <= threshold && (!bestY || Math.abs(delta) < Math.abs(bestY.delta)))
+        bestY = { delta, targetVal: target, otherL: oL, otherR: oR }
+    }
+  }
+
+  const finalX = rawX + (bestX?.delta ?? 0)
+  const finalY = rawY + (bestY?.delta ?? 0)
+  const lines: SnapLine[] = []
+  if (bestX) lines.push({ axis: 'x', x: bestX.targetVal, y1: Math.min(finalY, bestX.otherT) - 8, y2: Math.max(finalY + dragH, bestX.otherB) + 8 })
+  if (bestY) lines.push({ axis: 'y', y: bestY.targetVal, x1: Math.min(finalX, bestY.otherL) - 8, x2: Math.max(finalX + dragW, bestY.otherR) + 8 })
+  return { x: finalX, y: finalY, lines }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function CanvasEditor() {
   const {
     activeProjectId, project, activeArtboardId,
@@ -22,14 +85,23 @@ export function CanvasEditor() {
   } = useEditorStore()
 
   const [isPreview, setIsPreview] = useState(false)
-  const [isFocusMode, setIsFocusMode] = useState(false)
   const [panelsHidden, setPanelsHidden] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [customWidth, setCustomWidth] = useState<string>('')
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
+  const [snapLines, setSnapLines] = useState<SnapLine[]>([])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
+  const artboardDragRef = useRef<{
+    artboardId: string
+    startMouseX: number
+    startMouseY: number
+    startArtX: number
+    startArtY: number
+    active: boolean
+  } | null>(null)
+  const artboardElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const patternSizeRef = useRef<number>(project?.canvasPatternSize ?? 20)
   const { cameraRef, fitToScreen, scalePercent, applyTransform } = useCanvasTransform(
     containerRef as React.RefObject<HTMLElement>,
@@ -58,6 +130,58 @@ export function CanvasEditor() {
     }
   }, [activeProjectId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Drag артбордов за лейбл
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      const d = artboardDragRef.current
+      if (!d) return
+      const scale = cameraRef.current.scale
+      const dx = (e.clientX - d.startMouseX) / scale
+      const dy = (e.clientY - d.startMouseY) / scale
+      if (!d.active) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return
+        d.active = true
+        document.body.style.cursor = 'grabbing'
+      }
+      const rawX = d.startArtX + dx
+      const rawY = d.startArtY + dy
+      const state = useEditorStore.getState()
+      const { x: newX, y: newY, lines } = computeSnap(
+        d.artboardId, rawX, rawY,
+        state.project!.artboards, state.project!.artboardOrder, scale,
+      )
+      setSnapLines(lines)
+      const el = artboardElRefs.current.get(d.artboardId)
+      if (el) {
+        el.style.left = newX + 'px'
+        el.style.top = newY + 'px'
+      }
+      useEditorStore.getState().moveArtboardTemp(d.artboardId, newX, newY)
+    }
+    const onMouseUp = (e: MouseEvent) => {
+      const d = artboardDragRef.current
+      if (!d || !d.active) { artboardDragRef.current = null; return }
+      const scale = cameraRef.current.scale
+      const rawX = d.startArtX + (e.clientX - d.startMouseX) / scale
+      const rawY = d.startArtY + (e.clientY - d.startMouseY) / scale
+      const state = useEditorStore.getState()
+      const { x: newX, y: newY } = computeSnap(
+        d.artboardId, rawX, rawY,
+        state.project!.artboards, state.project!.artboardOrder, scale,
+      )
+      useEditorStore.getState().moveArtboard(d.artboardId, newX, newY)
+      artboardDragRef.current = null
+      setSnapLines([])
+      document.body.style.cursor = ''
+    }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleBreakpointSelect = (bp: Breakpoint) => {
     setViewportWidth(bp.width)
     setCustomWidth('')
@@ -69,7 +193,6 @@ export function CanvasEditor() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (showCanvasSettings) { setShowCanvasSettings(false); return }
-        if (isFocusMode) { setIsFocusMode(false); return }
         if (isPreview) { setIsPreview(false); return }
         selectElement(null)
         return
@@ -77,19 +200,6 @@ export function CanvasEditor() {
 
       const tag = (e.target as HTMLElement).tagName
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
-        if (e.key === 'f' || e.key === 'F') {
-          const s = useEditorStore.getState()
-          const abId = s.activeArtboardId
-          const ab = abId && s.project ? s.project.artboards[abId] : null
-          if (!isFocusMode && ab) {
-            setIsFocusMode(true)
-            setTimeout(() => fitToScreen(ab.width), 0)
-          } else if (isFocusMode) {
-            setIsFocusMode(false)
-          }
-          return
-        }
-
         const idx = parseInt(e.key) - 1
         if (idx >= 0 && idx < BREAKPOINTS.length) {
           const bp = BREAKPOINTS[idx]
@@ -105,7 +215,14 @@ export function CanvasEditor() {
         const ab = abId && s.project ? s.project.artboards[abId] : null
 
         if (ab && e.key === 'Enter' && !e.shiftKey) {
-          if (s.selectedElementIds.length === 1) {
+          if (s.selectedElementIds.length === 0) {
+            // Выделен артборд, но нет элемента — провалиться в первый рутовый элемент
+            const firstRootId = ab.rootChildren?.[0]
+            if (firstRootId) {
+              useEditorStore.getState().selectElement(firstRootId)
+              e.preventDefault()
+            }
+          } else if (s.selectedElementIds.length === 1) {
             const currentId = s.selectedElementIds[0]
             const el = ab.elements[currentId]
             if (el && el.children.length > 0) {
@@ -124,13 +241,25 @@ export function CanvasEditor() {
             if (parentId) {
               useEditorStore.getState().selectElement(parentId)
               e.preventDefault()
+            } else {
+              // Элемент рутовый — подняться на артборд (снять выделение элементов)
+              useEditorStore.getState().selectElement(null)
+              e.preventDefault()
             }
           }
           return
         }
 
-        if (ab && e.key === 'Tab' && !e.shiftKey) {
+        if (e.key === 'Tab' && !e.shiftKey) {
           e.preventDefault()
+          if (!ab || s.selectedElementIds.length === 0) {
+            // Нет выделенных элементов — переключаемся между артбордами
+            const order = s.project?.artboardOrder ?? []
+            const idx = abId ? order.indexOf(abId) : -1
+            const nextId = order[idx + 1] ?? order[0]
+            if (nextId && nextId !== abId) useEditorStore.getState().setActiveArtboard(nextId)
+            return
+          }
           if (s.selectedElementIds.length > 1) {
             useEditorStore.getState().selectElement(s.selectedElementIds[0])
             return
@@ -142,8 +271,16 @@ export function CanvasEditor() {
           return
         }
 
-        if (ab && e.key === 'Tab' && e.shiftKey) {
+        if (e.key === 'Tab' && e.shiftKey) {
           e.preventDefault()
+          if (!ab || s.selectedElementIds.length === 0) {
+            // Нет выделенных элементов — переключаемся между артбордами (назад)
+            const order = s.project?.artboardOrder ?? []
+            const idx = abId ? order.indexOf(abId) : -1
+            const prevId = order[idx - 1] ?? order[order.length - 1]
+            if (prevId && prevId !== abId) useEditorStore.getState().setActiveArtboard(prevId)
+            return
+          }
           if (s.selectedElementIds.length > 1) {
             useEditorStore.getState().selectElement(s.selectedElementIds[s.selectedElementIds.length - 1])
             return
@@ -177,7 +314,7 @@ export function CanvasEditor() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [
-    isPreview, isFocusMode, showCanvasSettings, selectedElementId, activeArtboardId,
+    isPreview, showCanvasSettings, selectedElementId, activeArtboardId,
     selectElement, deleteElement, undo, redo, copyElement, pasteElement,
     duplicateElement, setActiveBreakpoint,
   ])
@@ -194,8 +331,6 @@ export function CanvasEditor() {
         customWidth={customWidth}
         scale={scalePercent / 100}
         showCanvasSettings={showCanvasSettings}
-        isFocusMode={isFocusMode}
-        hasActiveArtboard={!!activeArtboardId}
         onCloseProject={closeProject}
         onTogglePreview={() => setIsPreview(!isPreview)}
         onToggleSettings={() => setShowCanvasSettings(s => !s)}
@@ -208,7 +343,6 @@ export function CanvasEditor() {
         onBreakpointSelect={handleBreakpointSelect}
         onSetShowSettings={setShowCanvasSettings}
         onAddArtboard={() => addArtboard('Artboard ' + (project.artboardOrder.length + 1))}
-        onToggleFocusMode={() => setIsFocusMode(f => !f)}
       />
 
       {/* Основная область */}
@@ -217,7 +351,7 @@ export function CanvasEditor() {
         {/* Панель слоёв */}
         {!isPreview && (
           <div style={{
-            width: (panelsHidden || isFocusMode) ? 0 : 240,
+            width: panelsHidden ? 0 : 240,
             minWidth: 0,
             flexShrink: 0,
             overflow: 'hidden',
@@ -245,7 +379,7 @@ export function CanvasEditor() {
             flex: 1,
             overflow: 'hidden',
             background: project?.canvasBackground ?? '#e8e8e8',
-            backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots'),
+            backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots', project?.canvasBackground ?? '#e8e8e8', project?.canvasPatternColor),
             position: 'relative',
             outline: 'none',
           }}
@@ -275,11 +409,28 @@ export function CanvasEditor() {
               return (
                 <div
                   key={id}
+                  ref={(el) => {
+                    if (el) artboardElRefs.current.set(id, el)
+                    else artboardElRefs.current.delete(id)
+                  }}
                   style={{
                     position: 'absolute',
                     left: artboard.x,
                     top: artboard.y,
+                    cursor: !isActive && !isPreview ? 'grab' : undefined,
                   }}
+                  onMouseDown={!isActive && !isPreview ? (e) => {
+                    e.stopPropagation()
+                    const ab = project.artboards[id]
+                    artboardDragRef.current = {
+                      artboardId: id,
+                      startMouseX: e.clientX,
+                      startMouseY: e.clientY,
+                      startArtX: ab.x,
+                      startArtY: ab.y,
+                      active: false,
+                    }
+                  } : undefined}
                 >
                   {/* Лейбл над артбордом */}
                   {!isPreview && (
@@ -293,6 +444,19 @@ export function CanvasEditor() {
                         userSelect: 'none',
                         whiteSpace: 'nowrap',
                         lineHeight: '20px',
+                        cursor: 'grab',
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation()
+                        const ab = project.artboards[id]
+                        artboardDragRef.current = {
+                          artboardId: id,
+                          startMouseX: e.clientX,
+                          startMouseY: e.clientY,
+                          startArtX: ab.x,
+                          startArtY: ab.y,
+                          active: false,
+                        }
                       }}
                     >
                       {artboard.name}
@@ -312,6 +476,20 @@ export function CanvasEditor() {
                 </div>
               )
             })}
+          {/* Snap guides */}
+          {snapLines.length > 0 && (
+            <svg style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, overflow: 'visible', pointerEvents: 'none', zIndex: 9999 }}>
+              {snapLines.map((line, i) =>
+                line.axis === 'x' ? (
+                  <line key={i} x1={line.x} y1={line.y1} x2={line.x} y2={line.y2}
+                    stroke="#0066ff" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                ) : (
+                  <line key={i} x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
+                    stroke="#0066ff" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                )
+              )}
+            </svg>
+          )}
           </div>
 
           {/* Процент зума */}
@@ -330,7 +508,7 @@ export function CanvasEditor() {
         {/* Панель свойств */}
         {!isPreview && (
           <div style={{
-            width: (panelsHidden || isFocusMode) ? 0 : 240,
+            width: panelsHidden ? 0 : 240,
             minWidth: 0,
             flexShrink: 0,
             overflow: 'hidden',
@@ -358,19 +536,42 @@ export function CanvasEditor() {
 
 // ─── Паттерны фона ──────────────────────────────────────────────────────────────
 
-function getPatternImage(pattern: CanvasPattern): string {
+function isLightColor(hex: string): boolean {
+  const h = hex.replace('#', '')
+  if (h.length < 6) return true
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  // Relative luminance (перцептивная яркость)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 128
+}
+
+function getPatternImage(pattern: CanvasPattern, bg = '#e8e8e8', patternColor?: string): string {
+  let c: string
+  let ce: string
+  let ca: string
+  if (patternColor) {
+    c = patternColor
+    ce = encodeURIComponent(patternColor)
+    ca = '1'
+  } else {
+    const light = isLightColor(bg)
+    c = light ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.2)'
+    ce = light ? '%23000000' : '%23ffffff'
+    ca = light ? '0.18' : '0.2'
+  }
   switch (pattern) {
     case 'none':
       return 'none'
     case 'dots':
-      return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
+      return `radial-gradient(circle, ${c} 1px, transparent 1px)`
     case 'grid':
-      return 'linear-gradient(#c8c8c8 1px, transparent 1px), linear-gradient(90deg, #c8c8c8 1px, transparent 1px)'
+      return `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`
     case 'cross':
-      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='%23c0c0c0' stroke-width='1'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='%23c0c0c0' stroke-width='1'/%3E%3C/svg%3E")`
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3C/svg%3E")`
     case 'hearts':
-      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='%23d0d0d0'/%3E%3C/svg%3E")`
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='${ce}' fill-opacity='${ca}'/%3E%3C/svg%3E")`
     default:
-      return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
+      return `radial-gradient(circle, ${c} 1px, transparent 1px)`
   }
 }

@@ -16,7 +16,7 @@ type Props = {
 const selectStyle: React.CSSProperties = {
   padding: '3px 5px', border: '1px solid #e0e0e0', borderRadius: 4,
   fontSize: 11, background: '#fafafa', outline: 'none',
-  cursor: 'pointer', color: '#1a1a1a',
+  cursor: 'default', color: '#1a1a1a',
 }
 
 const numInputStyle: React.CSSProperties = {
@@ -95,7 +95,7 @@ export function GridChildSection({ styles, onUpdate }: Props) {
 
   const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
     flex: 1, padding: '4px 0', fontSize: 11, fontWeight: active ? 600 : 400,
-    border: '1px solid #e0e0e0', borderRadius: 4, cursor: 'pointer',
+    border: '1px solid #e0e0e0', borderRadius: 4, cursor: 'default',
     background: active ? '#0066ff' : '#fafafa',
     color: active ? '#fff' : '#555',
   })

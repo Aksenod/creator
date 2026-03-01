@@ -17,7 +17,7 @@ export function SegmentedControl({ value, options, onChange }: {
             onClick={() => onChange(opt.value)}
             style={{
               flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
-              borderRadius: 4, cursor: 'pointer', transition: 'all 0.1s',
+              borderRadius: 4, cursor: 'default', transition: 'all 0.1s',
               background: active ? '#1a1a1a' : 'transparent',
               color: active ? '#fff' : '#888',
               fontWeight: active ? 500 : 400,

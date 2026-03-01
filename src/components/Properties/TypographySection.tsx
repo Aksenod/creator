@@ -14,7 +14,7 @@ const FONT_FAMILIES = [
 
 const selectStyle: React.CSSProperties = {
   flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0',
-  borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'pointer',
+  borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'default',
 }
 
 export function TypographySection({ styles, onUpdate }: Props) {
@@ -83,7 +83,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
               <button
                 onClick={() => onUpdate({ lineHeight: undefined })}
                 title="Сбросить межстрочный интервал — браузер подберёт значение автоматически по размеру шрифта"
-                style={{ padding: '0 6px', borderLeft: '1px solid #e0e0e0', background: '#f0f0f0', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 12, flexShrink: 0 }}
+                style={{ padding: '0 6px', borderLeft: '1px solid #e0e0e0', background: '#f0f0f0', border: 'none', cursor: 'default', color: '#bbb', fontSize: 12, flexShrink: 0 }}
               >
                 –
               </button>
@@ -118,7 +118,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
                   title={labels[align]}
                   onClick={() => onUpdate({ textAlign: align })}
                   style={{
-                    flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',
+                    flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
                     fontSize: 12, background: styles.textAlign === align ? '#1a1a1a' : 'transparent',
                     color: styles.textAlign === align ? '#fff' : '#888',
                   }}
@@ -144,7 +144,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
                 title={opt.tooltip}
                 onClick={() => onUpdate({ textDecoration: opt.value })}
                 style={{
-                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',
+                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
                   fontSize: 12, background: (styles.textDecoration ?? 'none') === opt.value ? '#1a1a1a' : 'transparent',
                   color: (styles.textDecoration ?? 'none') === opt.value ? '#fff' : '#888',
                 }}

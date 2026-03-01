@@ -53,7 +53,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
                   title={opt.tooltip}
                   onClick={() => onUpdate({ borderStyle: opt.value })}
                   style={{
-                    flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',
+                    flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
                     fontSize: opt.value === 'none' ? 12 : 10,
                     background: (styles.borderStyle ?? 'none') === opt.value ? '#1a1a1a' : 'transparent',
                     color: (styles.borderStyle ?? 'none') === opt.value ? '#fff' : '#888',

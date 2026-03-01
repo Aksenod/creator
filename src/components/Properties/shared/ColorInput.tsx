@@ -11,7 +11,7 @@ export function ColorInput({ value, onChange, placeholder = '—', fallback = '#
         type="color"
         value={colorValue}
         onChange={e => onChange(e.target.value)}
-        style={{ width: 28, height: 28, padding: 2, border: 'none', borderRight: '1px solid #e0e0e0', cursor: 'pointer', flexShrink: 0 }}
+        style={{ width: 28, height: 28, padding: 2, border: 'none', borderRight: '1px solid #e0e0e0', cursor: 'default', flexShrink: 0 }}
       />
       <input
         value={value ?? ''}

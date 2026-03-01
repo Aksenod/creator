@@ -124,7 +124,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               border: '1px solid #e0e0e0',
               borderRadius: 4,
               background: open ? '#f0f4ff' : '#fafafa',
-              cursor: 'pointer',
+              cursor: 'default',
               fontSize: 12,
               color: '#1a1a1a',
             }}
@@ -161,7 +161,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
                       padding: '7px 10px',
                       border: 'none',
                       background: active ? '#e6f0ff' : 'transparent',
-                      cursor: 'pointer',
+                      cursor: 'default',
                       textAlign: 'left',
                     }}
                   >

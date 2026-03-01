@@ -27,7 +27,7 @@ export function BackgroundSection({ styles, onUpdate }: Props) {
             value={styles.backgroundClip ?? ''}
             onChange={e => onUpdate({ backgroundClip: e.target.value as ElementStyles['backgroundClip'] || undefined })}
             title="Clipping — до какой границы рисуется фон. Text — фон виден только сквозь буквы (для градиентного текста)"
-            style={{ flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'pointer' }}
+            style={{ flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'default' }}
           >
             <option value="">None</option>
             <option value="border-box">Border box</option>

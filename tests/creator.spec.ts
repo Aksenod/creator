@@ -211,13 +211,14 @@ test('переключение брейкпоинтов', async ({ page }) => {
   // Кликнуть на Mobile
   await mobileBtn.click()
 
-  // В топбаре должна появиться надпись "375px" (внутри button Canvas Settings)
-  await expect(page.locator('button:has-text("375px")')).toBeVisible()
+  // Mobile кнопка должна стать активной (тёмный фон)
+  await expect(mobileBtn.first()).toHaveCSS('background-color', 'rgb(26, 26, 26)')
 
   // Кликнуть Desktop — вернуться к 1440px
   const desktopBtn = page.locator('button[title^="Desktop"]')
   await desktopBtn.click()
-  await expect(page.locator('button:has-text("1440px")')).toBeVisible()
+  // Desktop кнопка должна стать активной
+  await expect(desktopBtn).toHaveCSS('background-color', 'rgb(26, 26, 26)')
 })
 
 // ─── Тест 9: Добавление маржинов через Spacing panel ─────────────────────────
@@ -250,10 +251,10 @@ test('добавление маржинов через Spacing panel', async ({ 
   await setVal(3, 40) // marginLeft
 
   // Проверить отображаемые значения в триггерах
-  await expect(triggers.nth(0)).toHaveText('20')
-  await expect(triggers.nth(1)).toHaveText('10')
-  await expect(triggers.nth(2)).toHaveText('30')
-  await expect(triggers.nth(3)).toHaveText('40')
+  await expect(triggers.nth(0)).toHaveText('20px')
+  await expect(triggers.nth(1)).toHaveText('10px')
+  await expect(triggers.nth(2)).toHaveText('30px')
+  await expect(triggers.nth(3)).toHaveText('40px')
 
   // Проверить что значения сохранились в localStorage
   await page.waitForFunction(() => {
@@ -744,3 +745,4 @@ test('навигация по слоям: Enter/Tab/Shift+Tab/Shift+Enter', asyn
   })
   expect(afterShiftEnter).toBe('div 1')
 })
+

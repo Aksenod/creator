@@ -10,8 +10,6 @@ type Props = {
   customWidth: string
   scale: number
   showCanvasSettings: boolean
-  isFocusMode: boolean
-  hasActiveArtboard: boolean
   onCloseProject: () => void
   onTogglePreview: () => void
   onToggleSettings: () => void
@@ -21,7 +19,6 @@ type Props = {
   onBreakpointSelect: (bp: Breakpoint) => void
   onSetShowSettings: (show: boolean) => void
   onAddArtboard: () => void
-  onToggleFocusMode: () => void
 }
 
 export function Topbar({
@@ -32,8 +29,6 @@ export function Topbar({
   customWidth,
   scale,
   showCanvasSettings,
-  isFocusMode,
-  hasActiveArtboard,
   onCloseProject,
   onTogglePreview,
   onToggleSettings,
@@ -43,7 +38,6 @@ export function Topbar({
   onBreakpointSelect,
   onSetShowSettings,
   onAddArtboard,
-  onToggleFocusMode,
 }: Props) {
   const settingsRef = useRef<HTMLDivElement>(null)
   const detectedWidth = detectBreakpoint()
@@ -100,7 +94,6 @@ export function Topbar({
       {/* Центральная секция — Canvas Settings + Breakpoint bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }} ref={settingsRef}>
 
-        {/* Кнопка открытия Canvas Settings */}
         <button
           onClick={onToggleSettings}
           title="Настройки холста — ширина области просмотра и масштаб. Клавиши 1–4 для быстрого переключения брейкпоинтов"
@@ -191,20 +184,6 @@ export function Topbar({
           }}
         >
           + Артборд
-        </button>
-        <button
-          onClick={onToggleFocusMode}
-          disabled={!hasActiveArtboard && !isFocusMode}
-          title={isFocusMode ? 'Выйти из Focus Mode (F)' : 'Focus Mode — один артборд на весь экран (F)'}
-          style={{
-            padding: '4px 10px', borderRadius: 4, fontSize: 12,
-            border: 'none', cursor: 'pointer',
-            background: isFocusMode ? '#0066ff' : '#f0f0f0',
-            color: isFocusMode ? '#fff' : '#333',
-            opacity: (!hasActiveArtboard && !isFocusMode) ? 0.4 : 1,
-          }}
-        >
-          {isFocusMode ? '⊞ Все' : '⊟ Фокус'}
         </button>
         <button
           onClick={onTogglePreview}

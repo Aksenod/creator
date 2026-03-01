@@ -213,7 +213,7 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           lineHeight: '16px',
           background: open ? '#e6f0ff' : hasValue ? '#e6f0ff' : 'transparent',
           color: open || hasValue ? '#0066ff' : '#a88840',
-          cursor: 'text',
+          cursor: 'default',
           userSelect: 'none',
           transition: 'border-color 0.1s, background 0.1s',
           display: 'flex',
@@ -223,7 +223,7 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
         title="Клик — открыть панель ввода значения. Alt+перетаскивание — быстрая подстройка значения мышью. Shift ускоряет шаг ×10"
         data-spacing-trigger="true"
       >
-        {hasValue ? value : '–'}
+        {hasValue ? `${value}px` : '–'}
       </div>
 
       {open && (
@@ -399,7 +399,7 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
                 color: isActive ? '#fff' : '#555',
                 fontSize: 11,
                 padding: '2px 7px',
-                cursor: 'pointer',
+                cursor: 'default',
                 fontFamily: 'inherit',
                 lineHeight: '16px',
                 transition: 'background 0.1s',
@@ -429,7 +429,7 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
           color: '#888',
           fontSize: 11,
           padding: '4px 0',
-          cursor: 'pointer',
+          cursor: 'default',
           fontFamily: 'inherit',
           transition: 'border-color 0.1s, color 0.1s, background 0.1s',
         }}

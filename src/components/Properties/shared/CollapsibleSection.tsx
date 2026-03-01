@@ -14,7 +14,7 @@ export function CollapsibleSection({ label, tooltip, children, defaultOpen = tru
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           width: '100%', padding: 0, border: 'none', background: 'none',
-          cursor: 'pointer', marginBottom: open ? 10 : 0,
+          cursor: 'default', marginBottom: open ? 10 : 0,
         }}
       >
         <span title={tooltip} style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>

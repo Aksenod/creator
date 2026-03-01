@@ -289,17 +289,18 @@ function UnitDropdown({ value, options, onChange }: {
         onClick={() => setOpen(!open)}
         title="Единица измерения — px (пиксели), % (от родителя), vw/vh (от размера экрана), auto или none"
         style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: 18, height: 18,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
+          height: 18, padding: '0 3px',
           border: 'none', background: open ? '#e0e0e0' : 'transparent',
-          borderRadius: 3, cursor: 'pointer', padding: 0,
-          color: '#888',
+          borderRadius: 3, cursor: 'default',
+          color: '#888', fontSize: 10, fontWeight: 500,
           transition: 'background 0.1s',
         }}
         onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = '#e8e8e8' }}
         onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
       >
-        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+        <span>{value === 'auto' ? 'A' : value === 'none' ? 'N' : value.toUpperCase()}</span>
+        <svg width="6" height="6" viewBox="0 0 8 8" fill="none">
           <path d="M1.5 2.5L4 5L6.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
@@ -325,7 +326,7 @@ function UnitDropdown({ value, options, onChange }: {
                   background: active ? '#1a1a1a' : 'transparent',
                   color: active ? '#fff' : '#555',
                   fontSize: 11, fontWeight: active ? 600 : 400,
-                  cursor: 'pointer',
+                  cursor: 'default',
                   transition: 'background 0.1s',
                 }}
                 onMouseEnter={(e) => {
@@ -407,7 +408,7 @@ function OverflowRow({ value, onChange }: {
               title={opt.tooltip}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',
+                padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
                 background: active ? '#1a1a1a' : 'transparent',
                 color: active ? '#fff' : '#888',
                 transition: 'all 0.1s',

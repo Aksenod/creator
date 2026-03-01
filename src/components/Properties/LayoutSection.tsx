@@ -114,7 +114,7 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
               onClick={(e) => handleClick(e, justifyVal, alignVal)}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
+                cursor: 'default',
                 background: isActive ? 'rgba(0,102,255,0.08)' : 'transparent',
               }}
             >
@@ -153,7 +153,7 @@ function AlignSelect({ label, value, options, onChange }: {
       <span style={{ fontSize: 11, color: '#999', width: 10, flexShrink: 0 }}>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)} style={{
         flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
-        fontSize: 11, background: '#fafafa', outline: 'none', cursor: 'pointer',
+        fontSize: 11, background: '#fafafa', outline: 'none', cursor: 'default',
         color: '#1a1a1a',
       }}>
         <option value="">—</option>
@@ -188,7 +188,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
     <div style={{ marginTop: 4 }}>
       <button onClick={() => setOpen(!open)} style={{
         width: '100%', padding: '5px 10px', border: '1px solid #e0e0e0',
-        borderRadius: 4, fontSize: 11, cursor: 'pointer',
+        borderRadius: 4, fontSize: 11, cursor: 'default',
         background: '#f5f5f5', color: '#555',
         display: 'flex', alignItems: 'center', gap: 4,
       }}>
@@ -204,7 +204,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
                 <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ justifyContent: opt.value })}
                   style={{
                     flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
-                    borderRadius: 3, cursor: 'pointer',
+                    borderRadius: 3, cursor: 'default',
                     background: styles.justifyContent === opt.value ? '#1a1a1a' : '#f5f5f5',
                     color: styles.justifyContent === opt.value ? '#fff' : '#666',
                   }}>
@@ -220,7 +220,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
                 <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ alignContent: opt.value })}
                   style={{
                     flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
-                    borderRadius: 3, cursor: 'pointer',
+                    borderRadius: 3, cursor: 'default',
                     background: styles.alignContent === opt.value ? '#1a1a1a' : '#f5f5f5',
                     color: styles.alignContent === opt.value ? '#fff' : '#666',
                   }}>
@@ -259,7 +259,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
               <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
                 style={{
                   flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
-                  cursor: 'pointer', background: active ? '#1a1a1a' : '#efefef',
+                  cursor: 'default', background: active ? '#1a1a1a' : '#efefef',
                   color: active ? '#fff' : '#888',
                 }}>
                 {opt.label}
@@ -340,7 +340,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
           title={`Добавить ${label === 'Columns' ? 'колонку' : 'строку'} — новый track 1fr`}
           style={{
             fontSize: 11, border: '1px solid #d0d0d0', borderRadius: 3, padding: '2px 6px',
-            background: '#f5f5f5', cursor: 'pointer', color: '#555',
+            background: '#f5f5f5', cursor: 'default', color: '#555',
             display: 'flex', alignItems: 'center', gap: 2,
           }}
         >
@@ -376,7 +376,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
                 style={{
                   width: 46, padding: '3px 4px', border: '1px solid #e0e0e0',
                   borderRadius: 4, fontSize: 11, background: '#fafafa',
-                  outline: 'none', cursor: 'pointer', color: '#1a1a1a',
+                  outline: 'none', cursor: 'default', color: '#1a1a1a',
                 }}
               >
                 <option value="fr">fr</option>
@@ -389,7 +389,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
                 title="Удалить этот track — колонка или строка будет убрана из сетки"
                 data-testid="track-remove"
                 style={{
-                  border: 'none', background: 'none', cursor: 'pointer',
+                  border: 'none', background: 'none', cursor: 'default',
                   color: '#bbb', fontSize: 14, padding: '0 2px',
                   lineHeight: 1, flexShrink: 0,
                 }}
@@ -466,7 +466,7 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
           title={locked ? 'Разблокировать — задать разные отступы между колонками и строками' : 'Заблокировать — одинаковый отступ между колонками и строками'}
           style={{
             border: '1px solid #e0e0e0', background: locked ? '#f5f5f5' : '#e8f0ff',
-            borderRadius: 4, cursor: 'pointer', padding: '3px 5px',
+            borderRadius: 4, cursor: 'default', padding: '3px 5px',
             fontSize: 12, color: locked ? '#888' : '#0066ff', flexShrink: 0,
           }}
         >
@@ -530,7 +530,7 @@ function GridControls({ styles, onUpdate, elementId }: {
                 onClick={() => onUpdate({ gridAutoFlow: opt.value as ElementStyles['gridAutoFlow'] })}
                 style={{
                   flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4,
-                  fontSize: 11, cursor: 'pointer',
+                  fontSize: 11, cursor: 'default',
                   background: active ? '#1a1a1a' : '#efefef',
                   color: active ? '#fff' : '#888',
                 }}
@@ -568,7 +568,7 @@ function GridControls({ styles, onUpdate, elementId }: {
           style={{
             width: '100%', marginTop: 6, padding: '6px 10px',
             border: `1px solid ${isEditMode ? '#0066ff' : '#d0d0d0'}`,
-            borderRadius: 4, fontSize: 11, cursor: 'pointer',
+            borderRadius: 4, fontSize: 11, cursor: 'default',
             background: isEditMode ? '#e8f0ff' : '#f5f5f5',
             color: isEditMode ? '#0066ff' : '#555',
             fontWeight: isEditMode ? 600 : 400,

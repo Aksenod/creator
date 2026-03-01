@@ -132,5 +132,6 @@ export type Project = {
   canvasBackground?: string      // дефолт '#e8e8e8'
   canvasPattern?: CanvasPattern  // дефолт 'dots'
   canvasPatternSize?: number     // дефолт 20 (px)
+  canvasPatternColor?: string    // дефолт — авто по фону
 }
 

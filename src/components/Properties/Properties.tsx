@@ -124,7 +124,7 @@ export function Properties() {
               title={`Удалить все переопределения ${BREAKPOINT_LABELS[activeBreakpointId]}`}
               style={{
                 fontSize: 10, padding: '2px 6px', border: '1px solid #e0b000',
-                borderRadius: 3, cursor: 'pointer', background: '#fff', color: '#8a6000',
+                borderRadius: 3, cursor: 'default', background: '#fff', color: '#8a6000',
               }}
             >
               Сбросить
@@ -177,6 +177,7 @@ export function Properties() {
             canvasBackground={project?.canvasBackground ?? '#e8e8e8'}
             canvasPattern={project?.canvasPattern ?? 'dots'}
             canvasPatternSize={project?.canvasPatternSize ?? 20}
+            canvasPatternColor={project?.canvasPatternColor}
             onUpdate={updateCanvasSettings}
           />
         ) : (
