@@ -99,19 +99,23 @@ export function useCanvasTransform(
       const originY = e.clientY - rect.top
 
       if (e.ctrlKey || e.metaKey) {
-        // Pinch (trackpad) gives small deltaY (<10), wheel gives large (100+)
-        const normalizedDelta = Math.abs(e.deltaY) < 10
-          ? e.deltaY * 100
-          : e.deltaY
-        zoom(normalizedDelta, originX, originY)
+        // Нормализуем deltaY по deltaMode:
+        // deltaMode=0 → пиксели (trackpad pinch, deltaY обычно 1-10)
+        // deltaMode=1 → строки (физическое колесо, deltaY обычно 3)
+        // deltaMode=2 → страницы
+        // deltaMode=0 пиксели (trackpad pinch): deltaY обычно 1–10, умножаем для отзывчивости
+        // deltaMode=1 строки (физическое колесо): deltaY ~3 строки → в пиксели
+        const delta =
+          e.deltaMode === 1 ? e.deltaY * 30 :
+          e.deltaMode === 2 ? e.deltaY * 300 :
+          e.deltaY * 10
+        zoom(delta, originX, originY)
       } else {
-        // Scroll to pan
+        // Scroll to pan — нормализуем аналогично
+        const dx = e.deltaMode === 1 ? e.deltaX * 30 : e.deltaX
+        const dy = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY
         const c = cameraRef.current
-        cameraRef.current = {
-          ...c,
-          offsetX: c.offsetX - e.deltaX,
-          offsetY: c.offsetY - e.deltaY,
-        }
+        cameraRef.current = { ...c, offsetX: c.offsetX - dx, offsetY: c.offsetY - dy }
         applyTransform()
       }
     }
