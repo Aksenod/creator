@@ -26,7 +26,11 @@ export function CanvasEditor() {
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const { transform, fitToScreen, scalePercent } = useCanvasTransform(containerRef as React.RefObject<HTMLElement>)
+  const worldRef = useRef<HTMLDivElement>(null)
+  const { cameraRef, fitToScreen, scalePercent } = useCanvasTransform(
+    containerRef as React.RefObject<HTMLElement>,
+    worldRef as React.RefObject<HTMLElement>,
+  )
 
   const parsedCustom = parseInt(customWidth)
   const displayWidth = customWidth && !isNaN(parsedCustom) && parsedCustom > 0 ? parsedCustom : viewportWidth
@@ -107,7 +111,7 @@ export function CanvasEditor() {
         activeBreakpointId={activeBreakpointId}
         displayWidth={displayWidth}
         customWidth={customWidth}
-        scale={transform.scale}
+        scale={scalePercent / 100}
         showCanvasSettings={showCanvasSettings}
         onCloseProject={closeProject}
         onTogglePreview={() => setIsPreview(!isPreview)}
@@ -158,8 +162,6 @@ export function CanvasEditor() {
             overflow: 'hidden',
             background: '#e8e8e8',
             backgroundImage: 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)',
-            backgroundSize: `${20 * transform.scale}px ${20 * transform.scale}px`,
-            backgroundPosition: `${transform.x}px ${transform.y}px`,
             position: 'relative',
             outline: 'none',
           }}
@@ -171,13 +173,16 @@ export function CanvasEditor() {
             }
           }}
         >
-          {/* Трансформируемый слой */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0,
-            transformOrigin: '0 0',
-            transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-          }}>
+          {/* Трансформируемый слой — transform применяется напрямую через worldRef, без React re-render */}
+          <div
+            ref={worldRef}
+            style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              transformOrigin: '0 0',
+              willChange: 'transform',
+            }}
+          >
             {project.artboardOrder.map(id => {
               const artboard = project.artboards[id]
               if (!artboard) return null
@@ -214,7 +219,7 @@ export function CanvasEditor() {
                   <Canvas
                     artboard={artboard}
                     previewMode={isPreview}
-                    scale={transform.scale}
+                    cameraRef={cameraRef}
                     plain
                     isActive={isActive}
                     onArtboardClick={() => setActiveArtboard(id)}

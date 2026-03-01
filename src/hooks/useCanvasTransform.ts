@@ -1,32 +1,73 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-export type Transform = { x: number; y: number; scale: number }
+export type Camera = { scale: number; offsetX: number; offsetY: number }
 
 const MIN_SCALE = 0.05
 const MAX_SCALE = 4
 
-export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
-  const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 })
+/**
+ * Camera-based canvas transform.
+ *
+ * Zoom/pan updates are applied DIRECTLY to the DOM via refs — no React re-renders.
+ * Only `scalePercent` is React state (updated via RAF for the zoom indicator).
+ *
+ * @param containerRef — the outer scrollable/clip container
+ * @param worldRef     — the inner "world layer" div that gets CSS transform applied
+ */
+export function useCanvasTransform(
+  containerRef: React.RefObject<HTMLElement>,
+  worldRef: React.RefObject<HTMLElement>,
+) {
+  const cameraRef = useRef<Camera>({ scale: 1, offsetX: 0, offsetY: 0 })
+  const [scalePercent, setScalePercent] = useState(100)
+
   const isPanning = useRef(false)
   const spaceDown = useRef(false)
   const lastMouse = useRef({ x: 0, y: 0 })
+  const rafId = useRef<number>(0)
+
+  // --- Core: apply camera to DOM without React re-render ---
+  const applyTransform = useCallback(() => {
+    const { scale, offsetX, offsetY } = cameraRef.current
+
+    if (worldRef.current) {
+      worldRef.current.style.transform =
+        `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
+    }
+
+    if (containerRef.current) {
+      containerRef.current.style.backgroundSize =
+        `${20 * scale}px ${20 * scale}px`
+      containerRef.current.style.backgroundPosition =
+        `${offsetX}px ${offsetY}px`
+    }
+
+    // Update zoom indicator via RAF — low-frequency, doesn't affect perf
+    cancelAnimationFrame(rafId.current)
+    rafId.current = requestAnimationFrame(() => {
+      setScalePercent(Math.round(cameraRef.current.scale * 100))
+    })
+  }, [worldRef, containerRef])
+
+  // --- Actions ---
 
   const zoom = useCallback((delta: number, originX: number, originY: number) => {
-    setTransform((t) => {
-      const factor = Math.pow(0.999, delta)
-      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.scale * factor))
-      const ratio = newScale / t.scale
-      return {
-        scale: newScale,
-        x: originX - ratio * (originX - t.x),
-        y: originY - ratio * (originY - t.y),
-      }
-    })
-  }, [])
+    const c = cameraRef.current
+    const factor = Math.pow(0.999, delta)
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, c.scale * factor))
+    const ratio = newScale / c.scale
+    cameraRef.current = {
+      scale: newScale,
+      offsetX: originX - ratio * (originX - c.offsetX),
+      offsetY: originY - ratio * (originY - c.offsetY),
+    }
+    applyTransform()
+  }, [applyTransform])
 
   const resetZoom = useCallback(() => {
-    setTransform({ x: 0, y: 0, scale: 1 })
-  }, [])
+    cameraRef.current = { scale: 1, offsetX: 0, offsetY: 0 }
+    applyTransform()
+  }, [applyTransform])
 
   const fitToScreen = useCallback((contentWidth = 1440) => {
     if (!containerRef.current) return
@@ -34,12 +75,19 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     const hPadding = 80
     const vPadding = 60
     const scaleX = (offsetWidth - hPadding) / contentWidth
-    const scale = Math.min(scaleX, 1) // не зумить больше 100%
-    const x = Math.max(hPadding / 2, (offsetWidth - contentWidth * scale) / 2)
-    const y = vPadding / 2
-    setTransform({ x, y, scale })
-  }, [containerRef])
+    const scale = Math.min(scaleX, 1)
+    const offsetX = Math.max(hPadding / 2, (offsetWidth - contentWidth * scale) / 2)
+    const offsetY = vPadding / 2
+    cameraRef.current = { scale, offsetX, offsetY }
+    applyTransform()
+  }, [containerRef, applyTransform])
 
+  // Apply on mount so background grid is visible from the start
+  useEffect(() => {
+    applyTransform()
+  }, [applyTransform])
+
+  // --- Event listeners ---
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -51,15 +99,20 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
       const originY = e.clientY - rect.top
 
       if (e.ctrlKey || e.metaKey) {
-        // Pinch gesture (trackpad) или Cmd+scroll
-        // Pinch даёт дробные deltaY (-3..3), колесо — крупные (100+)
+        // Pinch (trackpad) gives small deltaY (<10), wheel gives large (100+)
         const normalizedDelta = Math.abs(e.deltaY) < 10
-          ? e.deltaY * 100   // pinch: усиливаем чтобы 0.999^delta работал
-          : e.deltaY         // колесо: используем как есть
+          ? e.deltaY * 100
+          : e.deltaY
         zoom(normalizedDelta, originX, originY)
       } else {
-        // Pan с колесом
-        setTransform((t) => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }))
+        // Scroll to pan
+        const c = cameraRef.current
+        cameraRef.current = {
+          ...c,
+          offsetX: c.offsetX - e.deltaX,
+          offsetY: c.offsetY - e.deltaY,
+        }
+        applyTransform()
       }
     }
 
@@ -93,7 +146,9 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
       const dx = e.clientX - lastMouse.current.x
       const dy = e.clientY - lastMouse.current.y
       lastMouse.current = { x: e.clientX, y: e.clientY }
-      setTransform((t) => ({ ...t, x: t.x + dx, y: t.y + dy }))
+      const c = cameraRef.current
+      cameraRef.current = { ...c, offsetX: c.offsetX + dx, offsetY: c.offsetY + dy }
+      applyTransform()
     }
 
     const onMouseUp = () => {
@@ -118,7 +173,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
     }
-  }, [containerRef, zoom, fitToScreen, resetZoom])
+  }, [containerRef, zoom, fitToScreen, resetZoom, applyTransform])
 
-  return { transform, zoom, resetZoom, fitToScreen, scalePercent: Math.round(transform.scale * 100) }
+  return { cameraRef, scalePercent, zoom, resetZoom, fitToScreen }
 }
