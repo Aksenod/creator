@@ -55,6 +55,7 @@ export function Toolbar() {
       <button
         ref={triggerRef}
         data-testid="add-element-trigger"
+        title="Добавить элемент — создаёт Div, Section, Text, Image или Button внутри выбранного элемента (или в корне артборда)"
         style={{
           width: 28, height: 28, fontSize: 18, lineHeight: 1,
           border: '1px solid #ddd', borderRadius: 4,

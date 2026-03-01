@@ -13,6 +13,7 @@ export function SegmentedControl({ value, options, onChange }: {
         return (
           <button
             key={opt.value}
+            title={opt.label}
             onClick={() => onChange(opt.value)}
             style={{
               flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',

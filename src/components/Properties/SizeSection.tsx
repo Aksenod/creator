@@ -283,6 +283,7 @@ function UnitDropdown({ value, options, onChange }: {
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
+        title="Единица измерения — px (пиксели), % (от родителя), vw/vh (от размера экрана), auto или none"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 18, height: 18,
@@ -344,9 +345,10 @@ function UnitDropdown({ value, options, onChange }: {
 
 type OverflowValue = ElementStyles['overflow']
 
-const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNode }[] = [
+const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNode; tooltip: string }[] = [
   {
     value: 'visible',
+    tooltip: 'Visible — содержимое свободно выходит за границы элемента (поведение по умолчанию)',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <ellipse cx="7" cy="7" rx="5" ry="3.5" stroke="currentColor" strokeWidth="1.3" />
@@ -356,6 +358,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'hidden',
+    tooltip: 'Hidden — обрезать содержимое по границам элемента, скрыть всё что выступает',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <ellipse cx="7" cy="7" rx="5" ry="3.5" stroke="currentColor" strokeWidth="1.3" />
@@ -366,6 +369,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'scroll',
+    tooltip: 'Scroll — всегда показывать полосу прокрутки, даже если содержимое вмещается',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <path d="M7 2L7 12M4 5L7 2L10 5M4 9L7 12L10 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -374,6 +378,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'auto',
+    tooltip: 'Auto — полоса прокрутки появляется только когда содержимое не вмещается в элемент',
     icon: <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '-0.02em' }}>Auto</span>,
   },
 ]
@@ -395,7 +400,7 @@ function OverflowRow({ value, onChange }: {
             <button
               key={opt.value}
               onClick={() => onChange(opt.value)}
-              title={opt.value}
+              title={opt.tooltip}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',

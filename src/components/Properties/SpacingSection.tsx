@@ -220,7 +220,7 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        title="Alt+drag to scrub"
+        title="Клик — открыть панель ввода значения. Alt+перетаскивание — быстрая подстройка значения мышью. Shift ускоряет шаг ×10"
         data-spacing-trigger="true"
       >
         {hasValue ? value : '–'}
@@ -420,6 +420,7 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
       <button
         onMouseDown={(e) => e.stopPropagation()}
         onClick={() => { onChange(undefined); onClose() }}
+        title="Сбросить значение — убрать этот отступ и вернуть к значению по умолчанию (0)"
         style={{
           width: '100%',
           background: '#f5f5f5',

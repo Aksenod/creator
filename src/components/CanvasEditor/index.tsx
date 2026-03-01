@@ -9,6 +9,8 @@ import { BREAKPOINTS, detectBreakpoint, type Breakpoint } from '../Canvas/PageEd
 import { GridEditOverlay } from '../GridEditOverlay'
 import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 import type { BreakpointId } from '../../constants/breakpoints'
+import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
+import type { CanvasPattern } from '../../types'
 
 export function CanvasEditor() {
   const {
@@ -20,6 +22,7 @@ export function CanvasEditor() {
   } = useEditorStore()
 
   const [isPreview, setIsPreview] = useState(false)
+  const [isFocusMode, setIsFocusMode] = useState(false)
   const [panelsHidden, setPanelsHidden] = useState(false)
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [customWidth, setCustomWidth] = useState<string>('')
@@ -58,6 +61,7 @@ export function CanvasEditor() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (showCanvasSettings) { setShowCanvasSettings(false); return }
+        if (isFocusMode) { setIsFocusMode(false); return }
         if (isPreview) { setIsPreview(false); return }
         selectElement(null)
         return
@@ -71,6 +75,62 @@ export function CanvasEditor() {
           setViewportWidth(bp.width)
           setCustomWidth('')
           setActiveBreakpoint(bp.id as BreakpointId)
+          return
+        }
+
+        // Навигация по слоям (Figma-style)
+        const s = useEditorStore.getState()
+        const abId = s.activeArtboardId
+        const ab = abId && s.project ? s.project.artboards[abId] : null
+
+        if (ab && e.key === 'Enter' && !e.shiftKey) {
+          if (s.selectedElementIds.length === 1) {
+            const currentId = s.selectedElementIds[0]
+            const el = ab.elements[currentId]
+            if (el && el.children.length > 0) {
+              useEditorStore.getState().expandLayers([currentId])
+              useEditorStore.getState().selectElements(el.children)
+              e.preventDefault()
+            }
+          }
+          return
+        }
+
+        if (ab && e.key === 'Enter' && e.shiftKey) {
+          const id = s.selectedElementIds[0] ?? s.selectedElementId
+          if (id) {
+            const parentId = findParentId(ab, id)
+            if (parentId) {
+              useEditorStore.getState().selectElement(parentId)
+              e.preventDefault()
+            }
+          }
+          return
+        }
+
+        if (ab && e.key === 'Tab' && !e.shiftKey) {
+          e.preventDefault()
+          if (s.selectedElementIds.length > 1) {
+            useEditorStore.getState().selectElement(s.selectedElementIds[0])
+            return
+          }
+          if (s.selectedElementIds.length !== 1) return
+          const info = getSiblingInfo(ab, s.selectedElementIds[0])
+          if (!info || info.index + 1 >= info.siblings.length) return
+          useEditorStore.getState().selectElement(info.siblings[info.index + 1])
+          return
+        }
+
+        if (ab && e.key === 'Tab' && e.shiftKey) {
+          e.preventDefault()
+          if (s.selectedElementIds.length > 1) {
+            useEditorStore.getState().selectElement(s.selectedElementIds[s.selectedElementIds.length - 1])
+            return
+          }
+          if (s.selectedElementIds.length !== 1) return
+          const info = getSiblingInfo(ab, s.selectedElementIds[0])
+          if (!info || info.index - 1 < 0) return
+          useEditorStore.getState().selectElement(info.siblings[info.index - 1])
           return
         }
       }
@@ -96,7 +156,7 @@ export function CanvasEditor() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [
-    isPreview, showCanvasSettings, selectedElementId, activeArtboardId,
+    isPreview, isFocusMode, showCanvasSettings, selectedElementId, activeArtboardId,
     selectElement, deleteElement, undo, redo, copyElement, pasteElement,
     duplicateElement, setActiveBreakpoint,
   ])
@@ -113,6 +173,8 @@ export function CanvasEditor() {
         customWidth={customWidth}
         scale={scalePercent / 100}
         showCanvasSettings={showCanvasSettings}
+        isFocusMode={isFocusMode}
+        hasActiveArtboard={!!activeArtboardId}
         onCloseProject={closeProject}
         onTogglePreview={() => setIsPreview(!isPreview)}
         onToggleSettings={() => setShowCanvasSettings(s => !s)}
@@ -125,6 +187,7 @@ export function CanvasEditor() {
         onBreakpointSelect={handleBreakpointSelect}
         onSetShowSettings={setShowCanvasSettings}
         onAddArtboard={() => addArtboard('Artboard ' + (project.artboardOrder.length + 1))}
+        onToggleFocusMode={() => setIsFocusMode(f => !f)}
       />
 
       {/* Основная область */}
@@ -160,8 +223,8 @@ export function CanvasEditor() {
           style={{
             flex: 1,
             overflow: 'hidden',
-            background: '#e8e8e8',
-            backgroundImage: 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)',
+            background: project?.canvasBackground ?? '#e8e8e8',
+            backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots'),
             position: 'relative',
             outline: 'none',
           }}
@@ -269,4 +332,34 @@ export function CanvasEditor() {
       )}
     </div>
   )
+}
+
+// ─── Паттерны фона ──────────────────────────────────────────────────────────────
+
+function getPatternImage(pattern: CanvasPattern): string {
+  switch (pattern) {
+    case 'none':
+      return 'none'
+    case 'dots':
+      return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
+    case 'grid':
+      return 'linear-gradient(#c8c8c8 1px, transparent 1px), linear-gradient(90deg, #c8c8c8 1px, transparent 1px)'
+    case 'cross': {
+      // Мелкая сетка + крупные крестики
+      const thin = 'rgba(180,180,180,0.5)'
+      const thick = 'rgba(160,160,160,0.8)'
+      return [
+        `linear-gradient(${thin} 1px, transparent 1px)`,
+        `linear-gradient(90deg, ${thin} 1px, transparent 1px)`,
+        `linear-gradient(${thick} 1px, transparent 1px)`,
+        `linear-gradient(90deg, ${thick} 1px, transparent 1px)`,
+      ].join(', ')
+    }
+    case 'hearts': {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><path d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='%23d0d0d0'/></svg>`
+      return `url("data:image/svg+xml,${svg.replace(/#/g, '%23')}")`
+    }
+    default:
+      return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
+  }
 }

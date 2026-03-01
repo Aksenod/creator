@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project, Artboard, CanvasElement, ElementStyles, ElementType } from '../types'
+import type { Project, Artboard, CanvasElement, ElementStyles, ElementType, CanvasPattern } from '../types'
 import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
 import {
@@ -60,6 +60,7 @@ type EditorState = {
   collapseLayers: (ids: string[]) => void
   collapseAllLayers: () => void
   setGridEditElementId: (id: string | null) => void
+  updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern }) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -602,6 +603,16 @@ export const useEditorStore = create<EditorState>()(
       collapseAllLayers: () => set({ expandedLayers: new Set<string>() }),
 
       setGridEditElementId: (id) => set({ gridEditElementId: id }),
+
+      updateCanvasSettings: (patch) => set((state) => {
+        if (!state.project) return state
+        const newProject: Project = {
+          ...state.project,
+          ...patch,
+          updatedAt: Date.now(),
+        }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
+      }),
 
       duplicateElement: () => set((state) => {
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null

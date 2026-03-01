@@ -116,6 +116,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
           {/* Trigger button */}
           <button
             onClick={() => setOpen(v => !v)}
+            title="Тип позиционирования — определяет как элемент располагается на странице: в потоке (Static), со смещением (Relative), свободно в родителе (Absolute), фиксировано на экране (Fixed) или прилипает при скролле (Sticky)"
             style={{
               width: '100%',
               display: 'flex', alignItems: 'center', gap: 6,

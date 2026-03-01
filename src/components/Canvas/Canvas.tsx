@@ -280,6 +280,13 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     )
   }
 
+  // Берём overflow из body-элемента (как в настоящем браузере: overflow у body = overflow у viewport)
+  const bodyEl = artboard.rootChildren
+    .map(id => artboard.elements[id])
+    .find(el => el?.type === 'body')
+  const bodyOverflow = bodyEl ? resolveStyles(bodyEl, activeBreakpointId).overflow : undefined
+  const artboardOverflow = bodyOverflow ?? 'hidden'
+
   const artboardBox = (
     <div
       data-testid="artboard-frame"
@@ -291,7 +298,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
         outline: isActive ? '2px solid #0066ff' : 'none',
         outlineOffset: 2,
-        overflow: 'hidden',
+        overflow: artboardOverflow,
         position: 'relative',
       }}
       onClick={plain ? (e) => {

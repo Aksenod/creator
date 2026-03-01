@@ -114,6 +114,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             e.stopPropagation()
             if (hasChildren) onToggleExpand(id, e.altKey)
           }}
+          title={hasChildren ? (isExpanded ? 'Свернуть вложенные элементы (Alt+клик — рекурсивно все потомки)' : 'Развернуть вложенные элементы (Alt+клик — рекурсивно все потомки)') : undefined}
           style={{
             width: 16, height: 16,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -359,7 +360,7 @@ export function Layers({ artboard }: Props) {
         {expandedLayers.size > 0 && (
           <button
             onClick={collapseAll}
-            title="Свернуть все слои"
+            title="Свернуть все слои — скрыть все вложенные элементы в дереве"
             style={{
               border: 'none', background: 'none', cursor: 'pointer',
               color: '#aaa', fontSize: 10, padding: '0 2px', lineHeight: 1,

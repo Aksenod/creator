@@ -34,8 +34,9 @@ export function parseTracks(css?: string): GridTrack[] {
 export function serializeTracks(tracks: GridTrack[]): string {
   return tracks.map(t => {
     if (t.unit === 'auto') return 'auto'
-    if (t.unit === 'fr') return `${t.value}fr`
-    return `${t.value}px`
+    const v = Math.round(t.value * 100) / 100
+    if (t.unit === 'fr') return `${v}fr`
+    return `${v}px`
   }).join(' ')
 }
 
@@ -88,7 +89,7 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
 
   return (
     <div
-      title="Click — set align&#10;Double-click / ⌘ — space-between&#10;Alt — stretch"
+      title="Визуальное выравнивание содержимого&#10;Клик — задать позицию элементов&#10;Двойной клик или ⌘+клик — распределить с равными промежутками (space-between)&#10;Alt+клик — растянуть элементы на всю высоту (stretch)"
       style={{
         width: 72, height: 72,
         border: '1px solid #e0e0e0', borderRadius: 6,
@@ -167,20 +168,20 @@ function AlignSelect({ label, value, options, onChange }: {
 function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
   const [open, setOpen] = useState(false)
 
-  const colOptions: Array<{ value: ElementStyles['justifyContent']; icon: string }> = [
-    { value: 'flex-start', icon: '⊢' },
-    { value: 'center', icon: '⊕' },
-    { value: 'flex-end', icon: '⊣' },
-    { value: 'space-between', icon: '⊧' },
-    { value: 'space-around', icon: '⊨' },
+  const colOptions: Array<{ value: ElementStyles['justifyContent']; icon: string; tooltip: string }> = [
+    { value: 'flex-start', icon: '⊢', tooltip: 'К началу — контент прижат к левому краю' },
+    { value: 'center', icon: '⊕', tooltip: 'По центру — контент по горизонтали в центре' },
+    { value: 'flex-end', icon: '⊣', tooltip: 'К концу — контент прижат к правому краю' },
+    { value: 'space-between', icon: '⊧', tooltip: 'Равные промежутки — первый элемент в начале, последний в конце, остальные распределены равномерно' },
+    { value: 'space-around', icon: '⊨', tooltip: 'Равные отступы — одинаковые отступы вокруг каждого элемента' },
   ]
-  const rowOptions: Array<{ value: ElementStyles['alignContent']; icon: string }> = [
-    { value: 'flex-start', icon: '⊤' },
-    { value: 'center', icon: '⊕' },
-    { value: 'flex-end', icon: '⊥' },
-    { value: 'space-between', icon: '⊥⊤' },
-    { value: 'space-around', icon: '⊵' },
-    { value: 'stretch', icon: '↕' },
+  const rowOptions: Array<{ value: ElementStyles['alignContent']; icon: string; tooltip: string }> = [
+    { value: 'flex-start', icon: '⊤', tooltip: 'К началу — строки прижаты к верхнему краю контейнера' },
+    { value: 'center', icon: '⊕', tooltip: 'По центру — строки по вертикали в центре контейнера' },
+    { value: 'flex-end', icon: '⊥', tooltip: 'К концу — строки прижаты к нижнему краю контейнера' },
+    { value: 'space-between', icon: '⊥⊤', tooltip: 'Равные промежутки — первая строка вверху, последняя внизу, остальные распределены' },
+    { value: 'space-around', icon: '⊵', tooltip: 'Равные отступы — одинаковые отступы вокруг каждой строки' },
+    { value: 'stretch', icon: '↕', tooltip: 'Растянуть — строки растягиваются на всю доступную высоту контейнера' },
   ]
 
   return (
@@ -200,7 +201,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
             <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Columns</div>
             <div style={{ display: 'flex', gap: 2 }}>
               {colOptions.map(opt => (
-                <button key={opt.value} onClick={() => onUpdate({ justifyContent: opt.value })}
+                <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ justifyContent: opt.value })}
                   style={{
                     flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
                     borderRadius: 3, cursor: 'pointer',
@@ -216,7 +217,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
             <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Rows</div>
             <div style={{ display: 'flex', gap: 2 }}>
               {rowOptions.map(opt => (
-                <button key={opt.value} onClick={() => onUpdate({ alignContent: opt.value })}
+                <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ alignContent: opt.value })}
                   style={{
                     flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
                     borderRadius: 3, cursor: 'pointer',
@@ -241,10 +242,10 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
   const gap = styles.gap ?? 0
 
   const dirOptions = [
-    { value: 'row', label: '→' },
-    { value: 'column', label: '↓' },
-    { value: 'row-reverse', label: '←' },
-    { value: 'column-reverse', label: '↑' },
+    { value: 'row', label: '→', tooltip: 'Горизонтально → дочерние элементы выстраиваются в строку слева направо' },
+    { value: 'column', label: '↓', tooltip: 'Вертикально ↓ дочерние элементы складываются в стопку сверху вниз' },
+    { value: 'row-reverse', label: '←', tooltip: 'Горизонтально ← как строка, но в обратном порядке справа налево' },
+    { value: 'column-reverse', label: '↑', tooltip: 'Вертикально ↑ как стопка, но в обратном порядке снизу вверх' },
   ]
 
   return (
@@ -255,7 +256,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
           {dirOptions.map(opt => {
             const active = dir === opt.value
             return (
-              <button key={opt.value} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
+              <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
                 style={{
                   flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
                   cursor: 'pointer', background: active ? '#1a1a1a' : '#efefef',
@@ -336,7 +337,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
         <span style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>{label}</span>
         <button
           onClick={onAddTrack}
-          title={`Add ${label.toLowerCase()}`}
+          title={`Добавить ${label === 'Columns' ? 'колонку' : 'строку'} — новый track 1fr`}
           style={{
             fontSize: 11, border: '1px solid #d0d0d0', borderRadius: 3, padding: '2px 6px',
             background: '#f5f5f5', cursor: 'pointer', color: '#555',
@@ -358,7 +359,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
                   type="number"
                   min={0}
                   value={track.value}
-                  onChange={(e) => updateTrack(i, { value: Number(e.target.value) })}
+                  onChange={(e) => updateTrack(i, { value: Math.round(Number(e.target.value) * 100) / 100 })}
                   style={{
                     flex: 1, minWidth: 0, padding: '3px 5px',
                     border: '1px solid #e0e0e0', borderRadius: 4,
@@ -385,7 +386,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
               {/* Remove */}
               <button
                 onClick={() => removeTrack(i)}
-                title="Remove track"
+                title="Удалить этот track — колонка или строка будет убрана из сетки"
                 data-testid="track-remove"
                 style={{
                   border: 'none', background: 'none', cursor: 'pointer',
@@ -462,7 +463,7 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
         {/* Lock/Unlock toggle */}
         <button
           onClick={() => setLocked(!locked)}
-          title={locked ? 'Unlock gap' : 'Lock gap'}
+          title={locked ? 'Разблокировать — задать разные отступы между колонками и строками' : 'Заблокировать — одинаковый отступ между колонками и строками'}
           style={{
             border: '1px solid #e0e0e0', background: locked ? '#f5f5f5' : '#e8f0ff',
             borderRadius: 4, cursor: 'pointer', padding: '3px 5px',
@@ -520,11 +521,12 @@ function GridControls({ styles, onUpdate, elementId }: {
       {/* Auto-flow direction */}
       <PropertyRow label="Direction">
         <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
-          {[{ value: 'row', label: '→ Row' }, { value: 'column', label: '↓ Column' }].map(opt => {
+          {[{ value: 'row', label: '→ Row', tooltip: 'По строкам → новые элементы заполняют ряды слева направо, затем переходят на следующий ряд' }, { value: 'column', label: '↓ Column', tooltip: 'По колонкам ↓ новые элементы заполняют колонки сверху вниз, затем переходят к следующей колонке' }].map(opt => {
             const active = autoFlow === opt.value
             return (
               <button
                 key={opt.value}
+                title={opt.tooltip}
                 onClick={() => onUpdate({ gridAutoFlow: opt.value as ElementStyles['gridAutoFlow'] })}
                 style={{
                   flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4,
@@ -562,7 +564,7 @@ function GridControls({ styles, onUpdate, elementId }: {
       {elementId && (
         <button
           onClick={() => setGridEditElementId(isEditMode ? null : elementId)}
-          title="Открыть Grid Edit Mode"
+          title="Визуальный редактор Grid — перетаскивайте разделители колонок и строк прямо на холсте для изменения размеров треков"
           style={{
             width: '100%', marginTop: 6, padding: '6px 10px',
             border: `1px solid ${isEditMode ? '#0066ff' : '#d0d0d0'}`,

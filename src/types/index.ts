@@ -1,5 +1,7 @@
 export type { BreakpointId } from '../constants/breakpoints'
 
+export type CanvasPattern = 'none' | 'dots' | 'grid' | 'cross' | 'hearts'
+
 // Режим позиционирования элемента
 export type PositionMode = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky'
 
@@ -127,5 +129,7 @@ export type Project = {
   artboards: Record<string, Artboard>
   artboardOrder: string[]
   updatedAt: number
+  canvasBackground?: string   // дефолт '#e8e8e8'
+  canvasPattern?: CanvasPattern  // дефолт 'dots'
 }
 

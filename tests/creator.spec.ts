@@ -406,7 +406,7 @@ test('Grid Gap: lock/unlock раздельные gap значения', async ({
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  const lockBtn = page.locator('button[title*="gap"]')
+  const lockBtn = page.locator('button[title*="колонками"]')
   await expect(lockBtn).toBeVisible()
 
   await expect(page.locator('span').filter({ hasText: /^Col$/ })).toHaveCount(0)

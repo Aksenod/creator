@@ -321,7 +321,7 @@ export function GridEditOverlay({ artboardId }: Props) {
           </div>
           <button
             onClick={() => removeCol(i)}
-            title="Удалить колонку"
+            title="Удалить эту колонку из сетки"
             style={{
               border: 'none', background: 'rgba(255,80,80,0.8)', color: '#fff',
               borderRadius: '50%', width: 14, height: 14, fontSize: 10,
@@ -349,7 +349,7 @@ export function GridEditOverlay({ artboardId }: Props) {
         >
           <button
             onClick={() => removeRow(i)}
-            title="Удалить строку"
+            title="Удалить эту строку из сетки"
             style={{
               border: 'none', background: 'rgba(255,80,80,0.8)', color: '#fff',
               borderRadius: '50%', width: 14, height: 14, fontSize: 10,
@@ -372,7 +372,7 @@ export function GridEditOverlay({ artboardId }: Props) {
       {/* Add column button */}
       <button
         onClick={addCol}
-        title="Добавить колонку"
+        title="Добавить колонку — новый track 1fr справа от текущей сетки"
         style={{
           position: 'absolute',
           left: gridRect.left + gridRect.width + 6,
@@ -392,7 +392,7 @@ export function GridEditOverlay({ artboardId }: Props) {
       {/* Add row button */}
       <button
         onClick={addRow}
-        title="Добавить строку"
+        title="Добавить строку — новый track 1fr снизу от текущей сетки"
         style={{
           position: 'absolute',
           top: gridRect.top + gridRect.height + 6,
@@ -413,6 +413,7 @@ export function GridEditOverlay({ artboardId }: Props) {
       <button
         onClick={() => setGridEditElementId(null)}
         data-testid="grid-edit-done"
+        title="Готово — завершить визуальное редактирование Grid и вернуться в обычный режим"
         style={{
           position: 'absolute',
           top: Math.max(8, gridRect.top - 34),

@@ -152,6 +152,7 @@ function ProjectCard({ project, onOpen, onRename, onDuplicate, onDelete }: Proje
               e.stopPropagation()
               setContextMenu({ x: e.clientX, y: e.clientY })
             }}
+            title="Меню проекта — переименовать, дублировать или удалить этот проект"
             style={{
               position: 'absolute', top: 8, right: 8,
               width: 28, height: 28,
@@ -268,6 +269,7 @@ export function ProjectsDashboard() {
         <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>Creator</span>
         <button
           onClick={handleCreateProject}
+          title="Создать новый пустой проект с одним артбордом"
           style={{
             marginLeft: 'auto',
             padding: '7px 16px',

@@ -43,13 +43,14 @@ export function BorderSection({ styles, onUpdate }: Props) {
           <PropertyRow label="Style" labelWidth={44}>
             <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
               {([
-                { value: 'none', label: '×' },
-                { value: 'solid', label: '—' },
-                { value: 'dashed', label: '- -' },
-                { value: 'dotted', label: '···' },
+                { value: 'none', label: '×', tooltip: 'Без рамки — убрать border у элемента' },
+                { value: 'solid', label: '—', tooltip: 'Сплошная рамка — непрерывная линия вокруг элемента' },
+                { value: 'dashed', label: '- -', tooltip: 'Пунктирная рамка — рамка из штрихов (----)' },
+                { value: 'dotted', label: '···', tooltip: 'Точечная рамка — рамка из мелких точек (····)' },
               ] as const).map(opt => (
                 <button
                   key={opt.value}
+                  title={opt.tooltip}
                   onClick={() => onUpdate({ borderStyle: opt.value })}
                   style={{
                     flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',

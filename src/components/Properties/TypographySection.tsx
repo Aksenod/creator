@@ -79,6 +79,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
               />
               <button
                 onClick={() => onUpdate({ lineHeight: undefined })}
+                title="Сбросить межстрочный интервал — браузер подберёт значение автоматически по размеру шрифта"
                 style={{ padding: '0 6px', borderLeft: '1px solid #e0e0e0', background: '#f0f0f0', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: 12, flexShrink: 0 }}
               >
                 –
@@ -102,7 +103,12 @@ export function TypographySection({ styles, onUpdate }: Props) {
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {(['left', 'center', 'right', 'justify'] as const).map(align => {
               const icons: Record<typeof align, string> = { left: '⊜', center: '≡', right: '⊝', justify: '☰' }
-              const labels: Record<typeof align, string> = { left: '≡ left', center: '≡ center', right: '≡ right', justify: '≡ justify' }
+              const labels: Record<typeof align, string> = {
+                left: 'По левому краю — текст прижат к левой стороне блока',
+                center: 'По центру — текст выровнен посередине блока',
+                right: 'По правому краю — текст прижат к правой стороне блока',
+                justify: 'По ширине — текст растянут равномерно от края до края, пробелы между словами увеличиваются',
+              }
               return (
                 <button
                   key={align}
@@ -125,13 +131,14 @@ export function TypographySection({ styles, onUpdate }: Props) {
         <PropertyRow label="Decor" labelWidth={44}>
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {([
-              { value: 'none', label: '×' },
-              { value: 'line-through', label: 'S\u0336' },
-              { value: 'underline', label: 'U\u0332' },
-              { value: 'overline', label: 'O\u0305' },
+              { value: 'none', label: '×', tooltip: 'Без декорации — убрать подчёркивание, зачёркивание и надчёркивание' },
+              { value: 'line-through', label: 'S\u0336', tooltip: 'Зачёркнутый — горизонтальная линия через середину текста, используется для отменённых цен или удалённого контента' },
+              { value: 'underline', label: 'U\u0332', tooltip: 'Подчёркнутый — линия под текстом, часто используется для ссылок' },
+              { value: 'overline', label: 'O\u0305', tooltip: 'Надчёркнутый — линия над текстом' },
             ] as const).map(opt => (
               <button
                 key={opt.value}
+                title={opt.tooltip}
                 onClick={() => onUpdate({ textDecoration: opt.value })}
                 style={{
                   flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'pointer',

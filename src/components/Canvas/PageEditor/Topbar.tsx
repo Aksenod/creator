@@ -67,6 +67,7 @@ export function Topbar({
       }}>
         <button
           onClick={onTogglePreview}
+          title="Выйти из Preview и вернуться в режим редактирования"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: 'none', background: '#333', color: '#fff',
@@ -88,6 +89,7 @@ export function Topbar({
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button
           onClick={onCloseProject}
+          title="Вернуться к списку проектов — текущий проект сохраняется автоматически"
           style={{ padding: '4px 10px', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', background: '#fff', fontSize: 12 }}
         >
           ← Проекты
@@ -101,6 +103,7 @@ export function Topbar({
         {/* Кнопка открытия Canvas Settings */}
         <button
           onClick={onToggleSettings}
+          title="Настройки холста — ширина области просмотра и масштаб. Клавиши 1–4 для быстрого переключения брейкпоинтов"
           style={{
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
@@ -181,6 +184,7 @@ export function Topbar({
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <button
           onClick={onAddArtboard}
+          title="Добавить артборд — новая страница или секция проекта на холсте"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: '1px solid #ddd', background: '#fff', color: '#333',
@@ -204,6 +208,7 @@ export function Topbar({
         </button>
         <button
           onClick={onTogglePreview}
+          title="Предпросмотр — показать сайт как его увидит пользователь, без рамок редактора и панелей"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: 'none',
