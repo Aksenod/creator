@@ -97,7 +97,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         style={{
           display: 'flex', alignItems: 'center',
           padding: `4px 8px 4px ${8 + depth * 16}px`,
-          cursor: el.type === 'body' ? 'default' : 'grab', fontSize: 12,
+          cursor: 'default', fontSize: 12,
           borderRadius: 3,
           background: isDropInto
             ? 'rgba(0,102,255,0.06)'
@@ -280,9 +280,13 @@ export function Layers({ artboard }: Props) {
 
     const targetEl = artboard.elements[targetId]
     const isContainer = targetEl != null && CONTAINER_TYPES.includes(targetEl.type as typeof CONTAINER_TYPES[number])
+    const isRootLevel = artboard.rootChildren.includes(targetId)
 
     let position: 'above' | 'below' | 'into'
-    if (fraction < 0.3) {
+    if (isRootLevel) {
+      // Корневые элементы (Body) — только "into", нельзя ставить рядом
+      position = 'into'
+    } else if (fraction < 0.3) {
       position = 'above'
     } else if (fraction > 0.7) {
       position = 'below'

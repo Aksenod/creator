@@ -39,6 +39,7 @@ type EditorState = {
   setActiveArtboard: (id: string | null) => void
   addArtboard: (name: string) => void
   moveArtboard: (id: string, x: number, y: number) => void
+  moveArtboardTemp: (id: string, x: number, y: number) => void
 
   selectElement: (id: string | null) => void
   selectElements: (ids: string[]) => void
@@ -62,7 +63,7 @@ type EditorState = {
   collapseAllLayers: () => void
   setGridEditElementId: (id: string | null) => void
   updateArtboard: (id: string, patch: ArtboardPatch) => void
-  updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number }) => void
+  updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string }) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -249,6 +250,17 @@ export const useEditorStore = create<EditorState>()(
           updatedAt: Date.now(),
         }
         return pushHistory(state.history, state.historyIndex, state.project, newProject)
+      }),
+
+      moveArtboardTemp: (id, x, y) => set((state) => {
+        const ab = state.project?.artboards[id]
+        if (!ab || !state.project) return state
+        return {
+          project: {
+            ...state.project,
+            artboards: { ...state.project.artboards, [id]: { ...ab, x, y } },
+          },
+        }
       }),
 
       selectElement: (id) => {
@@ -443,6 +455,9 @@ export const useEditorStore = create<EditorState>()(
       moveElement: (artboardId, elementId, newParentId, newIndex) => set((state) => {
         const ab = state.project?.artboards[artboardId]
         if (!ab || !state.project) return state
+
+        // Guard: только уже корневые элементы могут оставаться в rootChildren
+        if (newParentId === null && !ab.rootChildren.includes(elementId)) return state
 
         const oldParentId = findParentId(ab, elementId)
         const elements = { ...ab.elements }
