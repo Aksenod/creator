@@ -6,7 +6,7 @@ import { test, expect, Page } from '@playwright/test'
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => {
-    localStorage.removeItem('creator-v2')
+    localStorage.removeItem('creator-project')
     localStorage.removeItem('creator-project')
   })
   await page.reload()
@@ -36,10 +36,10 @@ async function enterPageEditor(page: Page) {
 
 async function getStoredProject(page: Page) {
   return page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    return p.state?.allProjects?.[0] ?? null
+    return p.state?.project ?? null
   })
 }
 
@@ -51,10 +51,10 @@ async function getStoredArtboard(page: Page) {
 
 async function getStoredStyles(page: Page) {
   return page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -79,7 +79,7 @@ test('создание проекта', async ({ page }) => {
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
 
   // Должен быть виден артборд-карточка на холсте
-  const artboard = page.locator('[data-testid="artboard-card"]').first()
+  const artboard = page.locator('[data-testid="artboard-frame"]').first()
   await expect(artboard).toBeVisible()
 
   // Должно быть имя проекта в топбаре
@@ -258,10 +258,10 @@ test('добавление маржинов через Spacing panel', async ({ 
   // Проверить что значения сохранились в localStorage
   await page.waitForFunction(() => {
     try {
-      const raw = localStorage.getItem('creator-v2')
+      const raw = localStorage.getItem('creator-project')
       if (!raw) return false
       const p = JSON.parse(raw)
-      const project = p.state?.allProjects?.[0]
+      const project = p.state?.project
       if (!project) return false
       const artboard = Object.values(project.artboards)[0] as any
       const bodyId = artboard?.rootChildren?.[0]
@@ -316,10 +316,10 @@ test('установка черного бордера 10px у div', async ({ pa
   // Ждём пока Zustand запишет borderStyle и borderWidth в localStorage
   await page.waitForFunction(() => {
     try {
-      const raw = localStorage.getItem('creator-v2')
+      const raw = localStorage.getItem('creator-project')
       if (!raw) return false
       const p = JSON.parse(raw)
-      const project = p.state?.allProjects?.[0]
+      const project = p.state?.project
       if (!project) return false
       const artboard = Object.values(project.artboards)[0] as any
       const bodyId = artboard?.rootChildren?.[0]
@@ -437,10 +437,10 @@ test('Grid Auto-flow: переключение направления', async ({
   await colBtn.click()
 
   const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -453,10 +453,10 @@ test('Grid Auto-flow: переключение направления', async ({
   await rowBtn.click()
 
   const stored2 = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -547,10 +547,10 @@ test('Grid Child: установить column span 2', async ({ page }) => {
   await page.keyboard.press('Tab')
 
   const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -575,10 +575,10 @@ test('Size section: ввод width и height меняет стили элеме�
   await page.keyboard.press('Tab')
 
   let stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -594,10 +594,10 @@ test('Size section: ввод width и height меняет стили элеме�
   await page.keyboard.press('Tab')
 
   stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -611,10 +611,10 @@ test('Size section: ввод width и height меняет стили элеме�
   await page.keyboard.press('Tab')
 
   stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -639,10 +639,10 @@ test('Size section: ввод minWidth и maxWidth', async ({ page }) => {
   await page.keyboard.press('Tab')
 
   const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-v2')
+    const raw = localStorage.getItem('creator-project')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const project = p.state?.allProjects?.[0]
+    const project = p.state?.project
     if (!project) return null
     const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
@@ -653,4 +653,94 @@ test('Size section: ввод minWidth и maxWidth', async ({ page }) => {
   })
   expect(stored?.minWidth).toBe('100px')
   expect(stored?.maxWidth).toBe('500px')
+})
+
+// ─── Тест 19: Навигация по слоям (Enter/Tab/Shift) ───────────────────────────
+
+test('навигация по слоям: Enter/Tab/Shift+Tab/Shift+Enter', async ({ page }) => {
+  await enterPageEditor(page)
+
+  // Создаём дерево: Body > div1 > (div2, div3)
+  await addElement(page, 'div') // div1 — ребёнок Body
+  await page.click('text=div 1')
+  await addElement(page, 'div') // div2 — ребёнок div1
+  await page.click('text=div 1') // повторно выбираем div1
+  await addElement(page, 'div') // div3 — ребёнок div1
+
+  // Убеждаемся что все три div видны в слоях
+  await expect(page.locator('text=div 1')).toBeVisible()
+  await expect(page.locator('text=div 2')).toBeVisible()
+  await expect(page.locator('text=div 3')).toBeVisible()
+
+  // Выделяем div 1
+  await page.click('text=div 1')
+
+  // Enter → провалиться: выделяются дети (div2, div3)
+  await page.keyboard.press('Enter')
+
+  // После Enter выделены дети — selectedElementIds содержит обоих
+  const afterEnter = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    return p.state?.selectedElementIds?.length ?? 0
+  })
+  expect(afterEnter).toBe(2)
+
+  // Tab → первый ребёнок → перейти на следующий сиблинг (div3)
+  await page.keyboard.press('Tab')
+
+  // Теперь selectedElementIds.length === 1 (Tab работает только при single-select,
+  // но после Enter было 2 — Tab сработает только при single.
+  // Сначала нужен single-select: кликнем div2
+  await page.click('text=div 2')
+
+  // Tab → переход к div3
+  await page.keyboard.press('Tab')
+  const afterTab = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    return p.state?.selectedElementId ?? null
+  })
+  // Проверяем что выбран div 3 (последний ребёнок)
+  const div3Name = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const selId = p.state?.selectedElementId
+    const project = p.state?.project
+    if (!project || !selId) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    return artboard?.elements?.[selId]?.name ?? null
+  })
+  expect(div3Name).toBe('div 3')
+
+  // Shift+Tab → назад к div2
+  await page.keyboard.press('Shift+Tab')
+  const afterShiftTab = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const selId = p.state?.selectedElementId
+    const project = p.state?.project
+    if (!project || !selId) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    return artboard?.elements?.[selId]?.name ?? null
+  })
+  expect(afterShiftTab).toBe('div 2')
+
+  // Shift+Enter → подняться к родителю (div1)
+  await page.keyboard.press('Shift+Enter')
+  const afterShiftEnter = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-project')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const selId = p.state?.selectedElementId
+    const project = p.state?.project
+    if (!project || !selId) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    return artboard?.elements?.[selId]?.name ?? null
+  })
+  expect(afterShiftEnter).toBe('div 1')
 })

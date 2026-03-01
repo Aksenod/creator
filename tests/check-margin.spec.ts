@@ -3,7 +3,7 @@ import { test, expect, Page } from '@playwright/test'
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
   await page.evaluate(() => {
-    localStorage.removeItem('creator-v2')
+    localStorage.removeItem('creator-project')
     localStorage.removeItem('creator-project')
   })
   await page.reload()

@@ -31,3 +31,19 @@ export const isDescendantOf = (
 ): boolean => {
   return collectDescendantIds(elements, ancestorId).has(candidateId)
 }
+
+// Получить список siblings и позицию элемента среди них
+export const getSiblingInfo = (
+  ab: Artboard,
+  id: string,
+): { siblings: string[]; index: number } | null => {
+  // Проверяем rootChildren
+  const rootIdx = ab.rootChildren.indexOf(id)
+  if (rootIdx !== -1) return { siblings: ab.rootChildren, index: rootIdx }
+  // Ищем среди children элементов
+  for (const el of Object.values(ab.elements)) {
+    const idx = el.children.indexOf(id)
+    if (idx !== -1) return { siblings: el.children, index: idx }
+  }
+  return null
+}

@@ -1,61 +1,49 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Project, EditorMode, Artboard, CanvasElement, ElementStyles, ElementType } from '../types'
+import type { Project, Artboard, CanvasElement, ElementStyles, ElementType } from '../types'
 import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
 import {
   generateId,
   CONTAINER_TYPES,
+  pushHistory,
   applyStyleUpdate,
 } from './helpers'
 import { findParentId, collectDescendantIds } from '../utils/treeUtils'
 
-const HISTORY_MAX = 50
-
 type EditorState = {
   allProjects: Project[]
-  activeProjectId: string | null
-  // Mirror of allProjects.find(p => p.id === activeProjectId) — for backward-compat with existing components
   project: Project | null
-  mode: EditorMode
+  activeProjectId: string | null
   activeArtboardId: string | null
   selectedElementId: string | null
   selectedElementIds: string[]
   activeBreakpointId: BreakpointId
-
-  // История (не персистируется)
   history: Project[]
   historyIndex: number
   future: Project[]
-
-  // Clipboard (не персистируется)
   clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null
-
-  // Grid Edit Mode
   gridEditElementId: string | null
+  expandedLayers: Set<string>
 
-  // Проекты
   createProject: (name: string) => void
   openProject: (id: string) => void
   closeProject: () => void
   deleteProject: (id: string) => void
   renameProject: (id: string, name: string) => void
   duplicateProject: (id: string) => void
+  loadProject: (project: Project) => void
 
-  // Артборды
-  setActiveArtboard: (artboardId: string | null) => void
+  enterArtboard: (artboardId: string) => void
+  setActiveArtboard: (id: string | null) => void
   addArtboard: (name: string) => void
-  renameArtboard: (artboardId: string, name: string) => void
-  deleteArtboard: (artboardId: string) => void
+  moveArtboard: (id: string, x: number, y: number) => void
 
-  // Выделение
   selectElement: (id: string | null) => void
+  selectElements: (ids: string[]) => void
   toggleSelectElement: (id: string) => void
-
-  // Брейкпоинты
   setActiveBreakpoint: (bpId: BreakpointId) => void
 
-  // Элементы
   addElement: (artboardId: string, type: ElementType, parentId: string | null) => void
   updateElement: (artboardId: string, elementId: string, patch: Partial<CanvasElement>) => void
   moveElement: (artboardId: string, elementId: string, newParentId: string | null, newIndex: number) => void
@@ -63,20 +51,16 @@ type EditorState = {
   updateSelectedElements: (artboardId: string, patch: Partial<ElementStyles>) => void
   clearBreakpointStyle: (artboardId: string, elementId: string, bpId: BreakpointId) => void
 
-  // Undo/Redo
   undo: () => void
   redo: () => void
-
-  // Clipboard
   copyElement: () => void
   pasteElement: () => void
   duplicateElement: () => void
-
-  // Grid Edit Mode
+  expandLayers: (ids: string[]) => void
+  collapseLayers: (ids: string[]) => void
+  collapseAllLayers: () => void
   setGridEditElementId: (id: string | null) => void
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
   const bodyId = generateId()
@@ -101,40 +85,18 @@ const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
   }
 }
 
-/** Обновить активный проект в allProjects + в project + добавить в историю */
-function pushAndSync(
-  state: Pick<EditorState, 'history' | 'historyIndex' | 'allProjects' | 'project'>,
-  currentProject: Project,
-  newProject: Project,
-) {
-  const updated = { ...newProject, updatedAt: Date.now() }
-  const hist = [...state.history.slice(0, state.historyIndex + 1), currentProject].slice(-HISTORY_MAX)
-  return {
-    project: updated,
-    allProjects: state.allProjects.map(p => p.id === updated.id ? updated : p),
-    history: hist,
-    historyIndex: hist.length - 1,
-    future: [] as Project[],
-  }
+function syncProjectToAll(allProjects: Project[], project: Project): Project[] {
+  const exists = allProjects.some(p => p.id === project.id)
+  if (exists) return allProjects.map(p => p.id === project.id ? project : p)
+  return [...allProjects, project]
 }
-
-/** Обновить проект без добавления в историю */
-function syncProject(allProjects: Project[], newProject: Project) {
-  return {
-    project: newProject,
-    allProjects: allProjects.map(p => p.id === newProject.id ? newProject : p),
-  }
-}
-
-// ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useEditorStore = create<EditorState>()(
   persist(
     (set) => ({
       allProjects: [],
-      activeProjectId: null,
       project: null,
-      mode: 'dashboard' as EditorMode,
+      activeProjectId: null,
       activeArtboardId: null,
       selectedElementId: null,
       selectedElementIds: [],
@@ -144,10 +106,9 @@ export const useEditorStore = create<EditorState>()(
       future: [],
       clipboard: null,
       gridEditElementId: null,
+      expandedLayers: new Set<string>(),
 
-      // ─── Projects ───────────────────────────────────────────────────────────
-
-      createProject: (name) => set((state) => {
+      createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)
         const project: Project = {
           id: generateId(),
@@ -156,29 +117,30 @@ export const useEditorStore = create<EditorState>()(
           artboardOrder: [artboard.id],
           updatedAt: Date.now(),
         }
-        return {
+        set((state) => ({
           allProjects: [...state.allProjects, project],
-          activeProjectId: project.id,
           project,
-          mode: 'canvas' as EditorMode,
+          activeProjectId: project.id,
           activeArtboardId: artboard.id,
           selectedElementId: null,
           selectedElementIds: [],
           history: [],
           historyIndex: -1,
           future: [],
-        }
-      }),
+        }))
+      },
 
       openProject: (id) => set((state) => {
-        const proj = state.allProjects.find(p => p.id === id)
-        if (!proj) return state
-        const firstArtboardId = proj.artboardOrder[0] ?? null
+        const updatedAll = state.project
+          ? syncProjectToAll(state.allProjects, state.project)
+          : state.allProjects
+        const found = updatedAll.find(p => p.id === id)
+        if (!found) return state
         return {
+          allProjects: updatedAll,
+          project: found,
           activeProjectId: id,
-          project: proj,
-          mode: 'canvas',
-          activeArtboardId: firstArtboardId,
+          activeArtboardId: found.artboardOrder[0] ?? null,
           selectedElementId: null,
           selectedElementIds: [],
           history: [],
@@ -187,112 +149,112 @@ export const useEditorStore = create<EditorState>()(
         }
       }),
 
-      closeProject: () => set({
-        mode: 'dashboard',
-        activeProjectId: null,
-        project: null,
-        activeArtboardId: null,
-        selectedElementId: null,
-        selectedElementIds: [],
-        history: [],
-        historyIndex: -1,
-        future: [],
+      closeProject: () => set((state) => {
+        const updatedAll = state.project
+          ? syncProjectToAll(state.allProjects, state.project)
+          : state.allProjects
+        return {
+          allProjects: updatedAll,
+          project: null,
+          activeProjectId: null,
+          activeArtboardId: null,
+          selectedElementId: null,
+          selectedElementIds: [],
+        }
       }),
 
       deleteProject: (id) => set((state) => {
-        const newProjects = state.allProjects.filter(p => p.id !== id)
-        const isActive = state.activeProjectId === id
-        return {
-          allProjects: newProjects,
-          ...(isActive ? {
-            activeProjectId: null,
+        const updatedAll = state.allProjects.filter(p => p.id !== id)
+        if (state.activeProjectId === id) {
+          return {
+            allProjects: updatedAll,
             project: null,
-            mode: 'dashboard' as EditorMode,
+            activeProjectId: null,
             activeArtboardId: null,
             selectedElementId: null,
             selectedElementIds: [],
-          } : {}),
+          }
         }
+        return { allProjects: updatedAll }
       }),
 
       renameProject: (id, name) => set((state) => {
-        const proj = state.allProjects.find(p => p.id === id)
-        if (!proj) return state
-        const updated = { ...proj, name, updatedAt: Date.now() }
-        return syncProject(state.allProjects, updated)
+        const updatedAll = state.allProjects.map(p =>
+          p.id === id ? { ...p, name, updatedAt: Date.now() } : p
+        )
+        const updatedProject = state.project?.id === id
+          ? { ...state.project, name, updatedAt: Date.now() }
+          : state.project
+        return { allProjects: updatedAll, project: updatedProject }
       }),
 
       duplicateProject: (id) => set((state) => {
-        const proj = state.allProjects.find(p => p.id === id)
-        if (!proj) return state
-        const newId = generateId()
-        // Deep-copy artboards with new ids
-        const artboardMap: Record<string, string> = {}
-        for (const abId of proj.artboardOrder) {
-          artboardMap[abId] = generateId()
-        }
-        const newArtboards: Record<string, Artboard> = {}
-        for (const [abId, ab] of Object.entries(proj.artboards)) {
-          const newAbId = artboardMap[abId]
-          if (!newAbId) continue
-          newArtboards[newAbId] = { ...ab, id: newAbId }
-        }
+        const source = state.allProjects.find(p => p.id === id)
+        if (!source) return state
         const newProject: Project = {
-          ...proj,
-          id: newId,
-          name: proj.name + ' (copy)',
-          artboards: newArtboards,
-          artboardOrder: proj.artboardOrder.map(id => artboardMap[id]!).filter(Boolean),
+          ...source,
+          id: generateId(),
+          name: source.name + ' (copy)',
           updatedAt: Date.now(),
         }
         return { allProjects: [...state.allProjects, newProject] }
       }),
 
-      // ─── Artboards ────────────────────────────────────────────────────────────
+      loadProject: (project) => set((state) => ({
+        allProjects: syncProjectToAll(state.allProjects, project),
+        project,
+        activeProjectId: project.id,
+        activeArtboardId: project.artboardOrder[0] ?? null,
+        selectedElementId: null,
+        selectedElementIds: [],
+        history: [],
+        historyIndex: -1,
+        future: [],
+      })),
 
-      setActiveArtboard: (artboardId) => set({ activeArtboardId: artboardId }),
+      enterArtboard: (artboardId) => {
+        set({ activeArtboardId: artboardId, selectedElementId: null, selectedElementIds: [] })
+      },
+
+      setActiveArtboard: (id) => {
+        set({ activeArtboardId: id, selectedElementId: null, selectedElementIds: [] })
+      },
 
       addArtboard: (name) => set((state) => {
-        const proj = state.project
-        if (!proj) return state
-        const lastArtboardId = proj.artboardOrder[proj.artboardOrder.length - 1]
-        const lastAb = lastArtboardId ? proj.artboards[lastArtboardId] : null
+        if (!state.project) return state
+        const order = state.project.artboardOrder
+        const lastId = order[order.length - 1]
+        const lastAb = lastId ? state.project.artboards[lastId] : null
         const x = lastAb ? lastAb.x + lastAb.width + 100 : 100
-        const artboard = createDefaultArtboard(name, x, 100)
-        const newProject = {
-          ...proj,
-          artboards: { ...proj.artboards, [artboard.id]: artboard },
-          artboardOrder: [...proj.artboardOrder, artboard.id],
+        const y = lastAb ? lastAb.y : 100
+        const artboard = createDefaultArtboard(name, x, y)
+        const newProject: Project = {
+          ...state.project,
+          artboards: { ...state.project.artboards, [artboard.id]: artboard },
+          artboardOrder: [...state.project.artboardOrder, artboard.id],
+          updatedAt: Date.now(),
         }
-        return pushAndSync(state, proj, newProject)
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
-      renameArtboard: (artboardId, name) => set((state) => {
-        const proj = state.project
-        if (!proj) return state
-        const ab = proj.artboards[artboardId]
-        if (!ab) return state
-        const updated = { ...proj, artboards: { ...proj.artboards, [artboardId]: { ...ab, name } }, updatedAt: Date.now() }
-        return syncProject(state.allProjects, updated)
-      }),
-
-      deleteArtboard: (artboardId) => set((state) => {
-        const proj = state.project
-        if (!proj || proj.artboardOrder.length <= 1) return state
-        const newArtboards = { ...proj.artboards }
-        delete newArtboards[artboardId]
-        const newOrder = proj.artboardOrder.filter(id => id !== artboardId)
-        const updated = { ...proj, artboards: newArtboards, artboardOrder: newOrder, updatedAt: Date.now() }
-        const newActiveId = state.activeArtboardId === artboardId ? (newOrder[0] ?? null) : state.activeArtboardId
-        return {
-          ...syncProject(state.allProjects, updated),
-          activeArtboardId: newActiveId,
+      moveArtboard: (id, x, y) => set((state) => {
+        const ab = state.project?.artboards[id]
+        if (!ab || !state.project) return state
+        const newProject: Project = {
+          ...state.project,
+          artboards: { ...state.project.artboards, [id]: { ...ab, x, y } },
+          updatedAt: Date.now(),
         }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
-      // ─── Selection ────────────────────────────────────────────────────────────
+      selectElement: (id) => {
+        set({ selectedElementId: id, selectedElementIds: id ? [id] : [] })
+      },
 
-      selectElement: (id) => set({ selectedElementId: id, selectedElementIds: id ? [id] : [] }),
+      selectElements: (ids) => {
+        set({ selectedElementIds: ids, selectedElementId: ids[0] ?? null })
+      },
 
       toggleSelectElement: (id) => set((state) => {
         const ids = state.selectedElementIds
@@ -304,8 +266,6 @@ export const useEditorStore = create<EditorState>()(
       }),
 
       setActiveBreakpoint: (bpId) => set({ activeBreakpointId: bpId }),
-
-      // ─── Elements ────────────────────────────────────────────────────────────
 
       addElement: (artboardId, type, parentId) => set((state) => {
         const ab = state.project?.artboards[artboardId]
@@ -349,15 +309,16 @@ export const useEditorStore = create<EditorState>()(
           updatedRootChildren = [...ab.rootChildren, id]
         }
 
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: {
             ...state.project.artboards,
             [artboardId]: { ...ab, elements: updatedElements, rootChildren: updatedRootChildren },
           },
+          updatedAt: Date.now(),
         }
         return {
-          ...pushAndSync(state, state.project, newProject),
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: id,
           selectedElementIds: [id],
         }
@@ -389,14 +350,15 @@ export const useEditorStore = create<EditorState>()(
           }
         }
 
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: {
             ...state.project.artboards,
             [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
           },
+          updatedAt: Date.now(),
         }
-        return pushAndSync(state, state.project, newProject)
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       clearBreakpointStyle: (artboardId, elementId, bpId) => set((state) => {
@@ -408,14 +370,15 @@ export const useEditorStore = create<EditorState>()(
         delete newBpStyles[bpId]
 
         const updated: CanvasElement = { ...el, breakpointStyles: newBpStyles }
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: {
             ...state.project.artboards,
             [artboardId]: { ...ab, elements: { ...ab.elements, [elementId]: updated } },
           },
+          updatedAt: Date.now(),
         }
-        return pushAndSync(state, state.project, newProject)
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       deleteElement: (artboardId, elementId) => set((state) => {
@@ -437,15 +400,16 @@ export const useEditorStore = create<EditorState>()(
 
         const newRootChildren = ab.rootChildren.filter(id => !toDelete.has(id))
 
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: {
             ...state.project.artboards,
             [artboardId]: { ...ab, elements: newElements, rootChildren: newRootChildren },
           },
+          updatedAt: Date.now(),
         }
         return {
-          ...pushAndSync(state, state.project, newProject),
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: toDelete.has(state.selectedElementId ?? '') ? null : state.selectedElementId,
           selectedElementIds: state.selectedElementIds.filter(id => !toDelete.has(id)),
         }
@@ -460,18 +424,17 @@ export const useEditorStore = create<EditorState>()(
         const newElements = { ...ab.elements }
         for (const id of ids) {
           const el = newElements[id]
-          if (el) {
-            newElements[id] = applyStyleUpdate(el, patch, activeBpId)
-          }
+          if (el) newElements[id] = applyStyleUpdate(el, patch, activeBpId)
         }
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: {
             ...state.project.artboards,
             [artboardId]: { ...ab, elements: newElements },
           },
+          updatedAt: Date.now(),
         }
-        return pushAndSync(state, state.project, newProject)
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       moveElement: (artboardId, elementId, newParentId, newIndex) => set((state) => {
@@ -481,67 +444,52 @@ export const useEditorStore = create<EditorState>()(
         const oldParentId = findParentId(ab, elementId)
         const elements = { ...ab.elements }
 
-        const save = (newProject: Project) =>
-          pushAndSync(state, state.project!, newProject)
+        const save = (proj: Project) =>
+          pushHistory(state.history, state.historyIndex, state.project!, proj)
+
+        const ts = { updatedAt: Date.now() }
 
         if (oldParentId === null) {
           const oldArr = ab.rootChildren.filter((id) => id !== elementId)
           if (newParentId === null) {
             const newArr = [...oldArr]
             newArr.splice(newIndex, 0, elementId)
-            return save({
-              ...state.project,
-              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
-            })
+            return save({ ...state.project, artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } }, ...ts })
           } else {
             const parent = elements[newParentId]
             if (!parent) return state
             const newChildren = [...parent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...parent, children: newChildren }
-            return save({
-              ...state.project,
-              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: oldArr } },
-            })
+            return save({ ...state.project, artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: oldArr } }, ...ts })
           }
         } else {
           const oldParent = elements[oldParentId]
           if (!oldParent) return state
-          const oldChildren = oldParent.children.filter((id) => id !== elementId)
-          elements[oldParentId] = { ...oldParent, children: oldChildren }
+          elements[oldParentId] = { ...oldParent, children: oldParent.children.filter(id => id !== elementId) }
 
           if (newParentId === null) {
             const newArr = [...ab.rootChildren]
             newArr.splice(newIndex, 0, elementId)
-            return save({
-              ...state.project,
-              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } },
-            })
+            return save({ ...state.project, artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: newArr } }, ...ts })
           } else {
             const newParent = elements[newParentId]
             if (!newParent) return state
             const newChildren = [...newParent.children]
             newChildren.splice(newIndex, 0, elementId)
             elements[newParentId] = { ...newParent, children: newChildren }
-            return save({
-              ...state.project,
-              artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: ab.rootChildren } },
-            })
+            return save({ ...state.project, artboards: { ...state.project.artboards, [artboardId]: { ...ab, elements, rootChildren: ab.rootChildren } }, ...ts })
           }
         }
       }),
 
-      // ─── Undo/Redo ────────────────────────────────────────────────────────────
-
       undo: () => set((state) => {
         if (state.historyIndex < 0 || state.history.length === 0) return state
-        const restoredProject = state.history[state.historyIndex]
-        const currentProject = state.project!
+        const project = state.history[state.historyIndex]
         return {
-          project: restoredProject,
-          allProjects: state.allProjects.map(p => p.id === restoredProject.id ? restoredProject : p),
+          project,
           historyIndex: state.historyIndex - 1,
-          future: [currentProject, ...state.future],
+          future: [state.project!, ...state.future],
           selectedElementId: null,
           selectedElementIds: [],
         }
@@ -550,19 +498,16 @@ export const useEditorStore = create<EditorState>()(
       redo: () => set((state) => {
         if (state.future.length === 0) return state
         const [nextProject, ...remainingFuture] = state.future
-        const hist = [...state.history.slice(0, state.historyIndex + 1), state.project!]
+        const newHistory = [...state.history.slice(0, state.historyIndex + 1), state.project!]
         return {
           project: nextProject,
-          allProjects: state.allProjects.map(p => p.id === nextProject.id ? nextProject : p),
-          history: hist,
-          historyIndex: hist.length - 1,
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
           future: remainingFuture,
           selectedElementId: null,
           selectedElementIds: [],
         }
       }),
-
-      // ─── Clipboard ────────────────────────────────────────────────────────────
 
       copyElement: () => set((state) => {
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
@@ -582,9 +527,7 @@ export const useEditorStore = create<EditorState>()(
         if (!ab || !state.clipboard || !state.project) return state
 
         const idMap: Record<string, string> = {}
-        Object.keys(state.clipboard.descendants).forEach(oldId => {
-          idMap[oldId] = generateId()
-        })
+        Object.keys(state.clipboard.descendants).forEach(oldId => { idMap[oldId] = generateId() })
 
         const newElements: Record<string, CanvasElement> = {}
         Object.entries(state.clipboard.descendants).forEach(([oldId, el]) => {
@@ -604,10 +547,7 @@ export const useEditorStore = create<EditorState>()(
         let newAb: Artboard
 
         if (selectedEl && CONTAINER_TYPES.includes(selectedEl.type as typeof CONTAINER_TYPES[number])) {
-          mergedElements[selectedEl.id] = {
-            ...selectedEl,
-            children: [...selectedEl.children, newRootId],
-          }
+          mergedElements[selectedEl.id] = { ...selectedEl, children: [...selectedEl.children, newRootId] }
           newAb = { ...ab, elements: mergedElements }
         } else if (selectedEl) {
           const parentId = findParentId(ab, selectedEl.id)
@@ -627,25 +567,41 @@ export const useEditorStore = create<EditorState>()(
         } else {
           const bodyId = ab.rootChildren.find(cid => ab.elements[cid]?.type === 'body')
           if (bodyId) {
-            const body = mergedElements[bodyId]
-            mergedElements[bodyId] = { ...body, children: [...body.children, newRootId] }
+            mergedElements[bodyId] = { ...mergedElements[bodyId], children: [...mergedElements[bodyId].children, newRootId] }
             newAb = { ...ab, elements: mergedElements }
           } else {
             newAb = { ...ab, elements: mergedElements, rootChildren: [...ab.rootChildren, newRootId] }
           }
         }
 
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
+          updatedAt: Date.now(),
         }
 
         return {
-          ...pushAndSync(state, state.project, newProject),
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: newRootId,
           selectedElementIds: [newRootId],
         }
       }),
+
+      expandLayers: (ids) => set((state) => {
+        const next = new Set(state.expandedLayers)
+        ids.forEach(id => next.add(id))
+        return { expandedLayers: next }
+      }),
+
+      collapseLayers: (ids) => set((state) => {
+        const next = new Set(state.expandedLayers)
+        ids.forEach(id => next.delete(id))
+        return { expandedLayers: next }
+      }),
+
+      collapseAllLayers: () => set({ expandedLayers: new Set<string>() }),
+
+      setGridEditElementId: (id) => set({ gridEditElementId: id }),
 
       duplicateElement: () => set((state) => {
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
@@ -654,17 +610,14 @@ export const useEditorStore = create<EditorState>()(
         if (ab.elements[id].type === 'body') return state
 
         const idMap: Record<string, string> = {}
-        collectDescendantIds(ab.elements, id).forEach(eid => {
-          idMap[eid] = generateId()
-        })
+        collectDescendantIds(ab.elements, id).forEach(eid => { idMap[eid] = generateId() })
 
         const newElements: Record<string, CanvasElement> = {}
         Object.entries(idMap).forEach(([oldId, newId]) => {
           const el = ab.elements[oldId]
           if (!el) return
           newElements[newId] = {
-            ...el,
-            id: newId,
+            ...el, id: newId,
             name: oldId === id ? el.name + ' copy' : el.name,
             children: el.children.map(c => idMap[c] ?? c),
           }
@@ -690,60 +643,30 @@ export const useEditorStore = create<EditorState>()(
           newAb = { ...ab, elements: mergedElements, rootChildren: newRootChildren }
         }
 
-        const newProject = {
+        const newProject: Project = {
           ...state.project,
           artboards: { ...state.project.artboards, [state.activeArtboardId!]: newAb },
+          updatedAt: Date.now(),
         }
 
         return {
-          ...pushAndSync(state, state.project, newProject),
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: newRootId,
           selectedElementIds: [newRootId],
         }
       }),
-
-      setGridEditElementId: (id) => set({ gridEditElementId: id }),
     }),
     {
-      name: 'creator-v2',
+      name: 'creator-project',
       partialize: (state) => ({
         allProjects: state.allProjects,
-        activeProjectId: state.activeProjectId,
         project: state.project,
-        mode: state.mode,
+        activeProjectId: state.activeProjectId,
         activeArtboardId: state.activeArtboardId,
         selectedElementId: state.selectedElementId,
         selectedElementIds: state.selectedElementIds,
         activeBreakpointId: state.activeBreakpointId,
       }),
-      merge: (persisted: unknown, current) => {
-        const p = persisted as Partial<EditorState> | null
-        if (!p) return current
-        const allProjects = p.allProjects ?? []
-        const activeProjectId = p.activeProjectId ?? null
-        const project = activeProjectId
-          ? allProjects.find(proj => proj.id === activeProjectId) ?? null
-          : null
-        return { ...current, ...p, project, allProjects }
-      },
-      onRehydrateStorage: () => (state) => {
-        // Миграция со старого ключа creator-project
-        if (state && state.allProjects.length === 0) {
-          try {
-            const raw = localStorage.getItem('creator-project')
-            if (raw) {
-              const parsed = JSON.parse(raw) as { state?: { project?: Project } }
-              const oldProject = parsed.state?.project
-              if (oldProject) {
-                state.allProjects = [{ ...oldProject, updatedAt: Date.now() }]
-                state.mode = 'dashboard'
-                state.project = null
-                state.activeProjectId = null
-              }
-            }
-          } catch { /* ignore */ }
-        }
-      },
     }
   )
 )

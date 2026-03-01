@@ -1,3 +1,4 @@
+import { Toolbar } from '../Toolbar/Toolbar'
 import {
   DndContext,
   DragEndEvent,
@@ -80,7 +81,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
   const isDropInto = dropIndicator?.targetId === id && dropIndicator.position === 'into'
 
   return (
-    <div style={{ opacity: isDragging ? 0.35 : 1 }}>
+    <div style={{ opacity: isDragging ? 0.35 : 1 }} data-layer-id={id}>
       {/* Синяя линия ВЫШЕ */}
       {isDropAbove && <DropLine depth={depth} />}
 
@@ -189,55 +190,47 @@ function getIcon(type: string) {
 // ─── Layers panel ─────────────────────────────────────────────────────────────
 
 export function Layers({ artboard }: Props) {
-  const { activeArtboardId, moveElement } = useEditorStore()
+  const {
+    activeArtboardId, moveElement, selectedElementId,
+    expandedLayers, expandLayers, collapseLayers, collapseAllLayers,
+  } = useEditorStore()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropIndicator, setDropIndicator] = useState<DropIndicator>(null)
   const mouseYRef = useRef(0)
   const expandTimerRef = useRef<{ timer: ReturnType<typeof setTimeout>; targetId: string } | null>(null)
-
-  // Все контейнеры развёрнуты по умолчанию
-  const [expandedLayers, setExpandedLayers] = useState<Set<string>>(() => {
-    const expanded = new Set<string>()
-    Object.entries(artboard.elements).forEach(([id, el]) => {
-      if (el.children.length > 0) expanded.add(id)
-    })
-    return expanded
-  })
+  const layersScrollRef = useRef<HTMLDivElement>(null)
 
   // Авто-раскрытие новых контейнеров (paste/duplicate добавляют элементы)
   useEffect(() => {
-    setExpandedLayers((prev) => {
-      let changed = false
-      const next = new Set(prev)
-      Object.entries(artboard.elements).forEach(([id, el]) => {
-        if (el.children.length > 0 && !next.has(id)) {
-          next.add(id)
-          changed = true
-        }
-      })
-      return changed ? next : prev
+    const toExpand: string[] = []
+    Object.entries(artboard.elements).forEach(([id, el]) => {
+      if (el.children.length > 0 && !expandedLayers.has(id)) {
+        toExpand.push(id)
+      }
     })
-  }, [artboard.elements])
+    if (toExpand.length > 0) expandLayers(toExpand)
+  }, [artboard.elements]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Scroll-into-view при смене выделения
+  useEffect(() => {
+    if (!selectedElementId || !layersScrollRef.current) return
+    const el = layersScrollRef.current.querySelector(`[data-layer-id="${selectedElementId}"]`)
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [selectedElementId])
 
   const toggleExpand = (id: string, altKey: boolean) => {
-    setExpandedLayers((prev) => {
-      const next = new Set(prev)
-      if (altKey) {
-        const ids = [...collectDescendantIds(artboard.elements, id)]
-        const isCurrentlyExpanded = prev.has(id)
-        ids.forEach((descId) => {
-          if (isCurrentlyExpanded) next.delete(descId)
-          else next.add(descId)
-        })
-      } else {
-        if (next.has(id)) next.delete(id)
-        else next.add(id)
-      }
-      return next
-    })
+    if (altKey) {
+      const ids = [...collectDescendantIds(artboard.elements, id)]
+      const isCurrentlyExpanded = expandedLayers.has(id)
+      if (isCurrentlyExpanded) collapseLayers(ids)
+      else expandLayers(ids)
+    } else {
+      if (expandedLayers.has(id)) collapseLayers([id])
+      else expandLayers([id])
+    }
   }
 
-  const collapseAll = () => setExpandedLayers(new Set())
+  const collapseAll = () => collapseAllLayers()
 
   // Отслеживать Y курсора глобально для вычисления above/into/below
   useEffect(() => {
@@ -303,7 +296,7 @@ export function Layers({ artboard }: Props) {
       if (expandTimerRef.current?.targetId !== targetId) {
         clearExpandTimer()
         const timer = setTimeout(() => {
-          setExpandedLayers((prev) => new Set([...prev, targetId]))
+          expandLayers([targetId])
         }, 600)
         expandTimerRef.current = { timer, targetId }
       }
@@ -357,10 +350,10 @@ export function Layers({ artboard }: Props) {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{
-        padding: '10px 12px', fontSize: 11, fontWeight: 600,
+        padding: '0 8px 0 12px', height: 36, fontSize: 11, fontWeight: 600,
         color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em',
         borderBottom: '1px solid #e0e0e0',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', gap: 4,
       }}>
         <span>Слои</span>
         {expandedLayers.size > 0 && (
@@ -375,9 +368,12 @@ export function Layers({ artboard }: Props) {
             ⊟
           </button>
         )}
+        <div style={{ marginLeft: 'auto' }}>
+          <Toolbar />
+        </div>
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div ref={layersScrollRef} style={{ flex: 1, overflow: 'auto' }}>
         {artboard.rootChildren.length === 0 ? (
           <div style={{ padding: 16, color: '#aaa', fontSize: 12 }}>Нет элементов</div>
         ) : (
