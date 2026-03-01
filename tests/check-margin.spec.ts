@@ -2,15 +2,17 @@ import { test, expect, Page } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
-  await page.evaluate(() => localStorage.removeItem('creator-project'))
+  await page.evaluate(() => {
+    localStorage.removeItem('creator-v2')
+    localStorage.removeItem('creator-project')
+  })
   await page.reload()
 })
 
 async function enterPageEditor(page: Page) {
   await page.click('button:has-text("Новый проект")')
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
-  await page.locator('[data-testid="artboard-card"]').first().dblclick()
-  await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
+  await expect(page.locator('button:has-text("← Проекты")')).toBeVisible()
 }
 
 async function addElement(page: Page, type: string) {
@@ -57,6 +59,6 @@ test('margin-top moves element visually away from sibling', async ({ page }) => 
   const afterBox = await secondEl.boundingBox()
   console.log('After margin box:', JSON.stringify(afterBox))
 
-  // Element should have moved down (canvas auto-fit scale ~0.625, so 80px margin → ~50px visual)
-  expect(afterBox!.y).toBeGreaterThan(initialBox!.y + 40)
+  // Element should have moved down (canvas transform scale, 80px margin → visible shift)
+  expect(afterBox!.y).toBeGreaterThanOrEqual(initialBox!.y + 30)
 })

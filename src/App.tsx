@@ -1,14 +1,10 @@
 import { useEditorStore } from './store'
-import { BirdsEye } from './components/Canvas/BirdsEye'
-import { PageEditor } from './components/Canvas/PageEditor'
-import { Welcome } from './components/Welcome'
+import { ProjectsDashboard } from './components/ProjectsDashboard'
+import { CanvasEditor } from './components/CanvasEditor'
 
 export default function App() {
-  const { project, mode } = useEditorStore()
+  const mode = useEditorStore((s) => s.mode)
 
-  if (!project) return <Welcome />
-
-  if (mode === 'birdseye') return <BirdsEye />
-
-  return <PageEditor />
+  if (mode === 'dashboard') return <ProjectsDashboard />
+  return <CanvasEditor />
 }

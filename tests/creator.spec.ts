@@ -5,7 +5,10 @@ import { test, expect, Page } from '@playwright/test'
 /** Сброс localStorage и перезагрузка страницы */
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
-  await page.evaluate(() => localStorage.removeItem('creator-project'))
+  await page.evaluate(() => {
+    localStorage.removeItem('creator-v2')
+    localStorage.removeItem('creator-project')
+  })
   await page.reload()
 })
 
@@ -15,54 +18,81 @@ async function addElement(page: Page, type: string) {
   await page.click(`[data-testid="add-${type}"]`)
 }
 
-/** Создать проект и вернуть page */
+/** Создать проект и дождаться открытия CanvasEditor */
 async function createProject(page: Page) {
   await page.click('button:has-text("Новый проект")')
-  // Ждём появления артборда в BirdsEye
+  // После создания проекта сразу открывается CanvasEditor
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
 }
 
-/** Войти в PageEditor (двойной клик по артборду) */
+/** Войти в Canvas Editor (теперь это просто createProject) */
 async function enterPageEditor(page: Page) {
   await createProject(page)
-  // Двойной клик по артборду-карточке
-  await page.locator('[data-testid="artboard-card"]').first().dblclick()
-  // Ждём появления кнопки "← Назад"
-  await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
+  // Уже в CanvasEditor после создания проекта
+  await expect(page.locator('button:has-text("← Проекты")')).toBeVisible()
+}
+
+// ─── Вспомогательная функция для чтения проекта из localStorage ──────────────
+
+async function getStoredProject(page: Page) {
+  return page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    return p.state?.allProjects?.[0] ?? null
+  })
+}
+
+async function getStoredArtboard(page: Page) {
+  const project = await getStoredProject(page)
+  if (!project) return null
+  return Object.values(project.artboards)[0] as typeof project.artboards[string]
+}
+
+async function getStoredStyles(page: Page) {
+  return page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elemId = body?.children?.[0]
+    return artboard?.elements?.[elemId]?.styles ?? null
+  })
 }
 
 // ─── Тест 1: Создание проекта ─────────────────────────────────────────────────
 
 test('создание проекта', async ({ page }) => {
-  // Должна быть Welcome-страница с заголовком Creator
-  await expect(page.locator('h1')).toContainText('Creator')
+  // Должен быть ProjectsDashboard с текстом Creator
+  await expect(page.locator('text=Creator').first()).toBeVisible()
 
-  // Кнопка "Новый проект"
-  const btn = page.locator('button:has-text("Новый проект")')
+  // Кнопка "Новый проект" (+ Новый проект в header)
+  const btn = page.locator('button:has-text("Новый проект")').first()
   await expect(btn).toBeVisible()
 
-  // Кликнуть → появится BirdsEye с кнопкой "+ Артборд"
+  // Кликнуть → открывается CanvasEditor с кнопкой "+ Артборд"
   await btn.click()
   await expect(page.locator('button:has-text("+ Артборд")')).toBeVisible()
 
-  // Должен быть виден артборд-карточка в BirdsEye
+  // Должен быть виден артборд-карточка на холсте
   const artboard = page.locator('[data-testid="artboard-card"]').first()
   await expect(artboard).toBeVisible()
 
   // Должно быть имя проекта в топбаре
-  await expect(page.locator('span').filter({ hasText: 'Мой проект' })).toBeVisible()
+  await expect(page.locator('span').filter({ hasText: 'Новый проект' }).first()).toBeVisible()
 })
 
-// ─── Тест 2: Вход в артборд (Page mode) ──────────────────────────────────────
+// ─── Тест 2: Вход в Canvas Editor ──────────────────────────────────────────
 
 test('вход в артборд', async ({ page }) => {
   await createProject(page)
 
-  // Двойной клик по артборду-карточке
-  await page.locator('[data-testid="artboard-card"]').first().dblclick()
-
-  // Кнопка "← Назад"
-  await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
+  // Кнопка "← Проекты"
+  await expect(page.locator('button:has-text("← Проекты")')).toBeVisible()
 
   // Панель "Слои" — заголовок секции (div с точным текстом "Слои")
   await expect(page.getByText('Слои', { exact: true })).toBeVisible()
@@ -142,7 +172,7 @@ test('переключение в Preview mode', async ({ page }) => {
   await expect(page.locator('button:has-text("▶ Preview")')).toBeVisible()
 
   // Панели вернулись
-  await expect(page.locator('button:has-text("← Назад")')).toBeVisible()
+  await expect(page.locator('button:has-text("← Проекты")')).toBeVisible()
 })
 
 // ─── Тест 6: Удаление элемента ───────────────────────────────────────────────
@@ -178,16 +208,13 @@ test('переключение брейкпоинтов', async ({ page }) => {
   )
   await expect(mobileBtn).toBeVisible()
 
-  // Текущая ширина до переключения
-  const widthIndicator = page.locator('span').filter({ hasText: /px/ }).last()
-
   // Кликнуть на Mobile
   await mobileBtn.click()
 
   // В топбаре должна появиться надпись "375px" (внутри button Canvas Settings)
   await expect(page.locator('button:has-text("375px")')).toBeVisible()
 
-  // Кликнуть Desktop — вернуться к 1440px (title начинается с "Desktop:")
+  // Кликнуть Desktop — вернуться к 1440px
   const desktopBtn = page.locator('button[title^="Desktop"]')
   await desktopBtn.click()
   await expect(page.locator('button:has-text("1440px")')).toBeVisible()
@@ -205,12 +232,9 @@ test('добавление маржинов через Spacing panel', async ({ 
   // Секция Spacing должна быть видна
   await expect(page.getByText('Spacing', { exact: true })).toBeVisible()
 
-  // Порядок SpacingValue триггеров: marginTop(0), marginRight(1), marginBottom(2), marginLeft(3),
-  //                                  paddingTop(4), paddingRight(5), paddingBottom(6), paddingLeft(7)
   const triggers = page.locator('[data-spacing-trigger]')
   await expect(triggers).toHaveCount(8)
 
-  // Хелпер: кликнуть на триггер, ввести значение в попапе, нажать Enter
   async function setVal(idx: number, val: number) {
     await triggers.nth(idx).click()
     const inp = page.locator('[data-spacing-popover] input')
@@ -232,21 +256,23 @@ test('добавление маржинов через Spacing panel', async ({ 
   await expect(triggers.nth(3)).toHaveText('40')
 
   // Проверить что значения сохранились в localStorage
-  // Zustand persist оборачивает state: { state: { project: ... } }
-  const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-project')
-    if (!raw) return null
-    const persisted = JSON.parse(raw)
-    const project = persisted.state?.project
-    if (!project) return null
-    const artboard = Object.values(project.artboards)[0] as any
-    // rootChildren[0] = body, body.children[0] = div 1
-    const bodyId = artboard.rootChildren[0]
-    const body = artboard.elements[bodyId]
-    const elemId = body?.children?.[0]
-    return artboard.elements[elemId]?.styles
+  await page.waitForFunction(() => {
+    try {
+      const raw = localStorage.getItem('creator-v2')
+      if (!raw) return false
+      const p = JSON.parse(raw)
+      const project = p.state?.allProjects?.[0]
+      if (!project) return false
+      const artboard = Object.values(project.artboards)[0] as any
+      const bodyId = artboard?.rootChildren?.[0]
+      const body = artboard?.elements?.[bodyId]
+      const elemId = body?.children?.[0]
+      const s = artboard?.elements?.[elemId]?.styles
+      return s?.marginTop === 20 && s?.marginLeft === 40
+    } catch { return false }
   })
 
+  const stored = await getStoredStyles(page)
   expect(stored?.marginTop).toBe(20)
   expect(stored?.marginRight).toBe(10)
   expect(stored?.marginBottom).toBe(30)
@@ -272,13 +298,12 @@ test('установка черного бордера 10px у div', async ({ pa
   await solidBtn.click()
 
   // Установить Width = 10
-  // .last() → самый внутренний div (BRow), а не внешний контейнер
   const widthRow = page.locator('div').filter({ has: page.locator('span').filter({ hasText: /^Width$/ }) }).last()
   const widthInput = widthRow.locator('input[type="number"]')
   await widthInput.fill('10')
   await page.keyboard.press('Tab')
 
-  // Ввести Color = #000000 — скопить по Color BRow (.last() → innermost div)
+  // Ввести Color = #000000
   const colorRow = page.locator('div').filter({ has: page.locator('span').filter({ hasText: /^Color$/ }) }).last()
   const colorHexInput = colorRow.locator('input[placeholder="—"]')
   await colorHexInput.fill('#000000')
@@ -288,29 +313,15 @@ test('установка черного бордера 10px у div', async ({ pa
   await expect(widthInput).toHaveValue('10')
   await expect(colorHexInput).toHaveValue('#000000')
 
-  // Вспомогательная функция для чтения стилей из localStorage
-  const getStoredStyles = () => page.evaluate(() => {
-    const raw = localStorage.getItem('creator-project')
-    if (!raw) return null
-    const persisted = JSON.parse(raw)
-    const project = persisted.state?.project
-    if (!project) return null
-    const artboard = Object.values(project.artboards)[0] as any
-    // rootChildren[0] = body, body.children[0] = div 1
-    const bodyId = artboard.rootChildren[0]
-    const body = artboard.elements[bodyId]
-    const elemId = body?.children?.[0]
-    return artboard.elements[elemId]?.styles ?? null
-  })
-
   // Ждём пока Zustand запишет borderStyle и borderWidth в localStorage
   await page.waitForFunction(() => {
     try {
-      const raw = localStorage.getItem('creator-project')
+      const raw = localStorage.getItem('creator-v2')
       if (!raw) return false
       const p = JSON.parse(raw)
-      const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-      // rootChildren[0] = body, body.children[0] = div 1
+      const project = p.state?.allProjects?.[0]
+      if (!project) return false
+      const artboard = Object.values(project.artboards)[0] as any
       const bodyId = artboard?.rootChildren?.[0]
       const body = artboard?.elements?.[bodyId]
       const elemId = body?.children?.[0]
@@ -319,10 +330,9 @@ test('установка черного бордера 10px у div', async ({ pa
     } catch { return false }
   })
 
-  const stored = await getStoredStyles()
+  const stored = await getStoredStyles(page)
   expect(stored?.borderStyle).toBe('solid')
   expect(stored?.borderWidth).toBe(10)
-  // borderColor проверяем через UI (onChange контролируется React)
   await expect(colorHexInput).toHaveValue('#000000')
 })
 
@@ -374,19 +384,15 @@ test('Grid TrackList: добавить и удалить колонку', async 
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // Кнопки удаления треков (data-testid)
   const removeBtns = page.locator('[data-testid="track-remove"]')
   const countBefore = await removeBtns.count()
 
-  // Добавить колонку (первая кнопка "+ Add" = Columns)
   const addBtns = page.locator('button').filter({ hasText: '+ Add' })
   await expect(addBtns.first()).toBeVisible()
   await addBtns.first().click()
 
-  // Должен появиться новый трек
   await expect(removeBtns).toHaveCount(countBefore + 1)
 
-  // Удалить последний добавленный трек
   await removeBtns.last().click()
   await expect(removeBtns).toHaveCount(countBefore)
 })
@@ -400,21 +406,16 @@ test('Grid Gap: lock/unlock раздельные gap значения', async ({
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // Кнопка lock видна (по умолчанию locked)
   const lockBtn = page.locator('button[title*="gap"]')
   await expect(lockBtn).toBeVisible()
 
-  // Заголовка "Col" и "Row" нет когда locked
   await expect(page.locator('span').filter({ hasText: /^Col$/ })).toHaveCount(0)
 
-  // Разблокировать
   await lockBtn.click()
 
-  // Теперь видны Col/Row метки
   await expect(page.locator('span').filter({ hasText: /^Col$/ })).toBeVisible()
   await expect(page.locator('span').filter({ hasText: /^Row$/ })).toBeVisible()
 
-  // Заблокировать обратно
   await lockBtn.click()
   await expect(page.locator('span').filter({ hasText: /^Col$/ })).toHaveCount(0)
 })
@@ -428,22 +429,20 @@ test('Grid Auto-flow: переключение направления', async ({
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // По умолчанию Row активен
   const rowBtn = page.locator('button').filter({ hasText: '→ Row' })
   const colBtn = page.locator('button').filter({ hasText: '↓ Column' })
   await expect(rowBtn).toBeVisible()
   await expect(colBtn).toBeVisible()
 
-  // Нажать Column
   await colBtn.click()
 
-  // Проверить в localStorage
   const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-project')
+    const raw = localStorage.getItem('creator-v2')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    // rootChildren[0] = body, body.children[0] = div 1
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
     const body = artboard?.elements?.[bodyId]
     const elemId = body?.children?.[0]
@@ -451,15 +450,15 @@ test('Grid Auto-flow: переключение направления', async ({
   })
   expect(stored).toBe('column')
 
-  // Нажать Row
   await rowBtn.click()
 
   const stored2 = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-project')
+    const raw = localStorage.getItem('creator-v2')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    // rootChildren[0] = body, body.children[0] = div 1
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
     const body = artboard?.elements?.[bodyId]
     const elemId = body?.children?.[0]
@@ -473,25 +472,18 @@ test('Grid Auto-flow: переключение направления', async ({
 test('Grid Child Section: появляется для дочернего элемента grid', async ({ page }) => {
   await enterPageEditor(page)
 
-  // Добавить родительский div и переключить на Grid
   await addElement(page, 'div')
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // Добавить дочерний div (будет добавлен в выбранный div 1)
   await addElement(page, 'div')
 
-  // Выбрать дочерний элемент в Layers
   await page.click('text=div 2')
 
-  // Секция "Grid child" должна появиться
   await expect(page.locator('span').filter({ hasText: 'Grid child' })).toBeVisible()
 
-  // По умолчанию режим Auto — Column/Row скрыты
-  // Переключаемся в Manual
   await page.click('button:has-text("Manual")')
 
-  // Метки Column и Row должны быть видны
   await expect(page.locator('span').filter({ hasText: /^Column$/ })).toBeVisible()
   await expect(page.locator('span').filter({ hasText: /^Row$/ })).toBeVisible()
 })
@@ -505,25 +497,19 @@ test('Grid Edit Mode: открыть и закрыть overlay', async ({ page }
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // Кнопка "Edit Grid" должна быть видна
   const editBtn = page.locator('button').filter({ hasText: /Edit Grid/ })
   await expect(editBtn).toBeVisible()
 
-  // Нажать — появится overlay с кнопкой Done
   await editBtn.click()
 
-  // Кнопка Done появилась
   const doneBtn = page.locator('button').filter({ hasText: 'Done' })
   await expect(doneBtn).toBeVisible()
 
-  // Кнопка "Exit Edit Mode" в Properties (кнопка поменяла текст)
   await expect(page.locator('button').filter({ hasText: /Exit Edit Mode/ })).toBeVisible()
 
-  // Нажать Done — overlay закрывается
   await doneBtn.click()
   await expect(doneBtn).toHaveCount(0)
 
-  // Кнопка в Properties снова "Edit Grid"
   await expect(page.locator('button').filter({ hasText: /Edit Grid/ })).toBeVisible()
 })
 
@@ -532,33 +518,25 @@ test('Grid Edit Mode: открыть и закрыть overlay', async ({ page }
 test('Grid Child: установить column span 2', async ({ page }) => {
   await enterPageEditor(page)
 
-  // Создать grid с 3 колонками
   await addElement(page, 'div')
   await page.click('text=div 1')
   await switchToGrid(page)
 
-  // Добавить 3 колонки
   const addColBtn = page.locator('button').filter({ hasText: '+ Add' }).first()
   await addColBtn.click()
   await addColBtn.click()
   await addColBtn.click()
 
-  // Добавить дочерний элемент
   await addElement(page, 'div')
   await page.click('text=div 2')
 
-  // Grid child секция видна
   await expect(page.locator('span').filter({ hasText: 'Grid child' })).toBeVisible()
 
-  // По умолчанию Auto — переключаем в Manual чтобы появились поля Column/Row
   await page.click('button:has-text("Manual")')
 
-  // Заполнить Column: start=1, span, end=2
-  // Используем data-testid на select
   const spanSelect = page.locator('[data-testid="grid-line-span-column"]')
   await expect(spanSelect).toBeVisible()
 
-  // Inputs рядом со span select в Column row
   const colInputs = spanSelect.locator('..').locator('input[type="number"]')
   const startInput = colInputs.first()
   const endInput = colInputs.last()
@@ -568,13 +546,13 @@ test('Grid Child: установить column span 2', async ({ page }) => {
   await endInput.fill('2')
   await page.keyboard.press('Tab')
 
-  // Проверить localStorage
   const stored = await page.evaluate(() => {
-    const raw = localStorage.getItem('creator-project')
+    const raw = localStorage.getItem('creator-v2')
     if (!raw) return null
     const p = JSON.parse(raw)
-    const artboard = Object.values(p.state?.project?.artboards ?? {})[0] as any
-    // rootChildren[0] = body, body.children[0] = div 1 (grid parent), div1.children[0] = div 2
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
     const bodyId = artboard?.rootChildren?.[0]
     const body = artboard?.elements?.[bodyId]
     const parentId = body?.children?.[0]
@@ -584,4 +562,95 @@ test('Grid Child: установить column span 2', async ({ page }) => {
   })
 
   expect(stored).toBe('1 / span 2')
+})
+
+// ─── Тест 18: Size section — ввод Width/Height/Min/Max ────────────────────────
+
+test('Size section: ввод width и height меняет стили элемента', async ({ page }) => {
+  await enterPageEditor(page)
+  await addElement(page, 'div')
+  await page.click('text=div 1')
+
+  await page.locator('[data-testid="size-width"]').fill('300')
+  await page.keyboard.press('Tab')
+
+  let stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elId = body?.children?.[0]
+    return artboard?.elements?.[elId]?.styles?.width ?? null
+  })
+  expect(stored).toBe('300%')
+
+  await page.locator('[data-testid="size-width"]').fill('')
+  await page.keyboard.press('Tab')
+  await page.locator('[data-testid="size-width"]').fill('200')
+  await page.keyboard.press('Tab')
+
+  stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elId = body?.children?.[0]
+    return artboard?.elements?.[elId]?.styles?.width ?? null
+  })
+  expect(stored).toBe('200px')
+
+  await page.locator('[data-testid="size-height"]').fill('150')
+  await page.keyboard.press('Tab')
+
+  stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elId = body?.children?.[0]
+    return artboard?.elements?.[elId]?.styles?.height ?? null
+  })
+  expect(stored).toBe('150px')
+})
+
+test('Size section: ввод minWidth и maxWidth', async ({ page }) => {
+  await enterPageEditor(page)
+  await addElement(page, 'div')
+  await page.click('text=div 1')
+
+  const minWInput = page.locator('input[placeholder="Min W"]')
+  await minWInput.fill('100')
+  await page.keyboard.press('Tab')
+
+  const maxWInput = page.locator('input[placeholder="Max W"]')
+  await maxWInput.fill('500')
+  await page.keyboard.press('Tab')
+
+  const stored = await page.evaluate(() => {
+    const raw = localStorage.getItem('creator-v2')
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    const project = p.state?.allProjects?.[0]
+    if (!project) return null
+    const artboard = Object.values(project.artboards)[0] as any
+    const bodyId = artboard?.rootChildren?.[0]
+    const body = artboard?.elements?.[bodyId]
+    const elId = body?.children?.[0]
+    const el = artboard?.elements?.[elId]
+    return { minWidth: el?.styles?.minWidth, maxWidth: el?.styles?.maxWidth }
+  })
+  expect(stored?.minWidth).toBe('100px')
+  expect(stored?.maxWidth).toBe('500px')
 })

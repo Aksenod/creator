@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
 import { getCSSPosition } from '../../utils/cssUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
+import { getGridCellsById } from '../../utils/gridUtils'
 
 // --- Resize handles ---
 
@@ -37,18 +39,31 @@ const HANDLES: Array<{ id: HandleDir; style: React.CSSProperties }> = [
 
 // --- Canvas ---
 
-type Props = { artboard: Artboard; previewMode?: boolean; scale?: number }
+type Props = {
+  artboard: Artboard
+  previewMode?: boolean
+  scale?: number
+  /** Без внешней обёртки с центровкой — для CanvasEditor */
+  plain?: boolean
+  /** Синяя рамка активного артборда */
+  isActive?: boolean
+  /** Вызывается при клике на фон артборда (не на элемент) */
+  onArtboardClick?: () => void
+}
 
-export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
+export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onArtboardClick }: Props) {
   const {
     selectElement, selectedElementId, selectedElementIds,
     toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
+    setActiveArtboard,
   } = useEditorStore()
 
   const resizeRef = useRef<ResizeState | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  const { startDrag, dropIndicator, draggingId } = useCanvasDnD(previewMode ? null : artboard)
+  const { startDrag, dropIndicator, draggingId, cellDropTarget, cellDragParentId } = useCanvasDnD(previewMode ? null : artboard)
+
+  const gridCells = cellDragParentId ? getGridCellsById(cellDragParentId) : []
 
   // Глобальные обработчики resize (mousemove/mouseup)
   useEffect(() => {
@@ -229,6 +244,7 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
         }}
         onClick={previewMode ? undefined : (e) => {
           e.stopPropagation()
+          setActiveArtboard(artboard.id)
           if (e.shiftKey) toggleSelectElement(id)
           else selectElement(id)
         }}
@@ -258,36 +274,84 @@ export function Canvas({ artboard, previewMode, scale = 1 }: Props) {
     )
   }
 
-  return (
+  const artboardBox = (
     <div
+      data-testid="artboard-card"
       style={{
-        minHeight: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingBottom: 80,
-      }}
-      onClick={() => selectElement(null)}
-    >
-      <div style={{
         width: artboard.width,
         minHeight: artboard.height,
         background: '#fff',
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-        zoom: scale !== 1 ? scale : undefined,
-      }}>
-        {artboard.rootChildren.length === 0 ? (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: artboard.height, color: '#aaa', fontSize: 13,
-          }}>
-            Добавь первый элемент через панель инструментов
-          </div>
-        ) : (
-          artboard.rootChildren.map(renderElement)
-        )}
-      </div>
+        zoom: (!plain && scale !== 1) ? scale : undefined,
+        outline: isActive ? '2px solid #0066ff' : 'none',
+        outlineOffset: 2,
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+      onClick={plain ? (e) => {
+        e.stopPropagation()
+        setActiveArtboard(artboard.id)
+        selectElement(null)
+        onArtboardClick?.()
+      } : undefined}
+    >
+      {artboard.rootChildren.length === 0 ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          height: artboard.height, color: '#aaa', fontSize: 13,
+        }}>
+          Добавь первый элемент через панель инструментов
+        </div>
+      ) : (
+        artboard.rootChildren.map(renderElement)
+      )}
     </div>
+  )
+
+  return (
+    <>
+      {plain ? artboardBox : (
+        <div
+          style={{
+            minHeight: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingBottom: 80,
+          }}
+          onClick={() => selectElement(null)}
+        >
+          {artboardBox}
+        </div>
+      )}
+
+      {/* Grid cell overlay — рендерим через portal чтобы CSS zoom не влиял */}
+      {cellDragParentId && gridCells.length > 0 && createPortal(
+        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9999 }}>
+          {gridCells.map(cell => {
+            const isHovered = cellDropTarget?.col === cell.col && cellDropTarget?.row === cell.row
+            return (
+              <div
+                key={`${cell.col}-${cell.row}`}
+                style={{
+                  position: 'fixed',
+                  top: cell.top,
+                  left: cell.left,
+                  width: cell.width,
+                  height: cell.height,
+                  background: isHovered ? 'rgba(0, 102, 255, 0.13)' : 'rgba(0, 102, 255, 0.04)',
+                  border: isHovered ? '2px solid #0066ff' : '1px solid rgba(0, 102, 255, 0.2)',
+                  borderRadius: 3,
+                  boxSizing: 'border-box',
+                  transition: 'background 0.08s, border 0.08s',
+                }}
+              />
+            )
+          })}
+        </div>,
+        document.body,
+      )}
+    </>
   )
 }

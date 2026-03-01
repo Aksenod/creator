@@ -3,14 +3,14 @@ import { BreakpointBar, detectBreakpoint, type Breakpoint } from './BreakpointBa
 import type { BreakpointId } from '../../../constants/breakpoints'
 
 type Props = {
-  artboardName: string
+  projectName: string
   isPreview: boolean
   activeBreakpointId: BreakpointId
   displayWidth: number
   customWidth: string
   scale: number
   showCanvasSettings: boolean
-  onExitArtboard: () => void
+  onCloseProject: () => void
   onTogglePreview: () => void
   onToggleSettings: () => void
   onCustomWidthChange: (v: string) => void
@@ -18,17 +18,18 @@ type Props = {
   onClearCustomWidth: () => void
   onBreakpointSelect: (bp: Breakpoint) => void
   onSetShowSettings: (show: boolean) => void
+  onAddArtboard: () => void
 }
 
 export function Topbar({
-  artboardName,
+  projectName,
   isPreview,
   activeBreakpointId,
   displayWidth,
   customWidth,
   scale,
   showCanvasSettings,
-  onExitArtboard,
+  onCloseProject,
   onTogglePreview,
   onToggleSettings,
   onCustomWidthChange,
@@ -36,11 +37,11 @@ export function Topbar({
   onClearCustomWidth,
   onBreakpointSelect,
   onSetShowSettings,
+  onAddArtboard,
 }: Props) {
   const settingsRef = useRef<HTMLDivElement>(null)
   const detectedWidth = detectBreakpoint()
 
-  // Закрыть Canvas Settings при клике вне
   useEffect(() => {
     if (!showCanvasSettings) return
     const onClickOutside = (e: MouseEvent) => {
@@ -67,7 +68,7 @@ export function Topbar({
         >
           ← Редактор
         </button>
-        <span style={{ color: '#888', fontSize: 12 }}>{artboardName}</span>
+        <span style={{ color: '#888', fontSize: 12 }}>{projectName}</span>
       </div>
     )
   }
@@ -80,12 +81,12 @@ export function Topbar({
       {/* Левая секция */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button
-          onClick={onExitArtboard}
+          onClick={onCloseProject}
           style={{ padding: '4px 10px', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', background: '#fff', fontSize: 12 }}
         >
-          ← Назад
+          ← Проекты
         </button>
-        <span style={{ fontWeight: 600 }}>{artboardName}</span>
+        <span style={{ fontWeight: 600 }}>{projectName}</span>
       </div>
 
       {/* Центральная секция — Canvas Settings + Breakpoint bar */}
@@ -171,7 +172,16 @@ export function Topbar({
       </div>
 
       {/* Правая секция */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+        <button
+          onClick={onAddArtboard}
+          style={{
+            padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
+            border: '1px solid #ddd', background: '#fff', color: '#333',
+          }}
+        >
+          + Артборд
+        </button>
         <button
           onClick={onTogglePreview}
           style={{

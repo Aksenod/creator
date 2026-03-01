@@ -126,7 +126,8 @@ export type Project = {
   name: string
   artboards: Record<string, Artboard>
   artboardOrder: string[]
+  updatedAt: number
 }
 
 // Режим редактора
-export type EditorMode = 'birdseye' | 'page'
+export type EditorMode = 'dashboard' | 'canvas'
