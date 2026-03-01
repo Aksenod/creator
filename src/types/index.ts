@@ -129,7 +129,8 @@ export type Project = {
   artboards: Record<string, Artboard>
   artboardOrder: string[]
   updatedAt: number
-  canvasBackground?: string   // дефолт '#e8e8e8'
+  canvasBackground?: string      // дефолт '#e8e8e8'
   canvasPattern?: CanvasPattern  // дефолт 'dots'
+  canvasPatternSize?: number     // дефолт 20 (px)
 }
 

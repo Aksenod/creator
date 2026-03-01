@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
 import { CollapsibleSection, PropertyRow } from './shared'
 import type { CanvasElement, ElementStyles } from '../../types'
+import { CanvasSection } from './CanvasSection'
+import { ArtboardSection } from './ArtboardSection'
 import { BREAKPOINT_LABELS } from '../../constants/breakpoints'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { resolveStyles } from '../../utils/resolveStyles'
@@ -15,6 +17,7 @@ import { SpacingSection } from './SpacingSection'
 import { GridChildSection } from './GridChildSection'
 import type { PositionMode } from '../../types'
 import { findParentId } from '../../utils/treeUtils'
+import { BREAKPOINTS } from '../Canvas/PageEditor/BreakpointBar'
 
 const getCommonStyles = (
   ids: string[],
@@ -40,10 +43,15 @@ export function Properties() {
   const {
     selectedElementId, selectedElementIds, project, activeArtboardId,
     updateElement, updateSelectedElements, activeBreakpointId, clearBreakpointStyle,
+    updateCanvasSettings, updateArtboard,
   } = useEditorStore()
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
+
+  const activeBp = BREAKPOINTS.find(bp => bp.id === activeBreakpointId)
+  const effectiveWidth = activeBp?.width ?? artboard?.width ?? 1440
+  const breakpointLabel = activeBp?.label ?? 'Desktop'
   const isMultiSelect = selectedElementIds.length > 1
   const commonStyles = useMemo(
     () => isMultiSelect && artboard
@@ -157,8 +165,20 @@ export function Properties() {
             <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
 
           </div>
+        ) : !element && artboard ? (
+          <ArtboardSection
+            artboard={artboard}
+            effectiveWidth={effectiveWidth}
+            breakpointLabel={breakpointLabel}
+            onUpdate={(patch) => updateArtboard(artboard.id, patch)}
+          />
         ) : !element ? (
-          <div style={{ color: '#aaa', fontSize: 12 }}>Выбери элемент</div>
+          <CanvasSection
+            canvasBackground={project?.canvasBackground ?? '#e8e8e8'}
+            canvasPattern={project?.canvasPattern ?? 'dots'}
+            canvasPatternSize={project?.canvasPatternSize ?? 20}
+            onUpdate={updateCanvasSettings}
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
 

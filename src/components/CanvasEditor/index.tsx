@@ -30,10 +30,18 @@ export function CanvasEditor() {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
-  const { cameraRef, fitToScreen, scalePercent } = useCanvasTransform(
+  const patternSizeRef = useRef<number>(project?.canvasPatternSize ?? 20)
+  const { cameraRef, fitToScreen, scalePercent, applyTransform } = useCanvasTransform(
     containerRef as React.RefObject<HTMLElement>,
     worldRef as React.RefObject<HTMLElement>,
+    patternSizeRef,
   )
+
+  // Sync patternSizeRef and re-apply when size changes
+  useEffect(() => {
+    patternSizeRef.current = project?.canvasPatternSize ?? 20
+    applyTransform()
+  }, [project?.canvasPatternSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const parsedCustom = parseInt(customWidth)
   const displayWidth = customWidth && !isNaN(parsedCustom) && parsedCustom > 0 ? parsedCustom : viewportWidth
@@ -69,6 +77,19 @@ export function CanvasEditor() {
 
       const tag = (e.target as HTMLElement).tagName
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        if (e.key === 'f' || e.key === 'F') {
+          const s = useEditorStore.getState()
+          const abId = s.activeArtboardId
+          const ab = abId && s.project ? s.project.artboards[abId] : null
+          if (!isFocusMode && ab) {
+            setIsFocusMode(true)
+            setTimeout(() => fitToScreen(ab.width), 0)
+          } else if (isFocusMode) {
+            setIsFocusMode(false)
+          }
+          return
+        }
+
         const idx = parseInt(e.key) - 1
         if (idx >= 0 && idx < BREAKPOINTS.length) {
           const bp = BREAKPOINTS[idx]
@@ -196,7 +217,7 @@ export function CanvasEditor() {
         {/* Панель слоёв */}
         {!isPreview && (
           <div style={{
-            width: panelsHidden ? 0 : 240,
+            width: (panelsHidden || isFocusMode) ? 0 : 240,
             minWidth: 0,
             flexShrink: 0,
             overflow: 'hidden',
@@ -286,6 +307,7 @@ export function CanvasEditor() {
                     plain
                     isActive={isActive}
                     onArtboardClick={() => setActiveArtboard(id)}
+                    displayWidth={displayWidth}
                   />
                 </div>
               )
@@ -308,7 +330,7 @@ export function CanvasEditor() {
         {/* Панель свойств */}
         {!isPreview && (
           <div style={{
-            width: panelsHidden ? 0 : 240,
+            width: (panelsHidden || isFocusMode) ? 0 : 240,
             minWidth: 0,
             flexShrink: 0,
             overflow: 'hidden',
@@ -344,21 +366,10 @@ function getPatternImage(pattern: CanvasPattern): string {
       return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
     case 'grid':
       return 'linear-gradient(#c8c8c8 1px, transparent 1px), linear-gradient(90deg, #c8c8c8 1px, transparent 1px)'
-    case 'cross': {
-      // Мелкая сетка + крупные крестики
-      const thin = 'rgba(180,180,180,0.5)'
-      const thick = 'rgba(160,160,160,0.8)'
-      return [
-        `linear-gradient(${thin} 1px, transparent 1px)`,
-        `linear-gradient(90deg, ${thin} 1px, transparent 1px)`,
-        `linear-gradient(${thick} 1px, transparent 1px)`,
-        `linear-gradient(90deg, ${thick} 1px, transparent 1px)`,
-      ].join(', ')
-    }
-    case 'hearts': {
-      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><path d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='%23d0d0d0'/></svg>`
-      return `url("data:image/svg+xml,${svg.replace(/#/g, '%23')}")`
-    }
+    case 'cross':
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='%23c0c0c0' stroke-width='1'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='%23c0c0c0' stroke-width='1'/%3E%3C/svg%3E")`
+    case 'hearts':
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='%23d0d0d0'/%3E%3C/svg%3E")`
     default:
       return 'radial-gradient(circle, #c0c0c0 1px, transparent 1px)'
   }

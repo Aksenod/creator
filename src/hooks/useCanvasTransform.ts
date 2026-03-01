@@ -11,12 +11,14 @@ const MAX_SCALE = 4
  * Zoom/pan updates are applied DIRECTLY to the DOM via refs — no React re-renders.
  * Only `scalePercent` is React state (updated via RAF for the zoom indicator).
  *
- * @param containerRef — the outer scrollable/clip container
- * @param worldRef     — the inner "world layer" div that gets CSS transform applied
+ * @param containerRef    — the outer scrollable/clip container
+ * @param worldRef        — the inner "world layer" div that gets CSS transform applied
+ * @param patternSizeRef  — ref to the base pattern cell size in px (default 20)
  */
 export function useCanvasTransform(
   containerRef: React.RefObject<HTMLElement>,
   worldRef: React.RefObject<HTMLElement>,
+  patternSizeRef?: React.RefObject<number>,
 ) {
   const cameraRef = useRef<Camera>({ scale: 1, offsetX: 0, offsetY: 0 })
   const [scalePercent, setScalePercent] = useState(100)
@@ -29,6 +31,7 @@ export function useCanvasTransform(
   // --- Core: apply camera to DOM without React re-render ---
   const applyTransform = useCallback(() => {
     const { scale, offsetX, offsetY } = cameraRef.current
+    const baseSize = patternSizeRef?.current ?? 20
 
     if (worldRef.current) {
       worldRef.current.style.transform =
@@ -37,7 +40,7 @@ export function useCanvasTransform(
 
     if (containerRef.current) {
       containerRef.current.style.backgroundSize =
-        `${20 * scale}px ${20 * scale}px`
+        `${baseSize * scale}px ${baseSize * scale}px`
       containerRef.current.style.backgroundPosition =
         `${offsetX}px ${offsetY}px`
     }
@@ -47,7 +50,7 @@ export function useCanvasTransform(
     rafId.current = requestAnimationFrame(() => {
       setScalePercent(Math.round(cameraRef.current.scale * 100))
     })
-  }, [worldRef, containerRef])
+  }, [worldRef, containerRef, patternSizeRef])
 
   // --- Actions ---
 
@@ -179,5 +182,5 @@ export function useCanvasTransform(
     }
   }, [containerRef, zoom, fitToScreen, resetZoom, applyTransform])
 
-  return { cameraRef, scalePercent, zoom, resetZoom, fitToScreen }
+  return { cameraRef, scalePercent, zoom, resetZoom, fitToScreen, applyTransform }
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Project, Artboard, CanvasElement, ElementStyles, ElementType, CanvasPattern } from '../types'
+type ArtboardPatch = Partial<Pick<Artboard, 'name' | 'height'>>
 import { type BreakpointId } from '../constants/breakpoints'
 import { slugify } from '../utils/slugify'
 import {
@@ -60,7 +61,8 @@ type EditorState = {
   collapseLayers: (ids: string[]) => void
   collapseAllLayers: () => void
   setGridEditElementId: (id: string | null) => void
-  updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern }) => void
+  updateArtboard: (id: string, patch: ArtboardPatch) => void
+  updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number }) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -603,6 +605,17 @@ export const useEditorStore = create<EditorState>()(
       collapseAllLayers: () => set({ expandedLayers: new Set<string>() }),
 
       setGridEditElementId: (id) => set({ gridEditElementId: id }),
+
+      updateArtboard: (id, patch) => set((state) => {
+        const ab = state.project?.artboards[id]
+        if (!ab || !state.project) return state
+        const newProject: Project = {
+          ...state.project,
+          artboards: { ...state.project.artboards, [id]: { ...ab, ...patch } },
+          updatedAt: Date.now(),
+        }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
+      }),
 
       updateCanvasSettings: (patch) => set((state) => {
         if (!state.project) return state

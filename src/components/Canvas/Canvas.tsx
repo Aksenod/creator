@@ -53,9 +53,11 @@ type Props = {
   isActive?: boolean
   /** Вызывается при клике на фон артборда (не на элемент) */
   onArtboardClick?: () => void
+  /** Визуальная ширина для BP-preview; не меняет artboard.width */
+  displayWidth?: number
 }
 
-export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isActive, onArtboardClick }: Props) {
+export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isActive, onArtboardClick, displayWidth }: Props) {
   const {
     selectElement, selectedElementId, selectedElementIds,
     toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
@@ -291,7 +293,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     <div
       data-testid="artboard-frame"
       style={{
-        width: artboard.width,
+        width: displayWidth ?? artboard.width,
         minHeight: artboard.height,
         background: '#fff',
         flexShrink: 0,
