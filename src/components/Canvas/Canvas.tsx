@@ -132,6 +132,15 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     document.body.style.userSelect = 'none'
   }
 
+  function resolveVpUnit(value: string | undefined, artW: number, artH: number): string | undefined {
+    if (!value) return value
+    const m = value.match(/^(-?[\d.]+)(vw|vh|svw|svh)$/)
+    if (!m) return value
+    const n = parseFloat(m[1])
+    const base = (m[2] === 'vw' || m[2] === 'svw') ? artW : artH
+    return `${Math.round(n * base / 100 * 100) / 100}px`
+  }
+
   const renderElement = (id: string): React.ReactNode => {
     const el = artboard.elements[id]
     if (!el) return null
@@ -174,12 +183,12 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
     const style: React.CSSProperties = {
       position: needsRelative ? 'relative' : cssPosition,
-      width: s.width ?? 'auto',
-      height: s.height ?? 'auto',
-      minWidth: s.minWidth,
-      maxWidth: s.maxWidth,
-      minHeight: s.minHeight ?? 20,
-      maxHeight: s.maxHeight,
+      width: resolveVpUnit(s.width, artboard.width, artboard.height) ?? 'auto',
+      height: resolveVpUnit(s.height, artboard.width, artboard.height) ?? 'auto',
+      minWidth: resolveVpUnit(s.minWidth, artboard.width, artboard.height),
+      maxWidth: resolveVpUnit(s.maxWidth, artboard.width, artboard.height),
+      minHeight: resolveVpUnit(s.minHeight, artboard.width, artboard.height) ?? 20,
+      maxHeight: resolveVpUnit(s.maxHeight, artboard.width, artboard.height),
       display: s.display ?? 'block',
       flexDirection: s.flexDirection,
       flexWrap: s.flexWrap,
