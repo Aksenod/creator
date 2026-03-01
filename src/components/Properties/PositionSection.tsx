@@ -65,11 +65,11 @@ const POS_OPTIONS: {
   description: string
   icon: React.ReactNode
 }[] = [
-  { value: 'static',   label: 'Static',   description: 'Стандартный поток',          icon: <IconStatic /> },
-  { value: 'relative', label: 'Relative', description: 'Смещение в потоке',           icon: <IconRelative /> },
-  { value: 'absolute', label: 'Absolute', description: 'Относительно родителя',       icon: <IconAbsolute /> },
-  { value: 'fixed',    label: 'Fixed',    description: 'Относительно экрана',         icon: <IconFixed /> },
-  { value: 'sticky',   label: 'Sticky',   description: 'Прилипает при скролле',       icon: <IconSticky /> },
+  { value: 'static',   label: 'Static',   description: 'Элемент в обычном потоке документа, один за другим',                icon: <IconStatic /> },
+  { value: 'relative', label: 'Relative', description: 'Можно сдвинуть через top/left, но место в потоке сохраняется',  icon: <IconRelative /> },
+  { value: 'absolute', label: 'Absolute', description: 'Свободное размещение внутри ближайшего relative/absolute родителя', icon: <IconAbsolute /> },
+  { value: 'fixed',    label: 'Fixed',    description: 'Привязан к окну браузера, не скроллится (хедеры, кнопки)',       icon: <IconFixed /> },
+  { value: 'sticky',   label: 'Sticky',   description: 'Прилипает к краю экрана при скролле (навбары, сайдбары)',        icon: <IconSticky /> },
 ]
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -209,19 +209,19 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               {normalizedMode === 'fixed' ? 'screen' : 'parent'}
             </div>
             {/* Top */}
-            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)' }}>
+            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)' }} title="Top — отступ от верхнего края родителя (или экрана для Fixed). Пустое = Auto, элемент не привязан к верху">
               <OffsetInput value={styles.top} onChange={(v) => onUpdateStyle({ top: v })} />
             </div>
             {/* Left */}
-            <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
+            <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} title="Left — отступ от левого края. Задай Left и Top чтобы зафиксировать элемент в конкретной точке">
               <OffsetInput value={styles.left} onChange={(v) => onUpdateStyle({ left: v })} />
             </div>
             {/* Right */}
-            <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
+            <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }} title="Right — отступ от правого края. Задай Left + Right чтобы растянуть элемент на всю ширину с отступами">
               <OffsetInput value={styles.right} onChange={(v) => onUpdateStyle({ right: v })} />
             </div>
             {/* Bottom */}
-            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }} title="Bottom — отступ от нижнего края. Полезно для фиксации элемента внизу (футер, кнопка)">
               <OffsetInput value={styles.bottom} onChange={(v) => onUpdateStyle({ bottom: v })} />
             </div>
           </div>
@@ -236,6 +236,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
                 const v = parseInt(e.target.value)
                 onUpdateStyle({ zIndex: isNaN(v) ? undefined : v })
               }}
+              title="Z-index — порядок наложения элементов. Больше число = ближе к пользователю. Используй чтобы один элемент перекрывал другой (модалки, дропдауны, тултипы)"
               placeholder="auto"
               style={{
                 flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,

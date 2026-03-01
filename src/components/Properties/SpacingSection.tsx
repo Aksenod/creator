@@ -14,7 +14,7 @@ type Props = {
 
 export function SpacingSection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Spacing" defaultOpen>
+    <CollapsibleSection label="Spacing" tooltip="Spacing — внешние (margin) и внутренние (padding) отступы. Margin — расстояние от соседей. Padding — расстояние от краёв элемента до его содержимого" defaultOpen>
       {(
         // ─── Outer box: MARGIN (тёплый оранжевый как у Webflow) ──────────────
         <div style={{

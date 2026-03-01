@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-export function CollapsibleSection({ label, children, defaultOpen = true }: {
+export function CollapsibleSection({ label, tooltip, children, defaultOpen = true }: {
   label: string
+  tooltip?: string
   children: React.ReactNode
   defaultOpen?: boolean
 }) {
@@ -16,7 +17,7 @@ export function CollapsibleSection({ label, children, defaultOpen = true }: {
           cursor: 'pointer', marginBottom: open ? 10 : 0,
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
+        <span title={tooltip} style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>{label}</span>
         <span style={{
           fontSize: 9, color: '#aaa',
           transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',

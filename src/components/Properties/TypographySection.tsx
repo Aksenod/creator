@@ -19,7 +19,7 @@ const selectStyle: React.CSSProperties = {
 
 export function TypographySection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Typography" defaultOpen>
+    <CollapsibleSection label="Typography" tooltip="Typography — настройки текста: шрифт, размер, насыщенность, цвет, выравнивание и декорации" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Font */}
@@ -27,6 +27,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
           <select
             value={styles.fontFamily ?? ''}
             onChange={e => onUpdate({ fontFamily: e.target.value || undefined })}
+            title="Шрифт — гарнитура текста. Inter/Roboto — для интерфейсов, Playfair Display — для заголовков, Georgia — классическая антиква"
             style={selectStyle}
           >
             <option value="">—</option>
@@ -39,6 +40,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
           <select
             value={styles.fontWeight ?? ''}
             onChange={e => onUpdate({ fontWeight: e.target.value || undefined })}
+            title="Насыщенность шрифта — от тонкого (100) до жирного (900). 400 — обычный текст, 600–700 — заголовки и акценты"
             style={selectStyle}
           >
             <option value="">—</option>
@@ -63,11 +65,12 @@ export function TypographySection({ styles, onUpdate }: Props) {
                 min={0}
                 value={styles.fontSize ?? ''}
                 onChange={e => onUpdate({ fontSize: e.target.value ? Number(e.target.value) : undefined })}
+                title="Размер шрифта в пикселях — определяет высоту букв. Типичные значения: 14–16 для текста, 24–48 для заголовков"
                 style={{ flex: 1, minWidth: 0, border: 'none', padding: '3px 6px', fontSize: 12, background: 'transparent', outline: 'none' }}
               />
               <span style={{ padding: '0 6px', borderLeft: '1px solid #e0e0e0', background: '#efefef', fontSize: 10, color: '#888', display: 'flex', alignItems: 'center', flexShrink: 0 }}>PX</span>
             </div>
-            <span style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>H</span>
+            <span title="Межстрочный интервал (line-height) — расстояние между строками текста. 1.0 = плотно, 1.5 = комфортно для чтения" style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>H</span>
             <div style={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0 }}>
               <input
                 type="number"

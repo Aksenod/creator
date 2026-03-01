@@ -296,7 +296,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       <PropertyRow label="Gap">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+        <div title="Gap — расстояние между дочерними элементами внутри flex-контейнера. Заменяет margin между элементами, работает одинаково для всех детей" style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
           <input
             type="range" min={0} max={120} value={gap}
             onChange={(e) => onUpdate({ gap: Number(e.target.value) })}
@@ -588,17 +588,17 @@ export function LayoutSection({ styles, onUpdate, elementId }: Props & { element
   const display = styles.display ?? 'block'
 
   return (
-    <CollapsibleSection label="Layout" defaultOpen>
+    <CollapsibleSection label="Layout" tooltip="Layout — как элемент организует своих детей: Block (по одному в строку), Flex (в ряд/столбец), Grid (сетка). Определяет всю структуру макета" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {/* Display */}
         <PropertyRow label="Display">
           <SegmentedControl
             value={display}
             options={[
-              { value: 'block', label: 'Block' },
-              { value: 'flex', label: 'Flex' },
-              { value: 'grid', label: 'Grid' },
-              { value: 'none', label: 'None' },
+              { value: 'block', label: 'Block', tooltip: 'Block — элемент занимает всю ширину родителя, следующий элемент начинается с новой строки. Стандартное поведение div' },
+              { value: 'flex', label: 'Flex', tooltip: 'Flex — дочерние элементы выстраиваются в ряд или столбец с гибким распределением пространства. Удобно для навбаров, карточек, центрирования' },
+              { value: 'grid', label: 'Grid', tooltip: 'Grid — двумерная сетка из колонок и строк. Идеально для сложных макетов: галереи, дашборды, формы' },
+              { value: 'none', label: 'None', tooltip: 'None — элемент полностью скрыт со страницы, не занимает места. Используй для условного показа элементов на разных брейкпоинтах' },
             ]}
             onChange={(v) => onUpdate({ display: v as ElementStyles['display'] })}
           />

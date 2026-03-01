@@ -1,6 +1,6 @@
 export function SegmentedControl({ value, options, onChange }: {
   value: string
-  options: { value: string; label: string }[]
+  options: { value: string; label: string; tooltip?: string }[]
   onChange: (v: string) => void
 }) {
   return (
@@ -13,7 +13,7 @@ export function SegmentedControl({ value, options, onChange }: {
         return (
           <button
             key={opt.value}
-            title={opt.label}
+            title={opt.tooltip ?? opt.label}
             onClick={() => onChange(opt.value)}
             style={{
               flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',

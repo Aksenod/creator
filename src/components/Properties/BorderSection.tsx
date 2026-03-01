@@ -10,12 +10,12 @@ export function BorderSection({ styles, onUpdate }: Props) {
   const radius = styles.borderRadius ?? 0
 
   return (
-    <CollapsibleSection label="Borders" defaultOpen>
+    <CollapsibleSection label="Borders" tooltip="Borders — рамка вокруг элемента и скругление углов. Стиль, толщина и цвет рамки" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Radius */}
         <PropertyRow label="Radius" labelWidth={44}>
-          <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
+          <div title="Скругление углов — чем больше значение, тем более круглые углы. 0 = прямые углы, 50+ = таблетка/круг" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <input
               type="range"
               min={0}
@@ -67,7 +67,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
 
           {/* Width */}
           <PropertyRow label="Width" labelWidth={44}>
-            <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
+            <div title="Толщина рамки в пикселях — 1–2px для тонких разделителей, 3–4px для акцентных рамок" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
               <input
                 type="number"
                 min={0}

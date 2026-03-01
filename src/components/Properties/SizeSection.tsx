@@ -80,35 +80,39 @@ type Props = {
 
 export function SizeSection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Size" defaultOpen>
+    <CollapsibleSection label="Size" tooltip="Size — габариты элемента: ширина, высота, минимальные/максимальные ограничения и поведение переполнения (overflow)" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
         {/* Dimensions */}
         <div>
           <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Dimensions</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <FigmaInput
-              prefix="W"
-              value={styles.width ?? ''}
-              placeholder="Auto"
-              allowAuto
-              testId="size-width"
-              onChange={(v) => onUpdate({ width: v || undefined })}
-            />
-            <FigmaInput
-              prefix="H"
-              value={styles.height ?? ''}
-              placeholder="Auto"
-              allowAuto
-              testId="size-height"
-              onChange={(v) => onUpdate({ height: v || undefined })}
-            />
+            <div title="Width — ширина элемента. Auto = подстраивается под содержимое или родителя. Можно задать в px, %, vw" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+              <FigmaInput
+                prefix="W"
+                value={styles.width ?? ''}
+                placeholder="Auto"
+                allowAuto
+                testId="size-width"
+                onChange={(v) => onUpdate({ width: v || undefined })}
+              />
+            </div>
+            <div title="Height — высота элемента. Auto = подстраивается под содержимое. Обычно оставляют Auto, задают явно для hero-секций и баннеров" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+              <FigmaInput
+                prefix="H"
+                value={styles.height ?? ''}
+                placeholder="Auto"
+                allowAuto
+                testId="size-height"
+                onChange={(v) => onUpdate({ height: v || undefined })}
+              />
+            </div>
           </div>
         </div>
 
         {/* Min */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }} title="Min width — элемент не сожмётся уже этого значения. Полезно для кнопок и карточек, чтобы не ломался макет на узких экранах">
             <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min width</div>
             <FigmaInput
               prefix={<MinWidthIcon />}
@@ -117,7 +121,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               onChange={(v) => onUpdate({ minWidth: v || undefined })}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }} title="Min height — элемент не сожмётся ниже этого значения. Используй для секций, чтобы гарантировать минимальную высоту даже без контента">
             <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min height</div>
             <FigmaInput
               prefix={<MinHeightIcon />}
@@ -130,7 +134,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
 
         {/* Max */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }} title="Max width — элемент не растянется шире этого значения. Классика: max-width 1200px для контейнера, чтобы текст не растягивался на всю ширину экрана">
             <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max width</div>
             <FigmaInput
               prefix={<MaxWidthIcon />}
@@ -140,7 +144,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               onChange={(v) => onUpdate({ maxWidth: v || undefined })}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }} title="Max height — элемент не растянется выше этого значения. Используй для ограничения высоты изображений или модальных окон">
             <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max height</div>
             <FigmaInput
               prefix={<MaxHeightIcon />}
@@ -389,7 +393,7 @@ function OverflowRow({ value, onChange }: {
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-      <span style={{ fontSize: 10, color: '#aaa', width: 52, flexShrink: 0 }}>Overflow</span>
+      <span title="Overflow — что происходит с содержимым, которое не вмещается в элемент" style={{ fontSize: 10, color: '#aaa', width: 52, flexShrink: 0 }}>Overflow</span>
       <div style={{
         display: 'flex', background: '#efefef', borderRadius: 6,
         padding: 2, gap: 2, flex: 1,

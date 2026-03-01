@@ -101,13 +101,13 @@ export function GridChildSection({ styles, onUpdate }: Props) {
   })
 
   return (
-    <CollapsibleSection label="Grid child" defaultOpen>
+    <CollapsibleSection label="Grid child" tooltip="Grid child — позиция и размер этого элемента внутри родительской сетки. Span = сколько колонок/строк занимает" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
         {/* Auto / Manual */}
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={switchToAuto}   title="Авто-размещение по DOM-порядку" style={toggleBtnStyle(mode === 'auto')}>Auto</button>
-          <button onClick={switchToManual} title="Явная позиция в сетке"          style={toggleBtnStyle(mode === 'manual')}>Manual</button>
+          <button onClick={switchToAuto}   title="Auto — элемент размещается автоматически в ближайшую свободную ячейку сетки по порядку" style={toggleBtnStyle(mode === 'auto')}>Auto</button>
+          <button onClick={switchToManual} title="Manual — вручную задать начальную и конечную линию сетки для точного размещения элемента" style={toggleBtnStyle(mode === 'manual')}>Manual</button>
         </div>
 
         {mode === 'auto' ? (
@@ -146,6 +146,7 @@ export function GridChildSection({ styles, onUpdate }: Props) {
               <select
                 value={styles.alignSelf ?? 'auto'}
                 onChange={(e) => onUpdate({ alignSelf: e.target.value as ElementStyles['alignSelf'] })}
+                title="Align self — вертикальное выравнивание этого элемента в ячейке сетки (start/center/end/stretch)"
                 style={{ ...selectStyle, flex: 1, minWidth: 0 }}
               >
                 {ALIGN_SELF_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
@@ -156,6 +157,7 @@ export function GridChildSection({ styles, onUpdate }: Props) {
               <select
                 value={styles.justifySelf ?? 'auto'}
                 onChange={(e) => onUpdate({ justifySelf: e.target.value as ElementStyles['justifySelf'] })}
+                title="Justify self — горизонтальное выравнивание этого элемента в ячейке сетки (start/center/end/stretch)"
                 style={{ ...selectStyle, flex: 1, minWidth: 0 }}
               >
                 {JUSTIFY_SELF_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
