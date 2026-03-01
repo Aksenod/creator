@@ -5,7 +5,7 @@ export type Transform = { x: number; y: number; scale: number }
 const MIN_SCALE = 0.05
 const MAX_SCALE = 4
 
-export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
+export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>, disabled = false) {
   const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 })
   const isPanning = useRef(false)
   const spaceDown = useRef(false)
@@ -45,6 +45,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     if (!el) return
 
     const onWheel = (e: WheelEvent) => {
+      if (disabled) return
       e.preventDefault()
       const rect = el.getBoundingClientRect()
       const originX = e.clientX - rect.left
@@ -64,6 +65,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return
       if (e.code === 'Space' && !e.repeat) {
         spaceDown.current = true
         el.style.cursor = 'grab'
@@ -73,6 +75,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
 
     const onKeyUp = (e: KeyboardEvent) => {
+      if (disabled) return
       if (e.code === 'Space') {
         spaceDown.current = false
         el.style.cursor = 'default'
@@ -80,6 +83,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
 
     const onMouseDown = (e: MouseEvent) => {
+      if (disabled) return
       if (spaceDown.current) {
         isPanning.current = true
         lastMouse.current = { x: e.clientX, y: e.clientY }
@@ -89,6 +93,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
 
     const onMouseMove = (e: MouseEvent) => {
+      if (disabled) return
       if (!isPanning.current) return
       const dx = e.clientX - lastMouse.current.x
       const dy = e.clientY - lastMouse.current.y
@@ -97,6 +102,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
     }
 
     const onMouseUp = () => {
+      if (disabled) return
       if (isPanning.current) {
         isPanning.current = false
         el.style.cursor = spaceDown.current ? 'grab' : 'default'
@@ -118,7 +124,7 @@ export function useCanvasTransform(containerRef: React.RefObject<HTMLElement>) {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
     }
-  }, [containerRef, zoom, fitToScreen, resetZoom])
+  }, [containerRef, disabled, zoom, fitToScreen, resetZoom])
 
   return { transform, zoom, resetZoom, fitToScreen, scalePercent: Math.round(transform.scale * 100) }
 }

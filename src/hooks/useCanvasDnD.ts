@@ -2,7 +2,9 @@ import { useRef, useState, useEffect } from 'react'
 import { useEditorStore } from '../store'
 import { findParentId, isDescendantOf } from '../utils/treeUtils'
 import { CONTAINER_TYPES } from '../store/helpers'
+import { findCellAt, isManualGridChild, extractSpanNumber } from '../utils/gridUtils'
 import type { Artboard, CanvasElement } from '../types'
+import type { CellRect } from '../utils/gridUtils'
 
 export type DropIndicator = {
   targetId: string | null   // Элемент у которого рисуем линию (null = root)
@@ -11,8 +13,15 @@ export type DropIndicator = {
   zone: 'before' | 'after' | 'into'
 } | null
 
-// Для контейнеров (особенно grid): ищем ближайшего ребёнка по геометрии,
-// т.к. grid-дети в разных ячейках и elementsFromPoint не видит соседей
+export type CellDropTarget = {
+  col: number
+  row: number
+  parentId: string
+  rect: CellRect
+} | null
+
+// ─── Regular DnD helpers ──────────────────────────────────────────────────────
+
 function findDropInContainer(
   clientX: number,
   clientY: number,
@@ -78,15 +87,11 @@ function findDropTarget(
     const isContainer = CONTAINER_TYPES.includes(targetEl.type as typeof CONTAINER_TYPES[number])
 
     if (isContainer && relY > 0.08 && relY < 0.92) {
-      // Ищем точную позицию внутри контейнера по ближайшему ребёнку.
-      // Зоны 8% сверху/снизу оставлены для before/after самого контейнера,
-      // остальные 84% — всегда into (важно для пустых grid-ячеек).
       return findDropInContainer(clientX, clientY, draggingId, targetId, targetEl)
     }
 
     const parentId = findParentId(artboard, targetId)
     const siblings = parentId ? (artboard.elements[parentId]?.children ?? []) : artboard.rootChildren
-    // Считаем idx в siblings БЕЗ dragging, т.к. moveElement удаляет элемент перед вставкой
     const siblingsWithoutDragging = siblings.filter(id => id !== draggingId)
     const idx = siblingsWithoutDragging.indexOf(targetId)
 
@@ -95,10 +100,11 @@ function findDropTarget(
       : { targetId, parentId, index: idx + 1, zone: 'after' }
   }
 
-  // Fallback: в конец root
   const rootWithoutDragging = artboard.rootChildren.filter(id => id !== draggingId)
   return { targetId: null, parentId: null, index: rootWithoutDragging.length, zone: 'after' }
 }
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCanvasDnD(artboard: Artboard | null) {
   const dragRef = useRef<{
@@ -108,12 +114,15 @@ export function useCanvasDnD(artboard: Artboard | null) {
     active: boolean
   } | null>(null)
 
-  const dropRef = useRef<DropIndicator>(null)
+  const dropRef     = useRef<DropIndicator>(null)
+  const cellDropRef = useRef<CellDropTarget>(null)
   const artboardRef = useRef(artboard)
   artboardRef.current = artboard
 
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dropIndicator, setDropIndicator] = useState<DropIndicator>(null)
+  const [draggingId,       setDraggingId]       = useState<string | null>(null)
+  const [dropIndicator,    setDropIndicator]    = useState<DropIndicator>(null)
+  const [cellDropTarget,   setCellDropTarget]   = useState<CellDropTarget>(null)
+  const [cellDragParentId, setCellDragParentId] = useState<string | null>(null)
 
   const storeRef = useRef(useEditorStore.getState())
   useEffect(() => useEditorStore.subscribe((s) => { storeRef.current = s }), [])
@@ -127,59 +136,96 @@ export function useCanvasDnD(artboard: Artboard | null) {
         const dx = Math.abs(e.clientX - drag.startX)
         const dy = Math.abs(e.clientY - drag.startY)
         if (dx < 5 && dy < 5) return
-
         drag.active = true
         setDraggingId(drag.elementId)
         storeRef.current.selectElement(drag.elementId)
-        document.body.style.cursor = 'grabbing'
+        document.body.style.cursor    = 'grabbing'
         document.body.style.userSelect = 'none'
       }
 
       const ab = artboardRef.current
       if (!ab) return
 
+      // Manual grid child: cell-based drop
+      const draggedEl = ab.elements[drag.elementId]
+      if (draggedEl && isManualGridChild(draggedEl, ab)) {
+        const parentId = findParentId(ab, drag.elementId)
+        if (parentId) {
+          const gridDom = document.querySelector(`[data-element-id="${parentId}"]`) as HTMLElement | null
+          if (gridDom) {
+            const hit = findCellAt(e.clientX, e.clientY, gridDom)
+            const target: CellDropTarget = hit ? { ...hit, parentId } : null
+            cellDropRef.current = target
+            setCellDropTarget(target)
+            setCellDragParentId(parentId)
+            dropRef.current = null
+            setDropIndicator(null)
+            return
+          }
+        }
+      }
+
+      // Обычный DnD
       const target = findDropTarget(e.clientX, e.clientY, drag.elementId, ab)
       dropRef.current = target
       setDropIndicator(target)
+      cellDropRef.current = null
+      setCellDropTarget(null)
+      setCellDragParentId(null)
     }
 
     const onMouseUp = () => {
       const drag = dragRef.current
       if (drag?.active) {
-        const di = dropRef.current
-        const { activeArtboardId, moveElement } = storeRef.current
+        const { activeArtboardId, moveElement, updateElement } = storeRef.current
         const ab = artboardRef.current
 
-        if (di && activeArtboardId && ab) {
-          // isSamePosition: di.index считается в siblings-without-dragging,
-          // "та же позиция" = dragging вернётся туда же = di.index совпадает с originalIdx
-          const currentParentId = findParentId(ab, drag.elementId)
-          const originalSiblings = currentParentId
-            ? (ab.elements[currentParentId]?.children ?? [])
-            : ab.rootChildren
-          const originalIdx = originalSiblings.indexOf(drag.elementId)
+        if (activeArtboardId && ab) {
+          const cellTarget = cellDropRef.current
 
-          const isSamePosition = di.parentId === currentParentId && di.index === originalIdx
-
-          if (!isSamePosition) {
-            moveElement(activeArtboardId, drag.elementId, di.parentId, di.index)
+          if (cellTarget) {
+            // Manual grid child: сохраняем span, обновляем позицию
+            const el = ab.elements[drag.elementId]
+            const colSpan = extractSpanNumber(el?.styles.gridColumn)
+            const rowSpan = extractSpanNumber(el?.styles.gridRow)
+            updateElement(activeArtboardId, drag.elementId, {
+              styles: {
+                gridColumn: colSpan > 1 ? `${cellTarget.col} / span ${colSpan}` : String(cellTarget.col),
+                gridRow:    rowSpan > 1 ? `${cellTarget.row} / span ${rowSpan}` : String(cellTarget.row),
+              },
+            })
+          } else {
+            const di = dropRef.current
+            if (di) {
+              const currentParentId = findParentId(ab, drag.elementId)
+              const originalSiblings = currentParentId
+                ? (ab.elements[currentParentId]?.children ?? [])
+                : ab.rootChildren
+              const originalIdx = originalSiblings.indexOf(drag.elementId)
+              if (!(di.parentId === currentParentId && di.index === originalIdx)) {
+                moveElement(activeArtboardId, drag.elementId, di.parentId, di.index)
+              }
+            }
           }
         }
       }
 
-      dragRef.current = null
-      dropRef.current = null
+      dragRef.current    = null
+      dropRef.current    = null
+      cellDropRef.current = null
       setDraggingId(null)
       setDropIndicator(null)
-      document.body.style.cursor = ''
+      setCellDropTarget(null)
+      setCellDragParentId(null)
+      document.body.style.cursor    = ''
       document.body.style.userSelect = ''
     }
 
     window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('mouseup',   onMouseUp)
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('mouseup',   onMouseUp)
     }
   }, [])
 
@@ -189,5 +235,5 @@ export function useCanvasDnD(artboard: Artboard | null) {
     dragRef.current = { elementId, startX: e.clientX, startY: e.clientY, active: false }
   }
 
-  return { startDrag, dropIndicator, draggingId }
+  return { startDrag, dropIndicator, draggingId, cellDropTarget, cellDragParentId }
 }

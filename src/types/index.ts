@@ -114,7 +114,7 @@ export type Artboard = {
   name: string
   width: number
   height: number
-  x: number // позиция на bird's eye холсте
+  x: number // позиция на бесконечном холсте
   y: number
   elements: Record<string, CanvasElement>
   rootChildren: string[] // корневые элементы страницы
@@ -129,5 +129,3 @@ export type Project = {
   updatedAt: number
 }
 
-// Режим редактора
-export type EditorMode = 'dashboard' | 'canvas'

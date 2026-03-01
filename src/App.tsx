@@ -3,8 +3,9 @@ import { ProjectsDashboard } from './components/ProjectsDashboard'
 import { CanvasEditor } from './components/CanvasEditor'
 
 export default function App() {
-  const mode = useEditorStore((s) => s.mode)
+  const { project } = useEditorStore()
 
-  if (mode === 'dashboard') return <ProjectsDashboard />
+  if (!project) return <ProjectsDashboard />
+
   return <CanvasEditor />
 }

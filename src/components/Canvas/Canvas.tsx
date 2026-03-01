@@ -276,14 +276,13 @@ export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onAr
 
   const artboardBox = (
     <div
-      data-testid="artboard-card"
+      data-testid="artboard-frame"
       style={{
         width: artboard.width,
         minHeight: artboard.height,
         background: '#fff',
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-        zoom: (!plain && scale !== 1) ? scale : undefined,
         outline: isActive ? '2px solid #0066ff' : 'none',
         outlineOffset: 2,
         overflow: 'hidden',

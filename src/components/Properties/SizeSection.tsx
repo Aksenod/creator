@@ -4,35 +4,72 @@ import { CollapsibleSection } from './shared'
 
 // ─── CSS Unit utilities ──────────────────────────────────────────────────────
 
-const CSS_UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh', 'svw', 'svh', 'ch'] as const
+const CSS_UNITS = ['px', '%', 'vw', 'vh'] as const
 type CssUnit = (typeof CSS_UNITS)[number]
 
 const SPECIAL_VALUES = ['auto', 'none'] as const
 type SpecialValue = (typeof SPECIAL_VALUES)[number]
 
-/** Parse "100px" → { num: "100", unit: "px" }, "auto" → { num: "", unit: "auto" } */
 function parseCssValue(raw: string | undefined): { num: string; unit: CssUnit | SpecialValue } {
   if (!raw || raw === 'auto') return { num: '', unit: 'auto' }
   if (raw === 'none') return { num: '', unit: 'none' }
-
   const match = raw.match(/^(-?[\d.]+)\s*(px|%|em|rem|vw|vh|svw|svh|ch)?$/)
-  if (match) {
-    return { num: match[1], unit: (match[2] as CssUnit) || 'px' }
-  }
-  // fallback: try to just get a number
+  if (match) return { num: match[1], unit: (match[2] as CssUnit) || 'px' }
   const numOnly = parseFloat(raw)
   if (!isNaN(numOnly)) return { num: String(numOnly), unit: 'px' }
-
   return { num: '', unit: 'px' }
 }
 
-/** Compose "100" + "px" → "100px", "" + "auto" → "auto" */
 function composeCssValue(num: string, unit: CssUnit | SpecialValue): string {
   if (unit === 'auto') return 'auto'
   if (unit === 'none') return 'none'
   if (!num && num !== '0') return ''
   return `${num}${unit}`
 }
+
+// ─── Icons ───────────────────────────────────────────────────────────────────
+
+const MinWidthIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+    <line x1="7" y1="3" x2="7" y2="11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="2" y1="7" x2="6.5" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="4.5,5.5 6.5,7 4.5,8.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="12" y1="7" x2="7.5" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="9.5,5.5 7.5,7 9.5,8.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const MinHeightIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+    <line x1="3" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="7" y1="2" x2="7" y2="6.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="5.5,4.5 7,6.5 8.5,4.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="7" y1="12" x2="7" y2="7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="5.5,9.5 7,7.5 8.5,9.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const MaxWidthIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+    <line x1="2" y1="3.5" x2="2" y2="10.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="12" y1="3.5" x2="12" y2="10.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="2.5" y1="7" x2="7" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="4.5,5.5 2.5,7 4.5,8.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="11.5" y1="7" x2="7" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="9.5,5.5 11.5,7 9.5,8.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const MaxHeightIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+    <line x1="3.5" y1="2" x2="10.5" y2="2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="3.5" y1="12" x2="10.5" y2="12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="7" y1="2.5" x2="7" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="5.5,4.5 7,2.5 8.5,4.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="7" y1="11.5" x2="7" y2="7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <polyline points="5.5,9.5 7,11.5 8.5,9.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -44,62 +81,75 @@ type Props = {
 export function SizeSection({ styles, onUpdate }: Props) {
   return (
     <CollapsibleSection label="Size" defaultOpen>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
-        {/* Width + Height */}
-        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-          <SizeInput
-            label="Width"
-            value={styles.width ?? ''}
-            placeholder="Auto"
-            allowAuto
-            onReset={() => onUpdate({ width: 'auto' })}
-            onChange={(v) => onUpdate({ width: v || undefined })}
-          />
-          <SizeInput
-            label="Height"
-            value={styles.height ?? ''}
-            placeholder="Auto"
-            allowAuto
-            onReset={() => onUpdate({ height: 'auto' })}
-            onChange={(v) => onUpdate({ height: v || undefined })}
-          />
+        {/* Dimensions */}
+        <div>
+          <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Dimensions</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <FigmaInput
+              prefix="W"
+              value={styles.width ?? ''}
+              placeholder="Auto"
+              allowAuto
+              testId="size-width"
+              onChange={(v) => onUpdate({ width: v || undefined })}
+            />
+            <FigmaInput
+              prefix="H"
+              value={styles.height ?? ''}
+              placeholder="Auto"
+              allowAuto
+              testId="size-height"
+              onChange={(v) => onUpdate({ height: v || undefined })}
+            />
+          </div>
         </div>
 
-        {/* Min W + Min H */}
-        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-          <SizeInput
-            label="Min W"
-            value={styles.minWidth ?? ''}
-            placeholder="0"
-            onChange={(v) => onUpdate({ minWidth: v || undefined })}
-          />
-          <SizeInput
-            label="Min H"
-            value={styles.minHeight ?? ''}
-            placeholder="0"
-            onChange={(v) => onUpdate({ minHeight: v || undefined })}
-          />
+        {/* Min */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min width</div>
+            <FigmaInput
+              prefix={<MinWidthIcon />}
+              value={styles.minWidth ?? ''}
+              placeholder="Min W"
+              onChange={(v) => onUpdate({ minWidth: v || undefined })}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min height</div>
+            <FigmaInput
+              prefix={<MinHeightIcon />}
+              value={styles.minHeight ?? ''}
+              placeholder="Min H"
+              onChange={(v) => onUpdate({ minHeight: v || undefined })}
+            />
+          </div>
         </div>
 
-        {/* Max W + Max H */}
-        <div style={{ display: 'flex', gap: 8, minWidth: 0 }}>
-          <SizeInput
-            label="Max W"
-            value={styles.maxWidth ?? ''}
-            placeholder="None"
-            allowNone
-            onReset={() => onUpdate({ maxWidth: undefined })}
-            onChange={(v) => onUpdate({ maxWidth: v || undefined })}
-          />
-          <SizeInput
-            label="Max H"
-            value={styles.maxHeight ?? ''}
-            placeholder="None"
-            allowNone
-            onReset={() => onUpdate({ maxHeight: undefined })}
-            onChange={(v) => onUpdate({ maxHeight: v || undefined })}
-          />
+        {/* Max */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max width</div>
+            <FigmaInput
+              prefix={<MaxWidthIcon />}
+              value={styles.maxWidth ?? ''}
+              placeholder="Max W"
+              allowNone
+              onChange={(v) => onUpdate({ maxWidth: v || undefined })}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max height</div>
+            <FigmaInput
+              prefix={<MaxHeightIcon />}
+              value={styles.maxHeight ?? ''}
+              placeholder="Max H"
+              allowNone
+              onChange={(v) => onUpdate({ maxHeight: v || undefined })}
+            />
+          </div>
         </div>
 
         {/* Overflow */}
@@ -113,85 +163,104 @@ export function SizeSection({ styles, onUpdate }: Props) {
   )
 }
 
-// ─── SizeInput: unified input with unit dropdown ─────────────────────────────
+// ─── FigmaInput ───────────────────────────────────────────────────────────────
 
-function SizeInput({ label, value, placeholder, allowAuto, allowNone, onChange, onReset }: {
-  label: string
+function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, testId }: {
+  prefix: React.ReactNode
   value: string
-  placeholder: string
+  placeholder?: string
   allowAuto?: boolean
   allowNone?: boolean
   onChange: (v: string) => void
-  onReset?: () => void
+  testId?: string
 }) {
+  const [focused, setFocused] = useState(false)
   const parsed = parseCssValue(value)
   const isSpecial = parsed.unit === 'auto' || parsed.unit === 'none'
 
-  const handleNumChange = (newNum: string) => {
-    if (isSpecial) return
-    onChange(composeCssValue(newNum, parsed.unit))
-  }
+  // Локальный state для отображаемого числа — чтобы можно было печатать в «auto» поле
+  const [localNum, setLocalNum] = useState(parsed.num)
+  useEffect(() => {
+    if (!focused) setLocalNum(parsed.num)
+  }, [value, focused])
 
-  const handleUnitChange = (newUnit: CssUnit | SpecialValue) => {
-    if (newUnit === 'auto') {
-      onChange('auto')
-    } else if (newUnit === 'none') {
-      onChange('none')
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newNum = e.target.value
+    setLocalNum(newNum)
+    if (newNum === '') {
+      // пустое поле → вернуть дефолт
+      if (allowNone) onChange('none')
+      else onChange('auto')
     } else {
-      const num = parsed.num || ''
-      onChange(composeCssValue(num, newUnit))
+      // если было auto/none — переключиться на px
+      const unit = isSpecial ? 'px' : (parsed.unit as CssUnit)
+      onChange(composeCssValue(newNum, unit))
     }
   }
 
-  // Build available units for this field
+  const handleBlur = () => {
+    setFocused(false)
+    // нормализовать: если localNum невалидное — сбросить
+    if (localNum !== '' && isNaN(parseFloat(localNum))) {
+      setLocalNum(parsed.num)
+    }
+  }
+
+  const handleUnitChange = (newUnit: CssUnit | SpecialValue) => {
+    if (newUnit === 'auto') onChange('auto')
+    else if (newUnit === 'none') onChange('none')
+    else onChange(composeCssValue(parsed.num || localNum || '0', newUnit))
+  }
+
   const units: (CssUnit | SpecialValue)[] = [...CSS_UNITS]
   if (allowAuto) units.push('auto')
   if (allowNone) units.push('none')
 
   return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 10, color: '#aaa', marginBottom: 3 }}>{label}</div>
-      <div style={{
-        display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4,
-        overflow: 'visible', background: '#fafafa', position: 'relative',
+    <div style={{
+      flex: 1, minWidth: 0,
+      display: 'flex', alignItems: 'center',
+      height: 30,
+      background: focused ? '#fff' : '#f0f0f0',
+      borderRadius: 6,
+      border: focused ? '1.5px solid #0066ff' : '1.5px solid transparent',
+      padding: '0 4px 0 8px',
+      gap: 5,
+      boxSizing: 'border-box',
+      transition: 'background 0.1s, border-color 0.1s',
+    }}>
+      {/* Prefix */}
+      <span style={{
+        fontSize: 11, color: '#888', flexShrink: 0,
+        display: 'flex', alignItems: 'center',
+        userSelect: 'none', fontWeight: 500,
       }}>
-        <input
-          type={isSpecial ? 'text' : 'number'}
-          value={isSpecial ? '' : parsed.num}
-          onChange={(e) => handleNumChange(e.target.value)}
-          placeholder={isSpecial ? (parsed.unit === 'auto' ? 'Auto' : 'None') : placeholder}
-          disabled={isSpecial}
-          style={{
-            flex: 1, border: 'none', padding: '4px 6px',
-            fontSize: 12, background: 'transparent', outline: 'none',
-            color: isSpecial ? '#bbb' : '#1a1a1a', minWidth: 0,
-            cursor: isSpecial ? 'default' : undefined,
-          }}
-        />
-        <UnitDropdown
-          value={isSpecial ? parsed.unit : parsed.unit}
-          options={units}
-          onChange={handleUnitChange}
-        />
-        {onReset && (
-          <button
-            onClick={onReset}
-            title="Сбросить"
-            style={{
-              padding: '0 7px', border: 'none', borderLeft: '1px solid #e0e0e0',
-              background: '#f0f0f0', cursor: 'pointer', color: '#bbb',
-              fontSize: 13, lineHeight: 1, flexShrink: 0,
-            }}
-          >
-            –
-          </button>
-        )}
-      </div>
+        {prefix}
+      </span>
+
+      {/* Number input — никогда не disabled */}
+      <input
+        type="text"
+        value={localNum}
+        onChange={handleChange}
+        onFocus={() => setFocused(true)}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        data-testid={testId}
+        style={{
+          flex: 1, border: 'none', background: 'transparent',
+          fontSize: 12, color: '#1a1a1a',
+          outline: 'none', minWidth: 0, padding: 0,
+        }}
+      />
+
+      {/* Unit dropdown */}
+      <UnitDropdown value={parsed.unit} options={units} onChange={handleUnitChange} />
     </div>
   )
 }
 
-// ─── UnitDropdown ────────────────────────────────────────────────────────────
+// ─── UnitDropdown ─────────────────────────────────────────────────────────────
 
 function UnitDropdown({ value, options, onChange }: {
   value: CssUnit | SpecialValue
@@ -204,36 +273,30 @@ function UnitDropdown({ value, options, onChange }: {
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
-
-  const displayLabel = value.toUpperCase()
 
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
-          padding: '0 6px', height: '100%',
-          borderLeft: '1px solid #e0e0e0', borderTop: 'none', borderBottom: 'none', borderRight: 'none',
-          background: open ? '#e0e0e0' : '#efefef',
-          fontSize: 10, color: open ? '#1a1a1a' : '#999',
-          display: 'flex', alignItems: 'center', gap: 2,
-          cursor: 'pointer', fontWeight: 500,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 18, height: 18,
+          border: 'none', background: open ? '#e0e0e0' : 'transparent',
+          borderRadius: 3, cursor: 'pointer', padding: 0,
+          color: '#888',
           transition: 'background 0.1s',
         }}
+        onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = '#e8e8e8' }}
+        onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
       >
-        {displayLabel}
-        <span style={{
-          fontSize: 7, marginLeft: 1,
-          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.15s',
-        }}>▼</span>
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+          <path d="M1.5 2.5L4 5L6.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </button>
 
       {open && (
@@ -242,7 +305,7 @@ function UnitDropdown({ value, options, onChange }: {
           zIndex: 200, background: '#fff',
           border: '1px solid #e0e0e0', borderRadius: 6,
           boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-          minWidth: 56, maxHeight: 200, overflowY: 'auto',
+          minWidth: 64, maxHeight: 220, overflowY: 'auto',
           padding: 3,
         }}>
           {options.map((unit) => {
@@ -252,9 +315,8 @@ function UnitDropdown({ value, options, onChange }: {
                 key={unit}
                 onClick={() => { onChange(unit); setOpen(false) }}
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  width: '100%', padding: '4px 8px',
-                  border: 'none', borderRadius: 4,
+                  display: 'block', width: '100%', padding: '4px 8px',
+                  border: 'none', borderRadius: 4, textAlign: 'left',
                   background: active ? '#1a1a1a' : 'transparent',
                   color: active ? '#fff' : '#555',
                   fontSize: 11, fontWeight: active ? 600 : 400,
@@ -268,7 +330,7 @@ function UnitDropdown({ value, options, onChange }: {
                   if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
                 }}
               >
-                {unit.toUpperCase()}
+                {unit === 'auto' ? 'Auto' : unit === 'none' ? 'None' : unit.toUpperCase()}
               </button>
             )
           })}
@@ -278,7 +340,7 @@ function UnitDropdown({ value, options, onChange }: {
   )
 }
 
-// ─── OverflowRow ─────────────────────────────────────────────────────────────
+// ─── OverflowRow ──────────────────────────────────────────────────────────────
 
 type OverflowValue = ElementStyles['overflow']
 

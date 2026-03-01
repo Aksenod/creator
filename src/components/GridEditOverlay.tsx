@@ -3,20 +3,13 @@ import { createPortal } from 'react-dom'
 import { useEditorStore } from '../store'
 import { parseTracks, serializeTracks } from './Properties/LayoutSection'
 import type { GridTrack } from './Properties/LayoutSection'
+import { getGridLayout } from '../utils/gridUtils'
 
 type Props = {
   artboardId: string
 }
 
 type GridRect = { top: number; left: number; width: number; height: number }
-
-function getTrackSizes(computed: string): number[] {
-  // computed: "100px 200px 300px" (браузер всегда раскрывает в px)
-  return computed.split(/\s+/).filter(Boolean).map(t => {
-    const m = t.match(/^([\d.]+)px$/)
-    return m ? parseFloat(m[1]) : 0
-  })
-}
 
 type DragState = {
   axis: 'col' | 'row'
@@ -50,26 +43,17 @@ export function GridEditOverlay({ artboardId }: Props) {
     const domEl = document.querySelector(`[data-element-id="${gridEditElementId}"]`) as HTMLElement | null
     if (!domEl) return
 
-    const rect = domEl.getBoundingClientRect()
-    setGridRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height })
+    const layout = getGridLayout(domEl)
+    if (!layout) return
 
-    const cs = window.getComputedStyle(domEl)
-    const cols = getTrackSizes(cs.gridTemplateColumns)
-    const rows = getTrackSizes(cs.gridTemplateRows)
-    const cGap = parseFloat(cs.columnGap) || 0
-    const rGap = parseFloat(cs.rowGap) || 0
-
-    setColSizesCss(cols)
-    setRowSizesCss(rows)
-    setColGapCss(cGap)
-    setRowGapCss(rGap)
-
-    // Вычислить реальный scale (CSS zoom эффект)
-    // totalCSSWidth = сумма треков + gap между ними
-    const totalCssW = cols.reduce((s, v) => s + v, 0) + Math.max(0, cols.length - 1) * cGap
-    const totalCssH = rows.reduce((s, v) => s + v, 0) + Math.max(0, rows.length - 1) * rGap
-    setScaleX(totalCssW > 0 ? rect.width / totalCssW : 1)
-    setScaleY(totalCssH > 0 ? rect.height / totalCssH : 1)
+    const { containerRect, colSizes, rowSizes, colGap, rowGap, scaleX: sx, scaleY: sy } = layout
+    setGridRect({ top: containerRect.top, left: containerRect.left, width: containerRect.width, height: containerRect.height })
+    setColSizesCss(colSizes)
+    setRowSizesCss(rowSizes)
+    setColGapCss(colGap)
+    setRowGapCss(rowGap)
+    setScaleX(sx)
+    setScaleY(sy)
   }, [gridEditElementId])
 
   useEffect(() => {
