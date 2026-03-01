@@ -6,6 +6,7 @@ import { resolveStyles } from '../../utils/resolveStyles'
 import { getCSSPosition } from '../../utils/cssUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
 import { getGridCellsById } from '../../utils/gridUtils'
+import type { Camera } from '../../hooks/useCanvasTransform'
 
 // --- Resize handles ---
 
@@ -42,7 +43,10 @@ const HANDLES: Array<{ id: HandleDir; style: React.CSSProperties }> = [
 type Props = {
   artboard: Artboard
   previewMode?: boolean
+  /** CSS zoom scale для thumbnail-превью (non-plain режим). В CanvasEditor не используется. */
   scale?: number
+  /** Ref на камеру из useCanvasTransform — нужен для корректного resize в CanvasEditor. */
+  cameraRef?: React.RefObject<Camera>
   /** Без внешней обёртки с центровкой — для CanvasEditor */
   plain?: boolean
   /** Синяя рамка активного артборда */
@@ -51,7 +55,7 @@ type Props = {
   onArtboardClick?: () => void
 }
 
-export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onArtboardClick }: Props) {
+export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isActive, onArtboardClick }: Props) {
   const {
     selectElement, selectedElementId, selectedElementIds,
     toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
@@ -73,8 +77,9 @@ export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onAr
       const state = resizeRef.current
       if (!state || !activeArtboardId) return
 
-      const dx = (e.clientX - state.startMouseX) / scale
-      const dy = (e.clientY - state.startMouseY) / scale
+      const currentScale = cameraRef?.current?.scale ?? scale
+      const dx = (e.clientX - state.startMouseX) / currentScale
+      const dy = (e.clientY - state.startMouseY) / currentScale
 
       let newW = state.startW
       let newH = state.startH
@@ -101,7 +106,7 @@ export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onAr
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
     }
-  }, [previewMode, scale, activeArtboardId, updateElement])
+  }, [previewMode, scale, cameraRef, activeArtboardId, updateElement])
 
   const startResize = (e: React.MouseEvent, id: string, handle: HandleDir) => {
     e.stopPropagation()
@@ -111,13 +116,14 @@ export function Canvas({ artboard, previewMode, scale = 1, plain, isActive, onAr
     if (!elDom) return
     const rect = elDom.getBoundingClientRect()
 
+    const currentScale = cameraRef?.current?.scale ?? scale
     resizeRef.current = {
       elementId: id,
       handle,
       startMouseX: e.clientX,
       startMouseY: e.clientY,
-      startW: rect.width / scale,
-      startH: rect.height / scale,
+      startW: rect.width / currentScale,
+      startH: rect.height / currentScale,
     }
 
     document.body.style.cursor = HANDLE_CURSORS[handle]
