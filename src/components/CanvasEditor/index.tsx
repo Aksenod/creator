@@ -124,6 +124,8 @@ async function addImageFromFile(file: File) {
     s2.updateElement(s2.activeArtboardId, newId, {
       src,
       alt: '',
+      naturalWidth: dims.width,
+      naturalHeight: dims.height,
       styles: { width: `${width}px`, height: `${height}px`, objectFit: 'cover', overflow: 'hidden' },
     })
     console.log('[Image drop] created element:', newId)
