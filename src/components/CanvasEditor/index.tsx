@@ -531,7 +531,7 @@ export function CanvasEditor() {
               position: 'absolute',
               top: 0, left: 0,
               transformOrigin: '0 0',
-              willChange: 'transform',
+              willChange: 'transform, zoom',
             }}
           >
             {project.artboardOrder.map(id => {
@@ -615,10 +615,10 @@ export function CanvasEditor() {
               {snapLines.map((line, i) =>
                 line.axis === 'x' ? (
                   <line key={i} x1={line.x} y1={line.y1} x2={line.x} y2={line.y2}
-                    stroke="#0066ff" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                    stroke="#0066ff" strokeWidth={1 / cameraRef.current.scale} />
                 ) : (
                   <line key={i} x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
-                    stroke="#0066ff" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                    stroke="#0066ff" strokeWidth={1 / cameraRef.current.scale} />
                 )
               )}
             </svg>
