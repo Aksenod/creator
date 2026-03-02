@@ -44,14 +44,14 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
   }
 
   return (
-    <CollapsibleSection label="Изображение" defaultOpen>
+    <CollapsibleSection label="Image" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
         {/* Preview thumbnail */}
         {element.src && (
           <div style={{
             width: '100%', height: 80, borderRadius: 4, overflow: 'hidden',
-            border: '1px solid #e0e0e0', background: '#f5f5f5',
+            border: '1px solid #e5e5e5', background: '#f5f5f5',
           }}>
             <img
               src={element.src}
@@ -67,12 +67,12 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
             <input
               value={element.src || ''}
               onChange={(e) => onUpdateField({ src: e.target.value })}
-              placeholder="URL изображения"
+              placeholder="Image URL"
               style={inputStyle}
             />
             <button
               onClick={() => fileRef.current?.click()}
-              title="Загрузить файл"
+              title="Upload file"
               style={btnStyle}
             >
               ↑
@@ -92,7 +92,7 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
           <input
             value={element.alt || ''}
             onChange={(e) => onUpdateField({ alt: e.target.value })}
-            placeholder="Описание"
+            placeholder="Description"
             style={inputStyle}
           />
         </PropertyRow>
@@ -133,13 +133,13 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
 }
 
 const inputStyle: React.CSSProperties = {
-  flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
+  flex: 1, padding: '3px 6px', border: '1px solid #e5e5e5', borderRadius: 4,
   fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
-  color: '#1a1a1a',
+  color: '#0a0a0a',
 }
 
 const btnStyle: React.CSSProperties = {
-  padding: '3px 8px', border: '1px solid #e0e0e0', borderRadius: 4,
-  fontSize: 12, background: '#fafafa', cursor: 'default', color: '#555',
+  padding: '3px 8px', border: '1px solid #e5e5e5', borderRadius: 4,
+  fontSize: 12, background: '#fafafa', cursor: 'default', color: '#525252',
   flexShrink: 0,
 }

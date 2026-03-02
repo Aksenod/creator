@@ -14,19 +14,19 @@ type Props = {
 
 export function SpacingSection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Spacing" tooltip="Spacing — внешние (margin) и внутренние (padding) отступы. Margin — расстояние от соседей. Padding — расстояние от краёв элемента до его содержимого" defaultOpen>
+    <CollapsibleSection label="Spacing" tooltip="Spacing — margin (outer) and padding (inner). Margin = distance from neighbors. Padding = distance from edges to content" defaultOpen>
       {(
-        // ─── Outer box: MARGIN (тёплый оранжевый как у Webflow) ──────────────
+        // ─── Outer box: MARGIN ──────────────
         <div style={{
           position: 'relative',
-          border: '1px solid #e8d8bc',
-          borderRadius: 4,
-          background: '#fef8ee',
+          border: '1px solid #d4d4d4',
+          borderRadius: 6,
+          background: '#fafafa',
           padding: '24px 46px',
         }}>
           <span style={{
             position: 'absolute', top: 4, left: 7,
-            fontSize: 8, color: '#c8a060', letterSpacing: '0.06em',
+            fontSize: 8, color: '#a3a3a3', letterSpacing: '0.06em',
             userSelect: 'none', fontWeight: 600,
           }}>
             MARGIN
@@ -62,17 +62,17 @@ export function SpacingSection({ styles, onUpdate }: Props) {
             style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)' }}
           />
 
-          {/* ─── Inner box: PADDING (синеватый как у Webflow) ──────────────── */}
+          {/* ─── Inner box: PADDING ──────────────── */}
           <div style={{
             position: 'relative',
-            border: '1px solid #b8ccf0',
-            borderRadius: 3,
-            background: '#eef3ff',
+            border: '1px solid #d4d4d4',
+            borderRadius: 4,
+            background: '#f0f0f0',
             padding: '22px 38px',
           }}>
             <span style={{
               position: 'absolute', bottom: 4, left: 6,
-              fontSize: 8, color: '#7090c8', letterSpacing: '0.06em',
+              fontSize: 8, color: '#737373', letterSpacing: '0.06em',
               userSelect: 'none', fontWeight: 600,
               pointerEvents: 'none',
             }}>
@@ -111,12 +111,12 @@ export function SpacingSection({ styles, onUpdate }: Props) {
 
             {/* Центральный прямоугольник — сам элемент */}
             <div style={{
-              background: '#dce6f8',
-              borderRadius: 2,
+              background: '#e5e5e5',
+              borderRadius: 3,
               minHeight: 20,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 9, color: '#6880b8', userSelect: 'none' }}>element</span>
+              <span style={{ fontSize: 9, color: '#737373', userSelect: 'none' }}>element</span>
             </div>
           </div>
         </div>
@@ -203,16 +203,16 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           height: 18,
           padding: '0 4px',
           border: `1px solid ${
-            open ? '#0066ff'
-            : hover || hasValue ? (hasValue ? '#0066ff' : '#c8a060')
+            open ? '#0a0a0a'
+            : hover || hasValue ? (hasValue ? '#0a0a0a' : '#a3a3a3')
             : 'transparent'
           }`,
-          borderRadius: 3,
+          borderRadius: 4,
           fontSize: 11,
           textAlign: 'center',
           lineHeight: '16px',
-          background: open ? '#e6f0ff' : hasValue ? '#e6f0ff' : 'transparent',
-          color: open || hasValue ? '#0066ff' : '#a88840',
+          background: open ? '#f0f0f0' : hasValue ? '#f0f0f0' : 'transparent',
+          color: open || hasValue ? '#0a0a0a' : '#a3a3a3',
           cursor: 'default',
           userSelect: 'none',
           transition: 'border-color 0.1s, background 0.1s',
@@ -220,7 +220,7 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        title="Клик — открыть панель ввода значения. Alt+перетаскивание — быстрая подстройка значения мышью. Shift ускоряет шаг ×10"
+        title="Click to edit. Alt+drag to scrub. Shift = 10x step"
         data-spacing-trigger="true"
       >
         {hasValue ? `${value}px` : '–'}
@@ -319,11 +319,11 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
         left: anchorPos.left,
         width: 196,
         background: '#fff',
-        border: '1px solid #e0e0e0',
-        borderRadius: 6,
+        border: '1px solid #e5e5e5',
+        borderRadius: 8,
         padding: '8px',
         zIndex: 99999,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
       }}
     >
       {/* Input + PX label */}
@@ -358,9 +358,9 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
           style={{
             flex: 1,
             background: '#fafafa',
-            border: '1px solid #e0e0e0',
-            borderRadius: 4,
-            color: '#1a1a1a',
+            border: '1px solid #e5e5e5',
+            borderRadius: 6,
+            color: '#0a0a0a',
             fontSize: 12,
             padding: '4px 6px',
             outline: 'none',
@@ -369,9 +369,9 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
         />
         <div style={{
           background: '#f5f5f5',
-          border: '1px solid #e0e0e0',
-          borderRadius: 4,
-          color: '#888',
+          border: '1px solid #e5e5e5',
+          borderRadius: 6,
+          color: '#737373',
           fontSize: 11,
           padding: '4px 7px',
           userSelect: 'none',
@@ -393,10 +393,10 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
               onClick={(e) => applyPreset(p, e)}
               title={`${p}px${p === 0 ? '' : ' · Shift: all sides · Alt: opposite'}`}
               style={{
-                background: isActive ? '#0066ff' : '#f5f5f5',
-                border: `1px solid ${isActive ? '#0066ff' : '#e0e0e0'}`,
-                borderRadius: 3,
-                color: isActive ? '#fff' : '#555',
+                background: isActive ? '#0a0a0a' : '#f5f5f5',
+                border: `1px solid ${isActive ? '#0a0a0a' : '#e5e5e5'}`,
+                borderRadius: 4,
+                color: isActive ? '#fff' : '#525252',
                 fontSize: 11,
                 padding: '2px 7px',
                 cursor: 'default',
@@ -412,7 +412,7 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
       </div>
 
       {/* Hint */}
-      <div style={{ fontSize: 10, color: '#aaa', marginBottom: 6, lineHeight: 1.4 }}>
+      <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 6, lineHeight: 1.4 }}>
         Shift+click → all · Alt+click → opposite
       </div>
 
@@ -420,13 +420,13 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
       <button
         onMouseDown={(e) => e.stopPropagation()}
         onClick={() => { onChange(undefined); onClose() }}
-        title="Сбросить значение — убрать этот отступ и вернуть к значению по умолчанию (0)"
+        title="Reset value"
         style={{
           width: '100%',
           background: '#f5f5f5',
-          border: '1px solid #e0e0e0',
-          borderRadius: 3,
-          color: '#888',
+          border: '1px solid #e5e5e5',
+          borderRadius: 4,
+          color: '#737373',
           fontSize: 11,
           padding: '4px 0',
           cursor: 'default',
@@ -434,14 +434,14 @@ function SpacingPopover({ value, anchorPos, onChange, onChangeAll, onChangeOppos
           transition: 'border-color 0.1s, color 0.1s, background 0.1s',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#d0d0d0'
+          e.currentTarget.style.borderColor = '#d4d4d4'
           e.currentTarget.style.background = '#ebebeb'
           e.currentTarget.style.color = '#333'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#e0e0e0'
+          e.currentTarget.style.borderColor = '#e5e5e5'
           e.currentTarget.style.background = '#f5f5f5'
-          e.currentTarget.style.color = '#888'
+          e.currentTarget.style.color = '#737373'
         }}
       >
         Reset

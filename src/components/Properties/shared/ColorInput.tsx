@@ -37,7 +37,7 @@ export function ColorInput({ value, onChange, placeholder = '—', fallback = '#
   }, [onChange])
 
   return (
-    <div style={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0, alignItems: 'center' }}>
+    <div style={{ display: 'flex', border: '1px solid #e5e5e5', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0, alignItems: 'center' }}>
       {/* Color swatch */}
       <div
         ref={swatchRef}
@@ -47,7 +47,7 @@ export function ColorInput({ value, onChange, placeholder = '—', fallback = '#
           height: 28,
           flexShrink: 0,
           cursor: 'pointer',
-          borderRight: '1px solid #e0e0e0',
+          borderRight: '1px solid #e5e5e5',
           background: colorValue,
         }}
       />

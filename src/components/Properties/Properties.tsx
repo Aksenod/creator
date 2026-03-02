@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
-import { CollapsibleSection, PropertyRow } from './shared'
+import { CollapsibleSection, PropertyRow, OpacityRow } from './shared'
 import type { CanvasElement, ElementStyles } from '../../types'
 import { CanvasSection } from './CanvasSection'
 import { ArtboardSection } from './ArtboardSection'
@@ -58,7 +58,6 @@ export function Properties() {
     () => isMultiSelect && artboard
       ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId)
       : null,
-    // artboard — стабильная ссылка от Zustand, меняется только при изменении данных
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isMultiSelect, selectedElementIds, artboard, activeBreakpointId],
   )
@@ -82,18 +81,15 @@ export function Properties() {
     updateElement(activeArtboardId, selectedElementId, { positionMode: mode })
   }
 
-  // Эффективные стили с учётом cascade
   const effectiveStyles = isMultiSelect
     ? (commonStyles ?? {})
     : element ? resolveStyles(element, activeBreakpointId) : {}
 
-  // Grid child: показывать секцию если родитель — grid-контейнер
   const parentId = artboard && selectedElementId ? findParentId(artboard, selectedElementId) : null
   const parentEl = parentId && artboard ? artboard.elements[parentId] : null
   const parentEffectiveStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId) : null
   const isGridChild = parentEffectiveStyles?.display === 'grid'
 
-  // Есть ли BP-overrides на текущем элементе для текущего BP
   const hasBpOverrides = !isMultiSelect && element && activeBreakpointId !== 'desktop'
     ? !!(element.breakpointStyles?.[activeBreakpointId] && Object.keys(element.breakpointStyles[activeBreakpointId]!).length > 0)
     : false
@@ -102,33 +98,32 @@ export function Properties() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{
         padding: '10px 12px', fontSize: 11, fontWeight: 600,
-        color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em',
-        borderBottom: '1px solid #e0e0e0',
+        color: '#737373', textTransform: 'uppercase', letterSpacing: '0.05em',
+        borderBottom: '1px solid #e5e5e5',
       }}>
-        Свойства
+        Properties
       </div>
-      {/* BP banner — показываем когда не на Desktop */}
       {activeBreakpointId !== 'desktop' && (
         <div style={{
           padding: '6px 12px',
-          background: hasBpOverrides ? '#fff3cd' : '#f0f4ff',
-          borderBottom: '1px solid #e0e0e0',
+          background: hasBpOverrides ? '#fff3cd' : '#f5f5f5',
+          borderBottom: '1px solid #e5e5e5',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         }}>
-          <span style={{ fontSize: 11, color: hasBpOverrides ? '#8a6000' : '#3355aa', fontWeight: 500 }}>
+          <span style={{ fontSize: 11, color: hasBpOverrides ? '#8a6000' : '#525252', fontWeight: 500 }}>
             ✎ {BREAKPOINT_LABELS[activeBreakpointId]}
-            {hasBpOverrides ? ' · есть переопределения' : ''}
+            {hasBpOverrides ? ' · has overrides' : ''}
           </span>
           {hasBpOverrides && element && (
             <button
               onClick={() => clearBreakpointStyle(activeArtboardId!, selectedElementId!, activeBreakpointId)}
-              title={`Удалить все переопределения ${BREAKPOINT_LABELS[activeBreakpointId]}`}
+              title={`Remove all ${BREAKPOINT_LABELS[activeBreakpointId]} overrides`}
               style={{
                 fontSize: 10, padding: '2px 6px', border: '1px solid #e0b000',
                 borderRadius: 3, cursor: 'default', background: '#fff', color: '#8a6000',
               }}
             >
-              Сбросить
+              Reset
             </button>
           )}
         </div>
@@ -136,64 +131,18 @@ export function Properties() {
 
       <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', padding: 12 }}>
         {isMultiSelect ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <div style={{ padding: '6px 0', fontSize: 12, color: '#555', fontWeight: 500 }}>
-              Выбрано: {selectedElementIds.length} элемента
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ padding: '6px 0', fontSize: 12, color: '#525252', fontWeight: 500 }}>
+              Selected: {selectedElementIds.length} elements
             </div>
 
-            <Divider />
-
             <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
-            <PropertyRow label="Opacity">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-                <input
-                  type="range"
-                  min={0} max={100} step={1}
-                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
-                  onChange={e => updateStyle({ opacity: Number(e.target.value) / 100 })}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-                <input
-                  type="number"
-                  min={0} max={100} step={1}
-                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
-                  onChange={e => {
-                    const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                    updateStyle({ opacity: v / 100 })
-                  }}
-                  style={{
-                    width: 36, flexShrink: 0, padding: '3px 2px', border: '1px solid #e0e0e0',
-                    borderRadius: 4, fontSize: 12, background: '#fafafa',
-                    outline: 'none', textAlign: 'right',
-                  }}
-                />
-                <span style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>%</span>
-              </div>
-            </PropertyRow>
-
-            <Divider />
-
+            <OpacityRow value={effectiveStyles.opacity} onChange={v => updateStyle({ opacity: v })} />
             <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
-
           </div>
         ) : !element && artboard ? (
           <ArtboardSection
@@ -211,19 +160,18 @@ export function Properties() {
             onUpdate={updateCanvasSettings}
           />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-            {/* Имя + Класс + Контент */}
-            <CollapsibleSection label="Слой" defaultOpen>
+            <CollapsibleSection label="Layer" defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <PropertyRow label="Имя">
+                <PropertyRow label="Name">
                   <input
                     value={element.name}
                     onChange={(e) => updateField({ name: e.target.value })}
                     style={inputStyle}
                   />
                 </PropertyRow>
-                <PropertyRow label="Класс">
+                <PropertyRow label="Class">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
                     <span style={{ color: '#aaa', fontSize: 11 }}>.</span>
                     <input
@@ -252,90 +200,36 @@ export function Properties() {
               </div>
             </CollapsibleSection>
 
-            <Divider />
-
             {element.type === 'image' && (
-              <>
-                <ImageSection
-                  element={element}
-                  styles={effectiveStyles}
-                  onUpdateField={updateField}
-                  onUpdateStyle={updateStyle}
-                />
-                <Divider />
-              </>
+              <ImageSection
+                element={element}
+                styles={effectiveStyles}
+                onUpdateField={updateField}
+                onUpdateStyle={updateStyle}
+              />
             )}
 
             {element.type !== 'body' && (
-              <>
-                <PositionSection
-                  positionMode={element.positionMode}
-                  styles={effectiveStyles}
-                  onUpdateMode={updatePositionMode}
-                  onUpdateStyle={updateStyle}
-                />
-                <Divider />
-              </>
+              <PositionSection
+                positionMode={element.positionMode}
+                styles={effectiveStyles}
+                onUpdateMode={updatePositionMode}
+                onUpdateStyle={updateStyle}
+              />
             )}
 
             <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
 
-            <Divider />
-
             {isGridChild && (
-              <>
-                <GridChildSection styles={effectiveStyles} onUpdate={updateStyle} />
-                <Divider />
-              </>
+              <GridChildSection styles={effectiveStyles} onUpdate={updateStyle} />
             )}
 
             <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} elementId={selectedElementId} />
-
-            <Divider />
-
             <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
-            <PropertyRow label="Opacity">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-                <input
-                  type="range"
-                  min={0} max={100} step={1}
-                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
-                  onChange={e => updateStyle({ opacity: Number(e.target.value) / 100 })}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-                <input
-                  type="number"
-                  min={0} max={100} step={1}
-                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
-                  onChange={e => {
-                    const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                    updateStyle({ opacity: v / 100 })
-                  }}
-                  style={{
-                    width: 36, flexShrink: 0, padding: '3px 2px', border: '1px solid #e0e0e0',
-                    borderRadius: 4, fontSize: 12, background: '#fafafa',
-                    outline: 'none', textAlign: 'right',
-                  }}
-                />
-                <span style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>%</span>
-              </div>
-            </PropertyRow>
-
-            <Divider />
-
+            <OpacityRow value={effectiveStyles.opacity} onChange={v => updateStyle({ opacity: v })} />
             <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            <Divider />
-
             <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
-
           </div>
         )}
       </div>
@@ -343,16 +237,8 @@ export function Properties() {
   )
 }
 
-// ─── Базовые стили ─────────────────────────────────────────────────────────────
-
 const inputStyle: React.CSSProperties = {
-  flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
+  flex: 1, padding: '3px 6px', border: '1px solid #e5e5e5', borderRadius: 4,
   fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
-  color: '#1a1a1a',
-}
-
-// ─── Компоненты ────────────────────────────────────────────────────────────────
-
-function Divider() {
-  return <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
+  color: '#0a0a0a',
 }

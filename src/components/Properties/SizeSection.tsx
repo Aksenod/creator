@@ -80,14 +80,14 @@ type Props = {
 
 export function SizeSection({ styles, onUpdate }: Props) {
   return (
-    <CollapsibleSection label="Size" tooltip="Size — габариты элемента: ширина, высота, минимальные/максимальные ограничения и поведение переполнения (overflow)" defaultOpen>
+    <CollapsibleSection label="Size" tooltip="Size — width, height, min/max constraints and overflow" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
         {/* Dimensions */}
         <div>
-          <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Dimensions</div>
+          <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 5 }}>Dimensions</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <div title="Width — ширина элемента. Auto = подстраивается под содержимое или родителя. Можно задать в px, %, vw" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+            <div title="Width — element width. Auto = fit content/parent. Supports px, %, vw" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
               <FigmaInput
                 prefix="W"
                 value={styles.width ?? ''}
@@ -97,7 +97,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
                 onChange={(v) => onUpdate({ width: v || undefined })}
               />
             </div>
-            <div title="Height — высота элемента. Auto = подстраивается под содержимое. Обычно оставляют Auto, задают явно для hero-секций и баннеров" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+            <div title="Height — element height. Auto = fit content" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
               <FigmaInput
                 prefix="H"
                 value={styles.height ?? ''}
@@ -112,8 +112,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
 
         {/* Min */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }} title="Min width — элемент не сожмётся уже этого значения. Полезно для кнопок и карточек, чтобы не ломался макет на узких экранах">
-            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min width</div>
+          <div style={{ flex: 1, minWidth: 0 }} title="Min width — element won't shrink below this">
+            <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 5 }}>Min width</div>
             <FigmaInput
               prefix={<MinWidthIcon />}
               value={styles.minWidth ?? ''}
@@ -121,8 +121,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
               onChange={(v) => onUpdate({ minWidth: v || undefined })}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }} title="Min height — элемент не сожмётся ниже этого значения. Используй для секций, чтобы гарантировать минимальную высоту даже без контента">
-            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Min height</div>
+          <div style={{ flex: 1, minWidth: 0 }} title="Min height — element won't shrink below this">
+            <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 5 }}>Min height</div>
             <FigmaInput
               prefix={<MinHeightIcon />}
               value={styles.minHeight ?? ''}
@@ -134,8 +134,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
 
         {/* Max */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }} title="Max width — элемент не растянется шире этого значения. Классика: max-width 1200px для контейнера, чтобы текст не растягивался на всю ширину экрана">
-            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max width</div>
+          <div style={{ flex: 1, minWidth: 0 }} title="Max width — element won't grow beyond this">
+            <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 5 }}>Max width</div>
             <FigmaInput
               prefix={<MaxWidthIcon />}
               value={styles.maxWidth ?? ''}
@@ -144,8 +144,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
               onChange={(v) => onUpdate({ maxWidth: v || undefined })}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }} title="Max height — элемент не растянется выше этого значения. Используй для ограничения высоты изображений или модальных окон">
-            <div style={{ fontSize: 10, color: '#aaa', marginBottom: 5 }}>Max height</div>
+          <div style={{ flex: 1, minWidth: 0 }} title="Max height — element won't grow beyond this">
+            <div style={{ fontSize: 10, color: '#a3a3a3', marginBottom: 5 }}>Max height</div>
             <FigmaInput
               prefix={<MaxHeightIcon />}
               value={styles.maxHeight ?? ''}
@@ -227,7 +227,7 @@ function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange
       height: 30,
       background: focused ? '#fff' : '#f0f0f0',
       borderRadius: 6,
-      border: focused ? '1.5px solid #0066ff' : '1.5px solid transparent',
+      border: focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
       padding: '0 4px 0 8px',
       gap: 5,
       boxSizing: 'border-box',
@@ -235,7 +235,7 @@ function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange
     }}>
       {/* Prefix */}
       <span style={{
-        fontSize: 11, color: '#888', flexShrink: 0,
+        fontSize: 11, color: '#737373', flexShrink: 0,
         display: 'flex', alignItems: 'center',
         userSelect: 'none', fontWeight: 500,
       }}>
@@ -253,7 +253,7 @@ function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange
         data-testid={testId}
         style={{
           flex: 1, border: 'none', background: 'transparent',
-          fontSize: 12, color: '#1a1a1a',
+          fontSize: 12, color: '#0a0a0a',
           outline: 'none', minWidth: 0, padding: 0,
         }}
       />
@@ -287,13 +287,13 @@ function UnitDropdown({ value, options, onChange }: {
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button
         onClick={() => setOpen(!open)}
-        title="Единица измерения — px (пиксели), % (от родителя), vw/vh (от размера экрана), auto или none"
+        title="Unit — px, % (of parent), vw/vh (of viewport), auto or none"
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
           height: 18, padding: '0 3px',
-          border: 'none', background: open ? '#e0e0e0' : 'transparent',
+          border: 'none', background: open ? '#e5e5e5' : 'transparent',
           borderRadius: 3, cursor: 'default',
-          color: '#888', fontSize: 10, fontWeight: 500,
+          color: '#737373', fontSize: 10, fontWeight: 500,
           transition: 'background 0.1s',
         }}
         onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.background = '#e8e8e8' }}
@@ -323,8 +323,8 @@ function UnitDropdown({ value, options, onChange }: {
                 style={{
                   display: 'block', width: '100%', padding: '4px 8px',
                   border: 'none', borderRadius: 4, textAlign: 'left',
-                  background: active ? '#1a1a1a' : 'transparent',
-                  color: active ? '#fff' : '#555',
+                  background: active ? '#0a0a0a' : 'transparent',
+                  color: active ? '#fff' : '#525252',
                   fontSize: 11, fontWeight: active ? 600 : 400,
                   cursor: 'default',
                   transition: 'background 0.1s',
@@ -353,7 +353,7 @@ type OverflowValue = ElementStyles['overflow']
 const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNode; tooltip: string }[] = [
   {
     value: 'visible',
-    tooltip: 'Visible — содержимое свободно выходит за границы элемента (поведение по умолчанию)',
+    tooltip: 'Visible — content flows outside the element (default)',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <ellipse cx="7" cy="7" rx="5" ry="3.5" stroke="currentColor" strokeWidth="1.3" />
@@ -363,7 +363,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'hidden',
-    tooltip: 'Hidden — обрезать содержимое по границам элемента, скрыть всё что выступает',
+    tooltip: 'Hidden — clip content at element boundaries',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <ellipse cx="7" cy="7" rx="5" ry="3.5" stroke="currentColor" strokeWidth="1.3" />
@@ -374,7 +374,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'scroll',
-    tooltip: 'Scroll — всегда показывать полосу прокрутки, даже если содержимое вмещается',
+    tooltip: 'Scroll — always show scrollbar',
     icon: (
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <path d="M7 2L7 12M4 5L7 2L10 5M4 9L7 12L10 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -383,7 +383,7 @@ const OVERFLOW_OPTIONS: { value: NonNullable<OverflowValue>; icon: React.ReactNo
   },
   {
     value: 'auto',
-    tooltip: 'Auto — полоса прокрутки появляется только когда содержимое не вмещается в элемент',
+    tooltip: 'Auto — scrollbar appears only when content overflows',
     icon: <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '-0.02em' }}>Auto</span>,
   },
 ]
@@ -394,7 +394,7 @@ function OverflowRow({ value, onChange }: {
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-      <span title="Overflow — что происходит с содержимым, которое не вмещается в элемент" style={{ fontSize: 10, color: '#aaa', width: 52, flexShrink: 0 }}>Overflow</span>
+      <span title="Overflow — what happens with content that doesn't fit" style={{ fontSize: 10, color: '#a3a3a3', width: 52, flexShrink: 0 }}>Overflow</span>
       <div style={{
         display: 'flex', background: '#efefef', borderRadius: 6,
         padding: 2, gap: 2, flex: 1,
@@ -409,8 +409,8 @@ function OverflowRow({ value, onChange }: {
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
-                background: active ? '#1a1a1a' : 'transparent',
-                color: active ? '#fff' : '#888',
+                background: active ? '#0a0a0a' : 'transparent',
+                color: active ? '#fff' : '#737373',
                 transition: 'all 0.1s',
               }}
             >

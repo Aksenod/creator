@@ -93,8 +93,8 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
       opacity: isDragging ? 0.3 : (fill.visible ? 1 : 0.45),
       height: 32,
       position: 'relative',
-      borderTop: isDragOver === 'above' ? '2px solid #0066ff' : '2px solid transparent',
-      borderBottom: isDragOver === 'below' ? '2px solid #0066ff' : '2px solid transparent',
+      borderTop: isDragOver === 'above' ? '2px solid #0a0a0a' : '2px solid transparent',
+      borderBottom: isDragOver === 'below' ? '2px solid #0a0a0a' : '2px solid transparent',
     }}>
       {/* Drag handle */}
       <div
@@ -102,7 +102,7 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
         style={{
           width: 16, height: 32, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'grab', color: '#bbb',
+          cursor: 'grab', color: '#d4d4d4',
         }}
       >
         <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor">
@@ -122,7 +122,7 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
         style={{
           width: 24, height: 24, flexShrink: 0,
           borderRadius: 4, cursor: 'pointer',
-          border: '1px solid #e0e0e0',
+          border: '1px solid #e5e5e5',
           background: swatchBg,
           marginRight: 6,
         }}
@@ -140,15 +140,15 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
           style={{
             flex: 1, minWidth: 0, border: 'none', padding: '2px 4px',
             fontSize: 12, fontFamily: 'monospace', outline: 'none',
-            background: '#f0f4ff', borderRadius: 3,
-            color: '#1a1a1a',
+            background: '#f5f5f5', borderRadius: 3,
+            color: '#0a0a0a',
           }}
         />
       ) : (
         <span
           onClick={hexEditable ? startHexEdit : openPicker}
           style={{
-            flex: 1, minWidth: 0, fontSize: 12, color: '#1a1a1a',
+            flex: 1, minWidth: 0, fontSize: 12, color: '#0a0a0a',
             fontFamily: fill.type === 'solid' ? 'monospace' : 'inherit',
             cursor: hexEditable ? 'text' : 'pointer',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -169,15 +169,15 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
           width: 32, padding: '2px 2px', border: 'none',
           fontSize: 12, background: 'transparent',
           outline: 'none', textAlign: 'right',
-          color: '#1a1a1a', flexShrink: 0,
+          color: '#0a0a0a', flexShrink: 0,
         }}
       />
-      <span style={{ fontSize: 11, color: '#999', flexShrink: 0, marginRight: 4 }}>%</span>
+      <span style={{ fontSize: 11, color: '#a3a3a3', flexShrink: 0, marginRight: 4 }}>%</span>
 
       {/* Eye toggle */}
       <button
         onClick={toggleVisible}
-        title={fill.visible ? 'Скрыть' : 'Показать'}
+        title={fill.visible ? 'Hide' : 'Show'}
         style={{
           width: 24, height: 24, padding: 0, border: 'none',
           background: 'none', cursor: 'pointer', flexShrink: 0,
@@ -204,12 +204,12 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
       {/* Remove */}
       <button
         onClick={onRemove}
-        title="Удалить заливку"
+        title="Remove fill"
         style={{
           width: 24, height: 24, padding: 0, border: 'none',
           background: 'none', cursor: 'pointer', flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#999', fontSize: 18, lineHeight: 1,
+          color: '#a3a3a3', fontSize: 18, lineHeight: 1,
         }}
       >
         −

@@ -7,12 +7,12 @@ import type { Project } from '../../types'
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp
   const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return 'только что'
-  if (minutes < 60) return `${minutes} мин. назад`
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} ч. назад`
+  if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
-  return `${days} дн. назад`
+  return `${days}d ago`
 }
 
 // ─── Инициалы проекта ─────────────────────────────────────────────────────────
@@ -75,18 +75,18 @@ function ContextMenu({ x, y, onRename, onDuplicate, onDelete, onClose }: Context
       <div style={itemStyle} onMouseDown={() => { onRename(); onClose() }}
         onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f5')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-        Переименовать
+        Rename
       </div>
       <div style={itemStyle} onMouseDown={() => { onDuplicate(); onClose() }}
         onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f5')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-        Дублировать
+        Duplicate
       </div>
       <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
       <div style={deleteStyle} onMouseDown={() => { onDelete(); onClose() }}
         onMouseEnter={e => (e.currentTarget.style.background = '#fff5f5')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-        Удалить
+        Delete
       </div>
     </div>
   )
@@ -134,7 +134,7 @@ function ProjectCard({ project, onOpen, onRename, onDuplicate, onDelete }: Proje
           width: 220, height: 140,
           background: '#f0f0f0',
           borderRadius: 8,
-          border: `2px solid ${isHovered ? '#0066ff' : '#e0e0e0'}`,
+          border: `2px solid ${isHovered ? '#0a0a0a' : '#e0e0e0'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'border-color 0.15s',
           overflow: 'hidden',
@@ -152,7 +152,7 @@ function ProjectCard({ project, onOpen, onRename, onDuplicate, onDelete }: Proje
               e.stopPropagation()
               setContextMenu({ x: e.clientX, y: e.clientY })
             }}
-            title="Меню проекта — переименовать, дублировать или удалить этот проект"
+            title="Project menu — rename, duplicate or delete"
             style={{
               position: 'absolute', top: 8, right: 8,
               width: 28, height: 28,
@@ -182,7 +182,7 @@ function ProjectCard({ project, onOpen, onRename, onDuplicate, onDelete }: Proje
             }}
             style={{
               fontSize: 13, fontWeight: 600, color: '#1a1a1a',
-              border: '1px solid #0066ff', borderRadius: 4,
+              border: '1px solid #0a0a0a', borderRadius: 4,
               padding: '2px 4px', outline: 'none',
               background: '#fff', width: '100%', boxSizing: 'border-box',
             }}
@@ -235,15 +235,15 @@ function NewProjectCard({ onCreate }: { onCreate: () => void }) {
     >
       <div style={{
         width: 220, height: 140,
-        background: isHovered ? '#f5f8ff' : '#fafafa',
+        background: isHovered ? '#f5f5f5' : '#fafafa',
         borderRadius: 8,
-        border: `2px dashed ${isHovered ? '#0066ff' : '#d0d0d0'}`,
+        border: `2px dashed ${isHovered ? '#0a0a0a' : '#d0d0d0'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s',
         flexDirection: 'column', gap: 8,
       }}>
-        <span style={{ fontSize: 28, color: isHovered ? '#0066ff' : '#bbb', lineHeight: 1 }}>+</span>
-        <span style={{ fontSize: 12, color: isHovered ? '#0066ff' : '#aaa' }}>Новый проект</span>
+        <span style={{ fontSize: 28, color: isHovered ? '#0a0a0a' : '#bbb', lineHeight: 1 }}>+</span>
+        <span style={{ fontSize: 12, color: isHovered ? '#0a0a0a' : '#aaa' }}>New project</span>
       </div>
     </div>
   )
@@ -255,7 +255,7 @@ export function ProjectsDashboard() {
   const { allProjects, createProject, openProject, deleteProject, renameProject, duplicateProject } = useEditorStore()
 
   const handleCreateProject = () => {
-    createProject('Новый проект')
+    createProject('New project')
   }
 
   return (
@@ -269,23 +269,23 @@ export function ProjectsDashboard() {
         <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>Creator</span>
         <button
           onClick={handleCreateProject}
-          title="Создать новый пустой проект с одним артбордом"
+          title="Create a new empty project with one artboard"
           style={{
             marginLeft: 'auto',
             padding: '7px 16px',
-            background: '#0066ff', color: '#fff',
+            background: '#0a0a0a', color: '#fff',
             border: 'none', borderRadius: 6,
             fontSize: 13, cursor: 'pointer', fontWeight: 500,
           }}
         >
-          + Новый проект
+          + New project
         </button>
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, overflow: 'auto', padding: 40 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', marginBottom: 32, marginTop: 0 }}>
-          Проекты
+          Projects
         </h1>
 
         <div style={{
@@ -306,7 +306,7 @@ export function ProjectsDashboard() {
 
         {allProjects.length === 0 && (
           <p style={{ color: '#aaa', fontSize: 14, marginTop: 40 }}>
-            Нет проектов. Создай первый!
+            No projects yet. Create your first one!
           </p>
         )}
       </div>

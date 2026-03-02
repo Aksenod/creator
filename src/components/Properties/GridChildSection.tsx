@@ -1,5 +1,6 @@
 import type { ElementStyles } from '../../types'
-import { CollapsibleSection, PropertyRow } from './shared'
+import { CollapsibleSection, PropertyRow, CompactInput } from './shared'
+import { PropertySelect } from './shared/PropertySelect'
 import {
   parseGridLine, serializeGridLine,
   detectGridChildMode, getSpanString, spanVal,
@@ -9,20 +10,6 @@ import {
 type Props = {
   styles: ElementStyles
   onUpdate: (patch: Partial<ElementStyles>) => void
-}
-
-// ─── Стили ───────────────────────────────────────────────────────────────────
-
-const selectStyle: React.CSSProperties = {
-  padding: '3px 5px', border: '1px solid #e0e0e0', borderRadius: 4,
-  fontSize: 11, background: '#fafafa', outline: 'none',
-  cursor: 'default', color: '#1a1a1a',
-}
-
-const numInputStyle: React.CSSProperties = {
-  width: 40, padding: '3px 5px', border: '1px solid #e0e0e0',
-  borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none',
-  color: '#1a1a1a', textAlign: 'center',
 }
 
 // ─── GridLineInput (Manual mode) ──────────────────────────────────────────────
@@ -37,28 +24,27 @@ function GridLineInput({ label, value, onChange }: {
   return (
     <PropertyRow label={label}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-        <input
-          type="number"
+        <CompactInput
           value={start}
           placeholder="1"
           onChange={(e) => onChange(serializeGridLine(e.target.value, end, isSpan))}
-          style={numInputStyle}
+          style={{ width: 40 }}
         />
-        <select
+        <PropertySelect
           value={isSpan ? 'span' : 'end'}
-          onChange={(e) => onChange(serializeGridLine(start, end, e.target.value === 'span'))}
-          data-testid={`grid-line-span-${label.toLowerCase()}`}
-          style={{ ...selectStyle, width: 52 }}
-        >
-          <option value="end">/</option>
-          <option value="span">span</option>
-        </select>
-        <input
-          type="number"
+          options={[
+            { value: 'end', label: '/' },
+            { value: 'span', label: 'span' },
+          ]}
+          onChange={(v) => onChange(serializeGridLine(start, end, v === 'span'))}
+          placeholder=""
+          style={{ width: 58, flex: 'none' }}
+        />
+        <CompactInput
           value={end}
           placeholder={isSpan ? '1' : '2'}
           onChange={(e) => onChange(serializeGridLine(start, e.target.value, isSpan))}
-          style={numInputStyle}
+          style={{ width: 40 }}
         />
       </div>
     </PropertyRow>
@@ -95,38 +81,36 @@ export function GridChildSection({ styles, onUpdate }: Props) {
 
   const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
     flex: 1, padding: '4px 0', fontSize: 11, fontWeight: active ? 600 : 400,
-    border: '1px solid #e0e0e0', borderRadius: 4, cursor: 'default',
-    background: active ? '#0066ff' : '#fafafa',
-    color: active ? '#fff' : '#555',
+    border: '1px solid #e5e5e5', borderRadius: 4, cursor: 'default',
+    background: active ? '#0a0a0a' : '#fafafa',
+    color: active ? '#fff' : '#525252',
   })
 
   return (
-    <CollapsibleSection label="Grid child" tooltip="Grid child — позиция и размер этого элемента внутри родительской сетки. Span = сколько колонок/строк занимает" defaultOpen>
+    <CollapsibleSection label="Grid child" tooltip="Grid child — position and size within parent grid. Span = columns/rows occupied" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
         {/* Auto / Manual */}
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={switchToAuto}   title="Auto — элемент размещается автоматически в ближайшую свободную ячейку сетки по порядку" style={toggleBtnStyle(mode === 'auto')}>Auto</button>
-          <button onClick={switchToManual} title="Manual — вручную задать начальную и конечную линию сетки для точного размещения элемента" style={toggleBtnStyle(mode === 'manual')}>Manual</button>
+          <button onClick={switchToAuto}   title="Auto — placed automatically in next available cell" style={toggleBtnStyle(mode === 'auto')}>Auto</button>
+          <button onClick={switchToManual} title="Manual — set explicit start/end grid lines" style={toggleBtnStyle(mode === 'manual')}>Manual</button>
         </div>
 
         {mode === 'auto' ? (
           /* Span-only inputs */
           <>
             <PropertyRow label="Column span">
-              <input
-                type="number" min={1}
-                value={getSpanString(styles.gridColumn) || '1'}
+              <CompactInput
+                value={getSpanString(styles.gridColumn) || '1'} min={1}
                 onChange={(e) => onUpdate({ gridColumn: spanVal(e.target.value) })}
-                style={{ ...numInputStyle, width: 60 }}
+                style={{ width: 60 }}
               />
             </PropertyRow>
             <PropertyRow label="Row span">
-              <input
-                type="number" min={1}
-                value={getSpanString(styles.gridRow) || '1'}
+              <CompactInput
+                value={getSpanString(styles.gridRow) || '1'} min={1}
                 onChange={(e) => onUpdate({ gridRow: spanVal(e.target.value) })}
-                style={{ ...numInputStyle, width: 60 }}
+                style={{ width: 60 }}
               />
             </PropertyRow>
           </>
@@ -142,26 +126,24 @@ export function GridChildSection({ styles, onUpdate }: Props) {
         <PropertyRow label="Align">
           <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>Self</span>
-              <select
+              <span style={{ fontSize: 10, color: '#a3a3a3', flexShrink: 0 }}>Self</span>
+              <PropertySelect
                 value={styles.alignSelf ?? 'auto'}
-                onChange={(e) => onUpdate({ alignSelf: e.target.value as ElementStyles['alignSelf'] })}
-                title="Align self — вертикальное выравнивание этого элемента в ячейке сетки (start/center/end/stretch)"
-                style={{ ...selectStyle, flex: 1, minWidth: 0 }}
-              >
-                {ALIGN_SELF_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
+                options={ALIGN_SELF_OPTIONS.map(v => ({ value: v, label: v }))}
+                onChange={(v) => onUpdate({ alignSelf: v as ElementStyles['alignSelf'] })}
+                title="Align self — vertical alignment"
+                placeholder=""
+              />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>Just</span>
-              <select
+              <span style={{ fontSize: 10, color: '#a3a3a3', flexShrink: 0 }}>Just</span>
+              <PropertySelect
                 value={styles.justifySelf ?? 'auto'}
-                onChange={(e) => onUpdate({ justifySelf: e.target.value as ElementStyles['justifySelf'] })}
-                title="Justify self — горизонтальное выравнивание этого элемента в ячейке сетки (start/center/end/stretch)"
-                style={{ ...selectStyle, flex: 1, minWidth: 0 }}
-              >
-                {JUSTIFY_SELF_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
+                options={JUSTIFY_SELF_OPTIONS.map(v => ({ value: v, label: v }))}
+                onChange={(v) => onUpdate({ justifySelf: v as ElementStyles['justifySelf'] })}
+                title="Justify self — horizontal alignment"
+                placeholder=""
+              />
             </div>
           </div>
         </PropertyRow>

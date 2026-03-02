@@ -65,11 +65,11 @@ const POS_OPTIONS: {
   description: string
   icon: React.ReactNode
 }[] = [
-  { value: 'static',   label: 'Static',   description: 'Элемент в обычном потоке документа, один за другим',                icon: <IconStatic /> },
-  { value: 'relative', label: 'Relative', description: 'Можно сдвинуть через top/left, но место в потоке сохраняется',  icon: <IconRelative /> },
-  { value: 'absolute', label: 'Absolute', description: 'Свободное размещение внутри ближайшего relative/absolute родителя', icon: <IconAbsolute /> },
-  { value: 'fixed',    label: 'Fixed',    description: 'Привязан к окну браузера, не скроллится (хедеры, кнопки)',       icon: <IconFixed /> },
-  { value: 'sticky',   label: 'Sticky',   description: 'Прилипает к краю экрана при скролле (навбары, сайдбары)',        icon: <IconSticky /> },
+  { value: 'static',   label: 'Static',   description: 'Normal document flow, elements stack one after another',            icon: <IconStatic /> },
+  { value: 'relative', label: 'Relative', description: 'Offset via top/left, but keeps its place in the flow',           icon: <IconRelative /> },
+  { value: 'absolute', label: 'Absolute', description: 'Free placement inside nearest relative/absolute parent',          icon: <IconAbsolute /> },
+  { value: 'fixed',    label: 'Fixed',    description: 'Pinned to browser window, does not scroll (headers, buttons)',    icon: <IconFixed /> },
+  { value: 'sticky',   label: 'Sticky',   description: 'Sticks to edge on scroll (navbars, sidebars)',                   icon: <IconSticky /> },
 ]
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -105,35 +105,35 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
 
   return (
     <div style={{ padding: '8px 0' }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a', display: 'block', marginBottom: 10 }}>
-        Позиция
+      <span style={{ fontSize: 12, fontWeight: 600, color: '#0a0a0a', display: 'block', marginBottom: 10 }}>
+        Position
       </span>
 
       {/* Position type — custom dropdown с иконками */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isOffsetable ? 10 : 0 }}>
-        <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>Тип</span>
+        <span style={{ fontSize: 11, color: '#a3a3a3', width: 56, flexShrink: 0 }}>Type</span>
         <div ref={dropdownRef} style={{ flex: 1, position: 'relative' }}>
           {/* Trigger button */}
           <button
             onClick={() => setOpen(v => !v)}
-            title="Тип позиционирования — определяет как элемент располагается на странице: в потоке (Static), со смещением (Relative), свободно в родителе (Absolute), фиксировано на экране (Fixed) или прилипает при скролле (Sticky)"
+            title="Position type — how the element is placed: in flow (Static), offset (Relative), free inside parent (Absolute), fixed to viewport (Fixed), or sticky on scroll (Sticky)"
             style={{
               width: '100%',
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '4px 8px',
-              border: '1px solid #e0e0e0',
+              border: '1px solid #e5e5e5',
               borderRadius: 4,
-              background: open ? '#f0f4ff' : '#fafafa',
+              background: open ? '#f5f5f5' : '#fafafa',
               cursor: 'default',
               fontSize: 12,
-              color: '#1a1a1a',
+              color: '#0a0a0a',
             }}
           >
-            <span style={{ color: '#555', display: 'flex', alignItems: 'center' }}>
+            <span style={{ color: '#525252', display: 'flex', alignItems: 'center' }}>
               {currentOption.icon}
             </span>
             <span style={{ flex: 1, textAlign: 'left' }}>{currentOption.label}</span>
-            <span style={{ fontSize: 9, color: '#aaa', marginLeft: 2 }}>▾</span>
+            <span style={{ fontSize: 9, color: '#a3a3a3', marginLeft: 2 }}>▾</span>
           </button>
 
           {/* Dropdown list */}
@@ -144,7 +144,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               left: 0, right: 0,
               zIndex: 100,
               background: '#fff',
-              border: '1px solid #e0e0e0',
+              border: '1px solid #e5e5e5',
               borderRadius: 6,
               boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
               overflow: 'hidden',
@@ -160,24 +160,28 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
                       display: 'flex', alignItems: 'center', gap: 8,
                       padding: '7px 10px',
                       border: 'none',
-                      background: active ? '#e6f0ff' : 'transparent',
+                      background: active ? '#f5f5f5' : 'transparent',
                       cursor: 'default',
                       textAlign: 'left',
                     }}
                   >
-                    <span style={{ color: active ? '#0066ff' : '#555', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ color: active ? '#0a0a0a' : '#525252', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                       {opt.icon}
                     </span>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: active ? 600 : 400, color: active ? '#0066ff' : '#1a1a1a' }}>
+                      <div style={{ fontSize: 12, fontWeight: active ? 600 : 400, color: active ? '#0a0a0a' : '#0a0a0a' }}>
                         {opt.label}
                       </div>
-                      <div style={{ fontSize: 10, color: '#aaa', marginTop: 1 }}>
+                      <div style={{ fontSize: 10, color: '#a3a3a3', marginTop: 1 }}>
                         {opt.description}
                       </div>
                     </div>
                     {active && (
-                      <span style={{ marginLeft: 'auto', fontSize: 10, color: '#0066ff' }}>✓</span>
+                      <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: '#0a0a0a' }}>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </span>
                     )}
                   </button>
                 )
@@ -197,38 +201,38 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               position: 'absolute',
               top: 20, left: 44, right: 44, bottom: 20,
               background: '#f5f5f5',
-              border: '1px solid #e0e0e0',
+              border: '1px solid #e5e5e5',
               borderRadius: 3,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 9,
-              color: '#bbb',
+              color: '#d4d4d4',
               userSelect: 'none',
             }}>
               {normalizedMode === 'fixed' ? 'screen' : 'parent'}
             </div>
             {/* Top */}
-            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)' }} title="Top — отступ от верхнего края родителя (или экрана для Fixed). Пустое = Auto, элемент не привязан к верху">
+            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)' }} title="Top — offset from parent's top edge (or viewport for Fixed). Empty = Auto">
               <OffsetInput value={styles.top} onChange={(v) => onUpdateStyle({ top: v })} />
             </div>
             {/* Left */}
-            <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} title="Left — отступ от левого края. Задай Left и Top чтобы зафиксировать элемент в конкретной точке">
+            <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} title="Left — offset from left edge. Set Left + Top to pin element at a specific position">
               <OffsetInput value={styles.left} onChange={(v) => onUpdateStyle({ left: v })} />
             </div>
             {/* Right */}
-            <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }} title="Right — отступ от правого края. Задай Left + Right чтобы растянуть элемент на всю ширину с отступами">
+            <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }} title="Right — offset from right edge. Set Left + Right to stretch element with insets">
               <OffsetInput value={styles.right} onChange={(v) => onUpdateStyle({ right: v })} />
             </div>
             {/* Bottom */}
-            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }} title="Bottom — отступ от нижнего края. Полезно для фиксации элемента внизу (футер, кнопка)">
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }} title="Bottom — offset from bottom edge. Useful for pinning elements to bottom (footer, FAB)">
               <OffsetInput value={styles.bottom} onChange={(v) => onUpdateStyle({ bottom: v })} />
             </div>
           </div>
 
           {/* Z-index */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: '#999', width: 56, flexShrink: 0 }}>Z-index</span>
+            <span style={{ fontSize: 11, color: '#a3a3a3', width: 56, flexShrink: 0 }}>Z-index</span>
             <input
               type="number"
               value={styles.zIndex ?? ''}
@@ -236,12 +240,12 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
                 const v = parseInt(e.target.value)
                 onUpdateStyle({ zIndex: isNaN(v) ? undefined : v })
               }}
-              title="Z-index — порядок наложения элементов. Больше число = ближе к пользователю. Используй чтобы один элемент перекрывал другой (модалки, дропдауны, тултипы)"
+              title="Z-index — stacking order. Higher number = closer to the user. Use for overlapping elements (modals, dropdowns, tooltips)"
               placeholder="auto"
               style={{
-                flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
+                flex: 1, padding: '3px 6px', border: '1px solid #e5e5e5', borderRadius: 4,
                 fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
-                color: '#1a1a1a',
+                color: '#0a0a0a',
               }}
             />
           </div>
@@ -273,12 +277,12 @@ function OffsetInput({
       style={{
         width: 42,
         padding: '3px 4px',
-        border: `1px solid ${hasValue ? '#0066ff' : '#e0e0e0'}`,
+        border: `1px solid ${hasValue ? '#0a0a0a' : '#e5e5e5'}`,
         borderRadius: 3,
         fontSize: 11,
         textAlign: 'center',
-        background: hasValue ? '#e6f0ff' : '#fafafa',
-        color: hasValue ? '#0066ff' : '#bbb',
+        background: hasValue ? '#f0f0f0' : '#fafafa',
+        color: hasValue ? '#0a0a0a' : '#d4d4d4',
         outline: 'none',
       }}
     />

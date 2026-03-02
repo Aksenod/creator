@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ElementStyles } from '../../types'
-import { CollapsibleSection, PropertyRow, SegmentedControl } from './shared'
+import { CollapsibleSection, PropertyRow, SegmentedControl, CompactInput } from './shared'
+import { PropertySelect } from './shared/PropertySelect'
 import { useEditorStore } from '../../store'
 
 type Props = {
@@ -89,10 +90,10 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
 
   return (
     <div
-      title="Визуальное выравнивание содержимого&#10;Клик — задать позицию элементов&#10;Двойной клик или ⌘+клик — распределить с равными промежутками (space-between)&#10;Alt+клик — растянуть элементы на всю высоту (stretch)"
+      title="Visual alignment&#10;Click — set position&#10;Double-click or ⌘+click — space-between&#10;Alt+click — stretch"
       style={{
         width: 72, height: 72,
-        border: '1px solid #e0e0e0', borderRadius: 6,
+        border: '1px solid #e5e5e5', borderRadius: 6,
         background: '#f5f5f5',
         display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
         gridTemplateRows: 'repeat(3, 1fr)',
@@ -115,7 +116,7 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'default',
-                background: isActive ? 'rgba(0,102,255,0.08)' : 'transparent',
+                background: isActive ? 'rgba(10,10,10,0.06)' : 'transparent',
               }}
             >
               {isSbBar ? (
@@ -123,11 +124,11 @@ function AlignPicker({ justifyContent, alignItems, onChangeJustify, onChangeAlig
                 <div style={{
                   width: 3, height: 14,
                   borderRadius: 1.5,
-                  background: '#0066ff',
+                  background: '#0a0a0a',
                 }} />
               ) : isActive ? (
                 // Активная точка
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0066ff' }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0a0a0a' }} />
               ) : (
                 // Обычная точка
                 <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#ccc' }} />
@@ -150,88 +151,88 @@ function AlignSelect({ label, value, options, onChange }: {
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
-      <span style={{ fontSize: 11, color: '#999', width: 10, flexShrink: 0 }}>{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} style={{
-        flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
-        fontSize: 11, background: '#fafafa', outline: 'none', cursor: 'default',
-        color: '#1a1a1a',
-      }}>
-        <option value="">—</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <span style={{ fontSize: 11, color: '#a3a3a3', width: 10, flexShrink: 0 }}>{label}</span>
+      <PropertySelect
+        value={value}
+        options={options}
+        onChange={onChange}
+      />
     </div>
   )
 }
 
+// ─── SVG Icons ───────────────────────────────────────────────────────────────
+
+const LockIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+)
+
+const UnlockIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+  </svg>
+)
+
 // ─── MoreAlignOptions ─────────────────────────────────────────────────────────
 
 function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
-  const [open, setOpen] = useState(false)
-
   const colOptions: Array<{ value: ElementStyles['justifyContent']; icon: string; tooltip: string }> = [
-    { value: 'flex-start', icon: '⊢', tooltip: 'К началу — контент прижат к левому краю' },
-    { value: 'center', icon: '⊕', tooltip: 'По центру — контент по горизонтали в центре' },
-    { value: 'flex-end', icon: '⊣', tooltip: 'К концу — контент прижат к правому краю' },
-    { value: 'space-between', icon: '⊧', tooltip: 'Равные промежутки — первый элемент в начале, последний в конце, остальные распределены равномерно' },
-    { value: 'space-around', icon: '⊨', tooltip: 'Равные отступы — одинаковые отступы вокруг каждого элемента' },
+    { value: 'flex-start', icon: '⊢', tooltip: 'Start — content aligned to the left' },
+    { value: 'center', icon: '⊕', tooltip: 'Center — content centered horizontally' },
+    { value: 'flex-end', icon: '⊣', tooltip: 'End — content aligned to the right' },
+    { value: 'space-between', icon: '⊧', tooltip: 'Space between — first item at start, last at end, evenly distributed' },
+    { value: 'space-around', icon: '⊨', tooltip: 'Space around — equal space around each item' },
   ]
   const rowOptions: Array<{ value: ElementStyles['alignContent']; icon: string; tooltip: string }> = [
-    { value: 'flex-start', icon: '⊤', tooltip: 'К началу — строки прижаты к верхнему краю контейнера' },
-    { value: 'center', icon: '⊕', tooltip: 'По центру — строки по вертикали в центре контейнера' },
-    { value: 'flex-end', icon: '⊥', tooltip: 'К концу — строки прижаты к нижнему краю контейнера' },
-    { value: 'space-between', icon: '⊥⊤', tooltip: 'Равные промежутки — первая строка вверху, последняя внизу, остальные распределены' },
-    { value: 'space-around', icon: '⊵', tooltip: 'Равные отступы — одинаковые отступы вокруг каждой строки' },
-    { value: 'stretch', icon: '↕', tooltip: 'Растянуть — строки растягиваются на всю доступную высоту контейнера' },
+    { value: 'flex-start', icon: '⊤', tooltip: 'Start — rows aligned to top' },
+    { value: 'center', icon: '⊕', tooltip: 'Center — rows centered vertically' },
+    { value: 'flex-end', icon: '⊥', tooltip: 'End — rows aligned to bottom' },
+    { value: 'space-between', icon: '⊥⊤', tooltip: 'Space between — first row at top, last at bottom' },
+    { value: 'space-around', icon: '⊵', tooltip: 'Space around — equal space around each row' },
+    { value: 'stretch', icon: '↕', tooltip: 'Stretch — rows stretch to fill container height' },
   ]
 
   return (
-    <div style={{ marginTop: 4 }}>
-      <button onClick={() => setOpen(!open)} style={{
-        width: '100%', padding: '5px 10px', border: '1px solid #e0e0e0',
-        borderRadius: 4, fontSize: 11, cursor: 'default',
-        background: '#f5f5f5', color: '#555',
-        display: 'flex', alignItems: 'center', gap: 4,
-      }}>
-        <span style={{ transform: open ? 'rotate(0)' : 'rotate(-90deg)', display: 'inline-block', transition: '0.15s' }}>▼</span>
-        More alignment options
-      </button>
-      {open && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-          <div>
-            <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Columns</div>
-            <div style={{ display: 'flex', gap: 2 }}>
-              {colOptions.map(opt => (
-                <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ justifyContent: opt.value })}
-                  style={{
-                    flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
-                    borderRadius: 3, cursor: 'default',
-                    background: styles.justifyContent === opt.value ? '#1a1a1a' : '#f5f5f5',
-                    color: styles.justifyContent === opt.value ? '#fff' : '#666',
-                  }}>
-                  {opt.icon}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Rows</div>
-            <div style={{ display: 'flex', gap: 2 }}>
-              {rowOptions.map(opt => (
-                <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ alignContent: opt.value })}
-                  style={{
-                    flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e0e0e0',
-                    borderRadius: 3, cursor: 'default',
-                    background: styles.alignContent === opt.value ? '#1a1a1a' : '#f5f5f5',
-                    color: styles.alignContent === opt.value ? '#fff' : '#666',
-                  }}>
-                  {opt.icon}
-                </button>
-              ))}
-            </div>
+    <CollapsibleSection label="Advanced align" defaultOpen={false}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 4 }}>Columns</div>
+          <div style={{ display: 'flex', gap: 2 }}>
+            {colOptions.map(opt => (
+              <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ justifyContent: opt.value })}
+                style={{
+                  flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e5e5e5',
+                  borderRadius: 3, cursor: 'default',
+                  background: styles.justifyContent === opt.value ? '#0a0a0a' : '#f5f5f5',
+                  color: styles.justifyContent === opt.value ? '#fff' : '#666',
+                }}>
+                {opt.icon}
+              </button>
+            ))}
           </div>
         </div>
-      )}
-    </div>
+        <div>
+          <div style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 4 }}>Rows</div>
+          <div style={{ display: 'flex', gap: 2 }}>
+            {rowOptions.map(opt => (
+              <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ alignContent: opt.value })}
+                style={{
+                  flex: 1, padding: '4px 2px', fontSize: 11, border: '1px solid #e5e5e5',
+                  borderRadius: 3, cursor: 'default',
+                  background: styles.alignContent === opt.value ? '#0a0a0a' : '#f5f5f5',
+                  color: styles.alignContent === opt.value ? '#fff' : '#666',
+                }}>
+                {opt.icon}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </CollapsibleSection>
   )
 }
 
@@ -239,34 +240,49 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
 
 function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
   const dir = styles.flexDirection ?? 'row'
+  const wrap = styles.flexWrap ?? 'nowrap'
   const gap = styles.gap ?? 0
 
   const dirOptions = [
-    { value: 'row', label: '→', tooltip: 'Горизонтально → дочерние элементы выстраиваются в строку слева направо' },
-    { value: 'column', label: '↓', tooltip: 'Вертикально ↓ дочерние элементы складываются в стопку сверху вниз' },
-    { value: 'row-reverse', label: '←', tooltip: 'Горизонтально ← как строка, но в обратном порядке справа налево' },
-    { value: 'column-reverse', label: '↑', tooltip: 'Вертикально ↑ как стопка, но в обратном порядке снизу вверх' },
+    { value: 'row', label: '→', tooltip: 'Horizontal → children line up left to right' },
+    { value: 'column', label: '↓', tooltip: 'Vertical ↓ children stack top to bottom' },
+    { value: 'row-reverse', label: '←', tooltip: 'Horizontal ← reversed, right to left' },
+    { value: 'column-reverse', label: '↑', tooltip: 'Vertical ↑ reversed, bottom to top' },
   ]
 
   return (
     <>
       {/* Direction */}
       <PropertyRow label="Direction">
-        <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
           {dirOptions.map(opt => {
             const active = dir === opt.value
             return (
               <button key={opt.value} title={opt.tooltip} onClick={() => onUpdate({ flexDirection: opt.value as ElementStyles['flexDirection'] })}
                 style={{
-                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, fontSize: 13,
-                  cursor: 'default', background: active ? '#1a1a1a' : '#efefef',
-                  color: active ? '#fff' : '#888',
+                  flex: 1, minWidth: 0, padding: '2px 0', border: 'none', borderRadius: 4, fontSize: 11,
+                  cursor: 'default', lineHeight: '16px',
+                  background: active ? '#0a0a0a' : 'transparent',
+                  color: active ? '#fff' : '#737373',
                 }}>
                 {opt.label}
               </button>
             )
           })}
         </div>
+      </PropertyRow>
+
+      {/* Wrap */}
+      <PropertyRow label="Wrap">
+        <SegmentedControl
+          value={wrap}
+          options={[
+            { value: 'nowrap', label: 'No Wrap', tooltip: 'No wrap — items stay in a single line, may overflow' },
+            { value: 'wrap', label: 'Wrap', tooltip: 'Wrap — items wrap to next line when container is full' },
+            { value: 'wrap-reverse', label: 'Reverse', tooltip: 'Wrap reverse — items wrap upward instead of downward' },
+          ]}
+          onChange={(v) => onUpdate({ flexWrap: v as ElementStyles['flexWrap'] })}
+        />
       </PropertyRow>
 
       {/* Align */}
@@ -296,18 +312,17 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       <PropertyRow label="Gap">
-        <div title="Gap — расстояние между дочерними элементами внутри flex-контейнера. Заменяет margin между элементами, работает одинаково для всех детей" style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+        <div title="Gap — space between child elements inside flex container" style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
           <input
             type="range" min={0} max={120} value={gap}
             onChange={(e) => onUpdate({ gap: Number(e.target.value) })}
-            style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+            style={{ flex: 1, minWidth: 0 }}
           />
-          <input
-            type="number" min={0} value={gap}
+          <CompactInput
+            value={gap} min={0}
             onChange={(e) => onUpdate({ gap: Number(e.target.value) })}
-            style={{ width: 36, flexShrink: 0, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center', color: '#1a1a1a' }}
+            suffix="PX" style={{ width: 52, flex: 'none' }}
           />
-          <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
         </div>
       </PropertyRow>
     </>
@@ -334,13 +349,13 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
   return (
     <div style={{ marginBottom: 4 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 11, color: '#737373', fontWeight: 500 }}>{label}</span>
         <button
           onClick={onAddTrack}
-          title={`Добавить ${label === 'Columns' ? 'колонку' : 'строку'} — новый track 1fr`}
+          title={`Add ${label === 'Columns' ? 'column' : 'row'} — new 1fr track`}
           style={{
             fontSize: 11, border: '1px solid #d0d0d0', borderRadius: 3, padding: '2px 6px',
-            background: '#f5f5f5', cursor: 'default', color: '#555',
+            background: '#f5f5f5', cursor: 'default', color: '#525252',
             display: 'flex', alignItems: 'center', gap: 2,
           }}
         >
@@ -348,7 +363,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
         </button>
       </div>
       {tracks.length === 0 ? (
-        <div style={{ fontSize: 11, color: '#bbb', textAlign: 'center', padding: '4px 0' }}>—</div>
+        <div style={{ fontSize: 11, color: '#d4d4d4', textAlign: 'center', padding: '4px 0' }}>—</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {tracks.map((track, i) => (
@@ -362,35 +377,33 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
                   onChange={(e) => updateTrack(i, { value: Math.round(Number(e.target.value) * 100) / 100 })}
                   style={{
                     flex: 1, minWidth: 0, padding: '3px 5px',
-                    border: '1px solid #e0e0e0', borderRadius: 4,
-                    fontSize: 12, background: '#fafafa', outline: 'none', color: '#1a1a1a',
+                    border: '1px solid #e5e5e5', borderRadius: 4,
+                    fontSize: 12, background: '#fafafa', outline: 'none', color: '#0a0a0a',
                   }}
                 />
               ) : (
                 <div style={{ flex: 1 }} />
               )}
               {/* Unit dropdown */}
-              <select
+              <PropertySelect
                 value={track.unit}
-                onChange={(e) => updateTrack(i, { unit: e.target.value as TrackUnit })}
-                style={{
-                  width: 46, padding: '3px 4px', border: '1px solid #e0e0e0',
-                  borderRadius: 4, fontSize: 11, background: '#fafafa',
-                  outline: 'none', cursor: 'default', color: '#1a1a1a',
-                }}
-              >
-                <option value="fr">fr</option>
-                <option value="px">px</option>
-                <option value="auto">auto</option>
-              </select>
+                options={[
+                  { value: 'fr', label: 'fr' },
+                  { value: 'px', label: 'px' },
+                  { value: 'auto', label: 'auto' },
+                ]}
+                onChange={(v) => updateTrack(i, { unit: v as TrackUnit })}
+                placeholder=""
+                style={{ width: 52, flex: 'none' }}
+              />
               {/* Remove */}
               <button
                 onClick={() => removeTrack(i)}
-                title="Удалить этот track — колонка или строка будет убрана из сетки"
+                title="Remove this track"
                 data-testid="track-remove"
                 style={{
                   border: 'none', background: 'none', cursor: 'default',
-                  color: '#bbb', fontSize: 14, padding: '0 2px',
+                  color: '#d4d4d4', fontSize: 14, padding: '0 2px',
                   lineHeight: 1, flexShrink: 0,
                 }}
               >
@@ -415,12 +428,6 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
     onUpdate({ columnGap: v, rowGap: v })
   }
 
-  const numInputStyle: React.CSSProperties = {
-    width: 36, padding: '3px 4px', border: '1px solid #e0e0e0',
-    borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none',
-    textAlign: 'center', color: '#1a1a1a',
-  }
-
   return (
     <PropertyRow label="Gap">
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
@@ -429,48 +436,46 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
             <input
               type="range" min={0} max={120} value={colGap}
               onChange={(e) => handleLocked(Number(e.target.value))}
-              style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+              style={{ flex: 1, minWidth: 0 }}
             />
-            <input
-              type="number" min={0} value={colGap}
+            <CompactInput
+              value={colGap} min={0}
               onChange={(e) => handleLocked(Number(e.target.value))}
-              style={numInputStyle}
+              suffix="PX" style={{ width: 52, flex: 'none' }}
             />
-            <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>PX</span>
           </>
         ) : (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 10, color: '#aaa', width: 20, flexShrink: 0 }}>Col</span>
-                <input
-                  type="number" min={0} value={colGap}
-                  onChange={(e) => onUpdate({ columnGap: Number(e.target.value) })}
-                  style={{ ...numInputStyle, flex: 1, width: 'auto' }}
-                />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 10, color: '#aaa', width: 20, flexShrink: 0 }}>Row</span>
-                <input
-                  type="number" min={0} value={rowGap}
-                  onChange={(e) => onUpdate({ rowGap: Number(e.target.value) })}
-                  style={{ ...numInputStyle, flex: 1, width: 'auto' }}
-                />
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 10, color: '#a3a3a3', width: 20, flexShrink: 0 }}>Col</span>
+              <CompactInput
+                value={colGap} min={0}
+                onChange={(e) => onUpdate({ columnGap: Number(e.target.value) })}
+                suffix="PX" style={{ flex: 1 }}
+              />
             </div>
-          </>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 10, color: '#a3a3a3', width: 20, flexShrink: 0 }}>Row</span>
+              <CompactInput
+                value={rowGap} min={0}
+                onChange={(e) => onUpdate({ rowGap: Number(e.target.value) })}
+                suffix="PX" style={{ flex: 1 }}
+              />
+            </div>
+          </div>
         )}
         {/* Lock/Unlock toggle */}
         <button
           onClick={() => setLocked(!locked)}
-          title={locked ? 'Разблокировать — задать разные отступы между колонками и строками' : 'Заблокировать — одинаковый отступ между колонками и строками'}
+          title={locked ? 'Unlock — set different column and row gaps' : 'Lock — same gap for columns and rows'}
           style={{
-            border: '1px solid #e0e0e0', background: locked ? '#f5f5f5' : '#e8f0ff',
+            border: '1px solid #e5e5e5', background: locked ? '#f5f5f5' : '#f0f0f0',
             borderRadius: 4, cursor: 'default', padding: '3px 5px',
-            fontSize: 12, color: locked ? '#888' : '#0066ff', flexShrink: 0,
+            color: locked ? '#888' : '#0a0a0a', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          {locked ? '🔒' : '🔓'}
+          {locked ? <LockIcon /> : <UnlockIcon />}
         </button>
       </div>
     </PropertyRow>
@@ -520,8 +525,8 @@ function GridControls({ styles, onUpdate, elementId }: {
 
       {/* Auto-flow direction */}
       <PropertyRow label="Direction">
-        <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0 }}>
-          {[{ value: 'row', label: '→ Row', tooltip: 'По строкам → новые элементы заполняют ряды слева направо, затем переходят на следующий ряд' }, { value: 'column', label: '↓ Column', tooltip: 'По колонкам ↓ новые элементы заполняют колонки сверху вниз, затем переходят к следующей колонке' }].map(opt => {
+        <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
+          {[{ value: 'row', label: '→ Row', tooltip: 'By rows → items fill rows left to right, then wrap to next row' }, { value: 'column', label: '↓ Column', tooltip: 'By columns ↓ items fill columns top to bottom, then move to next column' }].map(opt => {
             const active = autoFlow === opt.value
             return (
               <button
@@ -529,10 +534,10 @@ function GridControls({ styles, onUpdate, elementId }: {
                 title={opt.tooltip}
                 onClick={() => onUpdate({ gridAutoFlow: opt.value as ElementStyles['gridAutoFlow'] })}
                 style={{
-                  flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4,
-                  fontSize: 11, cursor: 'default',
-                  background: active ? '#1a1a1a' : '#efefef',
-                  color: active ? '#fff' : '#888',
+                  flex: 1, minWidth: 0, padding: '2px 0', border: 'none', borderRadius: 4,
+                  fontSize: 10, cursor: 'default', lineHeight: '16px',
+                  background: active ? '#0a0a0a' : 'transparent',
+                  color: active ? '#fff' : '#737373',
                 }}
               >
                 {opt.label}
@@ -564,13 +569,13 @@ function GridControls({ styles, onUpdate, elementId }: {
       {elementId && (
         <button
           onClick={() => setGridEditElementId(isEditMode ? null : elementId)}
-          title="Визуальный редактор Grid — перетаскивайте разделители колонок и строк прямо на холсте для изменения размеров треков"
+          title="Visual Grid editor — drag column/row dividers on canvas to resize tracks"
           style={{
             width: '100%', marginTop: 6, padding: '6px 10px',
-            border: `1px solid ${isEditMode ? '#0066ff' : '#d0d0d0'}`,
+            border: `1px solid ${isEditMode ? '#0a0a0a' : '#d0d0d0'}`,
             borderRadius: 4, fontSize: 11, cursor: 'default',
-            background: isEditMode ? '#e8f0ff' : '#f5f5f5',
-            color: isEditMode ? '#0066ff' : '#555',
+            background: isEditMode ? '#f0f0f0' : '#f5f5f5',
+            color: isEditMode ? '#0a0a0a' : '#555',
             fontWeight: isEditMode ? 600 : 400,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
           }}
@@ -588,17 +593,17 @@ export function LayoutSection({ styles, onUpdate, elementId }: Props & { element
   const display = styles.display ?? 'block'
 
   return (
-    <CollapsibleSection label="Layout" tooltip="Layout — как элемент организует своих детей: Block (по одному в строку), Flex (в ряд/столбец), Grid (сетка). Определяет всю структуру макета" defaultOpen>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <CollapsibleSection label="Layout" tooltip="Layout — how element organizes children: Block, Flex (row/column), Grid (2D). Defines the layout structure" defaultOpen>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {/* Display */}
         <PropertyRow label="Display">
           <SegmentedControl
             value={display}
             options={[
-              { value: 'block', label: 'Block', tooltip: 'Block — элемент занимает всю ширину родителя, следующий элемент начинается с новой строки. Стандартное поведение div' },
-              { value: 'flex', label: 'Flex', tooltip: 'Flex — дочерние элементы выстраиваются в ряд или столбец с гибким распределением пространства. Удобно для навбаров, карточек, центрирования' },
-              { value: 'grid', label: 'Grid', tooltip: 'Grid — двумерная сетка из колонок и строк. Идеально для сложных макетов: галереи, дашборды, формы' },
-              { value: 'none', label: 'None', tooltip: 'None — элемент полностью скрыт со страницы, не занимает места. Используй для условного показа элементов на разных брейкпоинтах' },
+              { value: 'block', label: 'Block', tooltip: 'Block — takes full width, next element starts on new line' },
+              { value: 'flex', label: 'Flex', tooltip: 'Flex — children arrange in row or column with flexible space' },
+              { value: 'grid', label: 'Grid', tooltip: 'Grid — 2D grid of columns and rows for complex layouts' },
+              { value: 'none', label: 'None', tooltip: 'None — element is hidden and takes no space' },
             ]}
             onChange={(v) => onUpdate({ display: v as ElementStyles['display'] })}
           />

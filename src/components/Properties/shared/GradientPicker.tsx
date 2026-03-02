@@ -123,9 +123,9 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
       ref={popRef}
       style={{
         position: 'fixed', top, left,
-        width: POPUP_W, background: '#fff', border: '1px solid #e0e0e0',
-        borderRadius: 8, padding: 12, zIndex: 99999,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)', userSelect: 'none',
+        width: POPUP_W, background: '#fff', border: '1px solid #e5e5e5',
+        borderRadius: 12, padding: 12, zIndex: 99999,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.10)', userSelect: 'none',
       }}
       onMouseDown={e => e.stopPropagation()}
     >
@@ -136,10 +136,10 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
             key={t}
             onClick={() => onChange({ ...fill, gradientType: t })}
             style={{
-              flex: 1, padding: '4px 0', border: '1px solid #e0e0e0',
+              flex: 1, padding: '4px 0', border: '1px solid #e5e5e5',
               borderRadius: 4, fontSize: 11, cursor: 'pointer',
-              background: fill.gradientType === t ? '#e8ecff' : '#fafafa',
-              color: fill.gradientType === t ? '#3355aa' : '#666',
+              background: fill.gradientType === t ? '#f0f0f0' : '#fafafa',
+              color: fill.gradientType === t ? '#525252' : '#666',
               fontWeight: fill.gradientType === t ? 600 : 400,
             }}
           >
@@ -156,7 +156,7 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
           style={{
             height: BAR_H, borderRadius: 6, cursor: 'pointer',
             background: gradientCSS,
-            border: '1px solid #e0e0e0',
+            border: '1px solid #e5e5e5',
           }}
         />
         {/* Stop markers */}
@@ -172,7 +172,7 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
               width: STOP_SIZE, height: STOP_SIZE,
               borderRadius: '50%',
               background: stop.color,
-              border: selectedStop === i ? '2px solid #0066ff' : '2px solid #fff',
+              border: selectedStop === i ? '2px solid #0a0a0a' : '2px solid #fff',
               boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
               cursor: 'pointer',
               zIndex: selectedStop === i ? 2 : 1,
@@ -183,12 +183,12 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
 
       {/* Selected stop info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <span style={{ fontSize: 11, color: '#888', flexShrink: 0 }}>Stop {selectedStop + 1}</span>
+        <span style={{ fontSize: 11, color: '#737373', flexShrink: 0 }}>Stop {selectedStop + 1}</span>
         <div
           onClick={e => openStopColor(selectedStop, e.currentTarget)}
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: 'pointer',
-            border: '1px solid #e0e0e0',
+            border: '1px solid #e5e5e5',
             background: fill.stops[selectedStop]?.color ?? '#000',
           }}
         />
@@ -198,7 +198,7 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
           onChange={e => updateStopAt(selectedStop, { color: e.target.value })}
           style={{
             flex: 1, minWidth: 0, padding: '3px 6px',
-            border: '1px solid #e0e0e0', borderRadius: 4,
+            border: '1px solid #e5e5e5', borderRadius: 4,
             fontSize: 11, fontFamily: 'monospace', outline: 'none',
           }}
         />
@@ -209,18 +209,18 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
           onChange={e => updateStopAt(selectedStop, { position: Number(e.target.value) / 100 })}
           style={{
             width: 38, padding: '3px 4px',
-            border: '1px solid #e0e0e0', borderRadius: 4,
+            border: '1px solid #e5e5e5', borderRadius: 4,
             fontSize: 11, textAlign: 'right', outline: 'none',
           }}
         />
-        <span style={{ fontSize: 10, color: '#999' }}>%</span>
+        <span style={{ fontSize: 10, color: '#a3a3a3' }}>%</span>
         {fill.stops.length > 2 && (
           <button
             onClick={() => removeStop(selectedStop)}
             title="Удалить стоп"
             style={{
               width: 18, height: 18, padding: 0, border: 'none',
-              background: 'none', cursor: 'pointer', color: '#999',
+              background: 'none', cursor: 'pointer', color: '#a3a3a3',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -235,7 +235,7 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
       {/* Angle (for linear) */}
       {fill.gradientType === 'linear' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 11, color: '#888', flexShrink: 0 }}>Angle</span>
+          <span style={{ fontSize: 11, color: '#737373', flexShrink: 0 }}>Angle</span>
           <input
             type="range"
             min={0} max={360} step={1}
@@ -250,11 +250,11 @@ export function GradientPicker({ fill, anchorRect, onChange, onClose }: Gradient
             onChange={e => onChange({ ...fill, angle: Number(e.target.value) })}
             style={{
               width: 38, padding: '3px 4px',
-              border: '1px solid #e0e0e0', borderRadius: 4,
+              border: '1px solid #e5e5e5', borderRadius: 4,
               fontSize: 11, textAlign: 'right', outline: 'none',
             }}
           />
-          <span style={{ fontSize: 10, color: '#999' }}>°</span>
+          <span style={{ fontSize: 10, color: '#a3a3a3' }}>°</span>
         </div>
       )}
 

@@ -62,10 +62,10 @@ export function Topbar({
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button
           onClick={onCloseProject}
-          title="Вернуться к списку проектов — текущий проект сохраняется автоматически"
+          title="Back to projects — current project is saved automatically"
           style={{ padding: '4px 10px', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', background: '#fff', fontSize: 12 }}
         >
-          ← Проекты
+          ← Projects
         </button>
         <span style={{ fontWeight: 600 }}>{projectName}</span>
       </div>
@@ -75,7 +75,7 @@ export function Topbar({
 
         <button
           onClick={onToggleSettings}
-          title="Настройки холста — ширина области просмотра и масштаб. Клавиши 1–4 для быстрого переключения брейкпоинтов"
+          title="Canvas settings — viewport width and scale. Keys 1–4 for quick breakpoint switching"
           style={{
             display: 'flex', alignItems: 'center', gap: 4,
             padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
@@ -104,7 +104,7 @@ export function Topbar({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-              <span style={{ color: '#555', flexShrink: 0 }}>Ширина</span>
+              <span style={{ color: '#555', flexShrink: 0 }}>Width</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <input
                   type="number"
@@ -115,7 +115,7 @@ export function Topbar({
                   onBlur={e => onCustomWidthBlur(e.target.value)}
                   style={{
                     width: 64, padding: '3px 6px', background: '#fafafa',
-                    border: customWidth ? '1px solid #0066ff' : '1px solid #e0e0e0',
+                    border: customWidth ? '1px solid #0a0a0a' : '1px solid #e0e0e0',
                     borderRadius: 4, color: '#1a1a1a', fontSize: 12,
                     textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none',
                   }}
@@ -125,14 +125,14 @@ export function Topbar({
                   <button
                     onClick={onClearCustomWidth}
                     style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11, padding: '0 2px' }}
-                    title="Сбросить к брейкпоинту"
+                    title="Reset to breakpoint"
                   >↺</button>
                 )}
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ color: '#555' }}>Масштаб</span>
+              <span style={{ color: '#555' }}>Scale</span>
               <span style={{ fontVariantNumeric: 'tabular-nums', color: '#1a1a1a', fontWeight: 500 }}>
                 {Math.round(scale * 100)}%
               </span>
@@ -140,7 +140,7 @@ export function Topbar({
 
             <div style={{ height: 1, background: '#e0e0e0', margin: '8px 0' }} />
             <div style={{ color: '#aaa', fontSize: 10, lineHeight: 1.5 }}>
-              Shortcuts: 1–4 для переключения BP
+              Shortcuts: 1–4 to switch breakpoints
             </div>
           </div>
         )}
@@ -157,7 +157,7 @@ export function Topbar({
         {onExportHTML && (
           <button
             onClick={onExportHTML}
-            title="Экспортировать активный артборд как standalone HTML-файл с responsive @media"
+            title="Export active artboard as standalone HTML file with responsive @media"
             style={{
               padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
               border: '1px solid #ddd', background: '#fff', color: '#333',
@@ -168,17 +168,17 @@ export function Topbar({
         )}
         <button
           onClick={onAddArtboard}
-          title="Добавить артборд — новая страница или секция проекта на холсте"
+          title="Add artboard — new page or section on canvas"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: '1px solid #ddd', background: '#fff', color: '#333',
           }}
         >
-          + Артборд
+          + Artboard
         </button>
         <button
           onClick={onTogglePreview}
-          title="Предпросмотр — экспортировать артборд как HTML и открыть в новой вкладке"
+          title="Preview — export artboard as HTML and open in new tab"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: 'none',

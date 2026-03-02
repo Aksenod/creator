@@ -75,7 +75,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
       ref={popRef}
       style={{
         position: 'fixed', top, left,
-        width: POPUP_W, background: '#fff', border: '1px solid #e0e0e0',
+        width: POPUP_W, background: '#fff', border: '1px solid #e5e5e5',
         borderRadius: 8, padding: 12, zIndex: 99999,
         boxShadow: '0 4px 20px rgba(0,0,0,0.15)', userSelect: 'none',
       }}
@@ -84,7 +84,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
       {/* Preview */}
       <div style={{
         width: '100%', height: 120, borderRadius: 6,
-        border: '1px solid #e0e0e0', marginBottom: 10,
+        border: '1px solid #e5e5e5', marginBottom: 10,
         background: fill.url
           ? `url(${fill.url}) center/${fill.scaleMode === 'fill' ? 'cover' : fill.scaleMode === 'fit' ? 'contain' : 'auto'} ${fill.scaleMode === 'tile' ? 'repeat' : 'no-repeat'}`
           : '#f5f5f5',
@@ -92,7 +92,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
         overflow: 'hidden',
       }}>
         {!fill.url && (
-          <span style={{ fontSize: 11, color: '#aaa' }}>Нет изображения</span>
+          <span style={{ fontSize: 11, color: '#a3a3a3' }}>Нет изображения</span>
         )}
       </div>
 
@@ -108,7 +108,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
         onClick={() => fileRef.current?.click()}
         style={{
           width: '100%', padding: '6px 0', marginBottom: 8,
-          border: '1px solid #e0e0e0', borderRadius: 4,
+          border: '1px solid #e5e5e5', borderRadius: 4,
           background: '#fafafa', cursor: 'pointer',
           fontSize: 12, color: '#333',
         }}
@@ -118,7 +118,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
 
       {/* URL input */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10 }}>
-        <span style={{ fontSize: 11, color: '#888', flexShrink: 0 }}>URL</span>
+        <span style={{ fontSize: 11, color: '#737373', flexShrink: 0 }}>URL</span>
         <input
           type="text"
           value={urlInput}
@@ -128,7 +128,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
           placeholder="https://..."
           style={{
             flex: 1, minWidth: 0, padding: '4px 6px',
-            border: '1px solid #e0e0e0', borderRadius: 4,
+            border: '1px solid #e5e5e5', borderRadius: 4,
             fontSize: 11, outline: 'none',
           }}
         />
@@ -136,7 +136,7 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
 
       {/* Scale mode */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span style={{ fontSize: 11, color: '#888', flexShrink: 0 }}>Scale</span>
+        <span style={{ fontSize: 11, color: '#737373', flexShrink: 0 }}>Scale</span>
         <div style={{ display: 'flex', gap: 2, flex: 1 }}>
           {([
             { mode: 'fill' as const, label: 'Fill' },
@@ -148,10 +148,10 @@ export function ImageFillPicker({ fill, anchorRect, onChange, onClose }: ImageFi
               onClick={() => handleScaleMode(mode)}
               style={{
                 flex: 1, padding: '4px 0',
-                border: '1px solid #e0e0e0', borderRadius: 4,
+                border: '1px solid #e5e5e5', borderRadius: 4,
                 fontSize: 11, cursor: 'pointer',
-                background: fill.scaleMode === mode ? '#e8ecff' : '#fafafa',
-                color: fill.scaleMode === mode ? '#3355aa' : '#666',
+                background: fill.scaleMode === mode ? '#f0f0f0' : '#fafafa',
+                color: fill.scaleMode === mode ? '#525252' : '#666',
                 fontWeight: fill.scaleMode === mode ? 600 : 400,
               }}
             >

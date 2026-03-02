@@ -71,7 +71,7 @@ export function CanvasSection({
         </PropertyRow>
       </CollapsibleSection>
 
-      <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
+      {/* Spacing handled by CollapsibleSection borderTop */}
 
       <CollapsibleSection label="Pattern" defaultOpen>
         {/* 5 кнопок-превью — grid 5 колонок, все в одну строку */}
@@ -90,7 +90,7 @@ export function CanvasSection({
                   alignItems: 'center',
                   gap: 4,
                   padding: 4,
-                  border: `2px solid ${isActive ? '#0066ff' : '#e0e0e0'}`,
+                  border: `2px solid ${isActive ? '#0a0a0a' : '#e5e5e5'}`,
                   borderRadius: 6,
                   cursor: 'default',
                   background: '#fff',
@@ -110,7 +110,7 @@ export function CanvasSection({
                     border: '1px solid rgba(0,0,0,0.08)',
                   }}
                 />
-                <span style={{ fontSize: 9, color: isActive ? '#0066ff' : '#888', lineHeight: 1 }}>
+                <span style={{ fontSize: 9, color: isActive ? '#0a0a0a' : '#737373', lineHeight: 1 }}>
                   {p.label}
                 </span>
               </button>
@@ -131,8 +131,8 @@ export function CanvasSection({
                 {canvasPatternColor && (
                   <button
                     onClick={() => onUpdate({ canvasPatternColor: '' })}
-                    title="Сбросить к авто"
-                    style={{ flexShrink: 0, fontSize: 10, color: '#888', background: 'none', border: '1px solid #e0e0e0', borderRadius: 3, padding: '2px 5px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    title="Reset to auto"
+                    style={{ flexShrink: 0, fontSize: 10, color: '#737373', background: 'none', border: '1px solid #e5e5e5', borderRadius: 3, padding: '2px 5px', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >Auto</button>
                 )}
               </div>
@@ -146,7 +146,7 @@ export function CanvasSection({
                 step={STEP}
                 value={canvasPatternSize}
                 onChange={(e) => onUpdate({ canvasPatternSize: Number(e.target.value) })}
-                style={{ flex: 1, cursor: 'pointer', accentColor: '#0066ff' }}
+                style={{ flex: 1 }}
               />
             </PropertyRow>
           </>
