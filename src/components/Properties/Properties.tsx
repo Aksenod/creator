@@ -213,7 +213,7 @@ export function Properties() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
 
-            {/* Имя + Класс */}
+            {/* Имя + Класс + Контент */}
             <CollapsibleSection label="Слой" defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <PropertyRow label="Имя">
@@ -234,6 +234,21 @@ export function Properties() {
                     />
                   </div>
                 </PropertyRow>
+                {(element.type === 'text' || element.type === 'button' || element.type === 'input') && (
+                  <PropertyRow label="Контент">
+                    <textarea
+                      value={element.content ?? ''}
+                      onChange={(e) => updateField({ content: e.target.value })}
+                      placeholder={element.type === 'text' ? 'Введите текст' : element.type === 'button' ? 'Текст кнопки' : 'Placeholder'}
+                      rows={3}
+                      style={{
+                        ...inputStyle,
+                        resize: 'vertical',
+                        fontFamily: element.type === 'text' ? 'inherit' : undefined,
+                      }}
+                    />
+                  </PropertyRow>
+                )}
               </div>
             </CollapsibleSection>
 

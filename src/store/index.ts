@@ -11,7 +11,7 @@ import {
   pushHistory,
   applyStyleUpdate,
 } from './helpers'
-import { findParentId, collectDescendantIds } from '../utils/treeUtils'
+import { findParentId, collectDescendantIds, getCommonParentId } from '../utils/treeUtils'
 
 type EditorState = {
   allProjects: Project[]
@@ -67,6 +67,7 @@ type EditorState = {
   updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string }) => void
   toggleElementVisibility: (artboardId: string, elementId: string) => void
   renameElements: (artboardId: string, renames: Array<{ id: string; name: string }>) => void
+  wrapElementsInDiv: (artboardId: string, elementIds: string[]) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -798,6 +799,85 @@ export const useEditorStore = create<EditorState>()(
           ...pushHistory(state.history, state.historyIndex, state.project, newProject),
           selectedElementId: newRootId,
           selectedElementIds: [newRootId],
+        }
+      }),
+
+      wrapElementsInDiv: (artboardId, elementIds) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        if (!ab || elementIds.length === 0) return state
+
+        // Проверяем что все элементы одного уровня
+        const { parentId: commonParentId, valid } = getCommonParentId(ab, elementIds)
+        if (!valid) {
+          // Элементы из разных родителей — нельзя объединить
+          return state
+        }
+
+        // Получаем список siblings и индекс первого элемента
+        const parent = commonParentId ? ab.elements[commonParentId] : null
+        const siblings = parent ? parent.children : ab.rootChildren
+        const firstIndex = siblings.findIndex(id => elementIds.includes(id))
+        if (firstIndex === -1) return state
+
+        // Считаем сколько div-ов уже есть для нумерации
+        const divCount = Object.values(ab.elements).filter(e => e.type === 'div').length
+        const newDivName = `Div ${divCount + 1}`
+        const newDivId = generateId()
+
+        // Создаём новый div
+        const newDiv: CanvasElement = {
+          id: newDivId,
+          name: newDivName,
+          className: slugify(newDivName),
+          type: 'div',
+          positionMode: 'static',
+          styles: { display: 'flex', flexDirection: 'column' },
+          children: [...elementIds],
+        }
+
+        // Копируем элементы
+        const newElements = { ...ab.elements, [newDivId]: newDiv }
+
+        // Удаляем элементы из родителя
+        if (parent && commonParentId) {
+          newElements[commonParentId] = {
+            ...parent,
+            children: parent.children.filter(id => !elementIds.includes(id)),
+          }
+        }
+
+        // Вставляем div на место первого элемента
+        const newSiblings = siblings.filter(id => !elementIds.includes(id))
+        newSiblings.splice(firstIndex, 0, newDivId)
+
+        const newProject: Project = {
+          ...state.project!,
+          artboards: {
+            ...state.project!.artboards,
+            [artboardId]: {
+              ...ab,
+              elements: newElements,
+            },
+          },
+          updatedAt: Date.now(),
+        }
+
+        // Обновляем rootChildren или children родителя
+        if (!commonParentId) {
+          newProject.artboards[artboardId].rootChildren = newSiblings
+        } else {
+          const updatedParent = newProject.artboards[artboardId].elements[commonParentId]
+          if (updatedParent) {
+            updatedParent.children = newSiblings
+          }
+        }
+
+        if (!state.project) return state
+
+        return {
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
+          selectedElementId: newDivId,
+          selectedElementIds: [newDivId],
         }
       }),
     }),

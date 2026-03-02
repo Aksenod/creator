@@ -330,14 +330,20 @@ export function Layers({ artboard }: Props) {
   const expandTimerRef = useRef<{ timer: ReturnType<typeof setTimeout>; targetId: string } | null>(null)
   const layersScrollRef = useRef<HTMLDivElement>(null)
 
-  // Авто-раскрытие новых контейнеров (paste/duplicate добавляют элементы)
+  // Авто-раскрытие только НОВЫХ контейнеров (paste/duplicate добавляют элементы)
+  // Не переоткрывать вручную свёрнутые при любом изменении elements
+  const prevElementIdsRef = useRef<Set<string>>(new Set(Object.keys(artboard.elements)))
   useEffect(() => {
+    const currentIds = new Set(Object.keys(artboard.elements))
+    const prevIds = prevElementIdsRef.current
     const toExpand: string[] = []
-    Object.entries(artboard.elements).forEach(([id, el]) => {
-      if (el.children.length > 0 && !expandedLayers.has(id)) {
-        toExpand.push(id)
+    for (const id of currentIds) {
+      if (!prevIds.has(id)) {
+        const el = artboard.elements[id]
+        if (el && el.children.length > 0) toExpand.push(id)
       }
-    })
+    }
+    prevElementIdsRef.current = currentIds
     if (toExpand.length > 0) expandLayers(toExpand)
   }, [artboard.elements]) // eslint-disable-line react-hooks/exhaustive-deps
 

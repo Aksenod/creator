@@ -9,8 +9,9 @@ import { BREAKPOINTS, detectBreakpoint, type Breakpoint } from '../Canvas/PageEd
 import { GridEditOverlay } from '../GridEditOverlay'
 import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 import { RenameLayersModal } from '../RenameLayersModal'
+import { Toast } from '../Toast/Toast'
 import type { BreakpointId } from '../../constants/breakpoints'
-import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
+import { findParentId, getSiblingInfo, getCommonParentId } from '../../utils/treeUtils'
 import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
 import type { CanvasPattern } from '../../types'
 
@@ -137,7 +138,7 @@ export function CanvasEditor() {
     closeProject, addArtboard, deleteArtboard, setActiveArtboard, selectElement,
     selectedElementId, activeBreakpointId, setActiveBreakpoint,
     deleteElement, undo, redo, copyElement, pasteElement, duplicateElement,
-    gridEditElementId, toggleElementVisibility,
+    gridEditElementId, toggleElementVisibility, wrapElementsInDiv,
   } = useEditorStore()
 
   const [isPreview, setIsPreview] = useState(false)
@@ -147,6 +148,7 @@ export function CanvasEditor() {
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [snapLines, setSnapLines] = useState<SnapLine[]>([])
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
@@ -384,13 +386,32 @@ export function CanvasEditor() {
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); setPanelsHidden(v => !v)
       }
+
+      // Shift+A — обернуть выбранные элементы в div
+      if (e.shiftKey && (e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф')) {
+        e.preventDefault()
+        const s = useEditorStore.getState()
+        const abId = s.activeArtboardId
+        const selIds = s.selectedElementIds.length > 0 ? s.selectedElementIds : (s.selectedElementId ? [s.selectedElementId] : [])
+        if (abId && selIds.length > 0) {
+          const ab = s.project?.artboards[abId]
+          if (ab) {
+            const { valid } = getCommonParentId(ab, selIds)
+            if (!valid) {
+              setToastMessage('Можно объединять только элементы одного уровня')
+              return
+            }
+          }
+          wrapElementsInDiv(abId, selIds)
+        }
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId,
     selectElement, deleteElement, deleteArtboard, undo, redo, copyElement, pasteElement,
-    duplicateElement, setActiveBreakpoint, toggleElementVisibility,
+    duplicateElement, setActiveBreakpoint, toggleElementVisibility, wrapElementsInDiv,
   ])
 
   // Image drag-drop + paste
@@ -673,6 +694,11 @@ export function CanvasEditor() {
           elementIds={useEditorStore.getState().selectedElementIds}
           onClose={() => setShowRenameModal(false)}
         />
+      )}
+
+      {/* Toast notifications */}
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
     </div>
   )
