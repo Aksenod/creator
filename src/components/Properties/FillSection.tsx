@@ -4,6 +4,7 @@ import type { Fill } from '../../types/fills'
 import { createSolidFill, createGradientFill, createImageFill } from '../../types/fills'
 import { migrateFills } from '../../utils/fillUtils'
 import { CollapsibleSection, PropertyRow } from './shared'
+import { PropertySelect } from './shared/PropertySelect'
 import { FillRow } from './FillRow'
 import { GradientPicker } from './shared/GradientPicker'
 import { ImageFillPicker } from './shared/ImageFillPicker'
@@ -107,13 +108,13 @@ export function FillSection({ styles, onUpdate }: Props) {
   return (
     <CollapsibleSection
       label="Fill"
-      tooltip="Заливки элемента — цвет, градиент или картинка"
+      tooltip="Element fills — color, gradient or image"
       defaultOpen
       headerRight={
         <div style={{ position: 'relative' }}>
           <button
             onClick={(e) => { e.stopPropagation(); setAddMenu(addMenu ? null : 'open') }}
-            title="Добавить заливку"
+            title="Add fill"
             style={{
               width: 20, height: 20, padding: 0, border: 'none',
               background: 'none', cursor: 'pointer',
@@ -127,7 +128,7 @@ export function FillSection({ styles, onUpdate }: Props) {
             <div
               style={{
                 position: 'absolute', right: 0, top: 22, zIndex: 100,
-                background: '#fff', border: '1px solid #e0e0e0', borderRadius: 6,
+                background: '#fff', border: '1px solid #e5e5e5', borderRadius: 6,
                 boxShadow: '0 2px 12px rgba(0,0,0,0.12)', padding: 4,
                 minWidth: 130,
               }}
@@ -152,7 +153,7 @@ export function FillSection({ styles, onUpdate }: Props) {
                     cursor: 'pointer', fontSize: 12, borderRadius: 4,
                     color: '#333',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#f0f4ff')}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f5')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 >
                   {item.label}
@@ -165,7 +166,7 @@ export function FillSection({ styles, onUpdate }: Props) {
     >
       <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {fills.length === 0 && (
-          <div style={{ fontSize: 11, color: '#aaa', padding: '4px 0' }}>Нет заливок</div>
+          <div style={{ fontSize: 11, color: '#a3a3a3', padding: '4px 0' }}>No fills</div>
         )}
         {fills.map((fill, i) => (
           <div key={fill.id} data-fill-row>
@@ -190,22 +191,18 @@ export function FillSection({ styles, onUpdate }: Props) {
         {fills.length > 0 && (
           <div style={{ marginTop: 6 }}>
             <PropertyRow label="Clip" labelWidth={30}>
-              <select
+              <PropertySelect
                 value={styles.backgroundClip ?? ''}
-                onChange={e => onUpdate({ backgroundClip: e.target.value as ElementStyles['backgroundClip'] || undefined })}
-                title="Background clip — до какой границы рисуется фон"
-                style={{
-                  flex: 1, minWidth: 0, padding: '3px 6px',
-                  border: '1px solid #e0e0e0', borderRadius: 4,
-                  fontSize: 12, background: '#fafafa', outline: 'none', cursor: 'default',
-                }}
-              >
-                <option value="">None</option>
-                <option value="border-box">Border box</option>
-                <option value="padding-box">Padding box</option>
-                <option value="content-box">Content box</option>
-                <option value="text">Text</option>
-              </select>
+                options={[
+                  { value: 'border-box', label: 'Border box' },
+                  { value: 'padding-box', label: 'Padding box' },
+                  { value: 'content-box', label: 'Content box' },
+                  { value: 'text', label: 'Text' },
+                ]}
+                onChange={v => onUpdate({ backgroundClip: (v as ElementStyles['backgroundClip']) || undefined })}
+                placeholder="None"
+                title="Background clip — where the background is painted"
+              />
             </PropertyRow>
           </div>
         )}

@@ -69,7 +69,7 @@ function DropLine({ depth }: { depth: number }) {
       style={{
         height: 2,
         marginLeft: 8 + depth * 16,
-        background: '#0066ff',
+        background: '#0a0a0a',
         borderRadius: 1,
         pointerEvents: 'none',
       }}
@@ -156,11 +156,11 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           cursor: 'default', fontSize: 12,
           borderRadius: 3,
           background: isDropInto
-            ? 'rgba(0,102,255,0.06)'
-            : isSelected ? '#e8f0fe' : 'transparent',
-          color: isSelected ? '#0066ff' : el.type === 'body' ? '#555' : '#333',
+            ? 'rgba(10,10,10,0.04)'
+            : isSelected ? '#f0f0f0' : 'transparent',
+          color: isSelected ? '#0a0a0a' : el.type === 'body' ? '#555' : '#333',
           userSelect: 'none',
-          outline: isDropInto ? '1.5px solid rgba(0,102,255,0.35)' : 'none',
+          outline: isDropInto ? '1.5px solid rgba(10,10,10,0.2)' : 'none',
           outlineOffset: -1,
           opacity: isHidden ? 0.4 : 1,
         }}
@@ -170,7 +170,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             e.stopPropagation()
             if (hasChildren && !isBody) onToggleExpand(id, e.altKey)
           }}
-          title={hasChildren && !isBody ? (isExpanded ? 'Свернуть вложенные элементы (Alt+клик — рекурсивно все потомки)' : 'Развернуть вложенные элементы (Alt+клик — рекурсивно все потомки)') : undefined}
+          title={hasChildren && !isBody ? (isExpanded ? 'Collapse (Alt+click = recursive)' : 'Expand (Alt+click = recursive)') : undefined}
           style={{
             width: 16, height: 16,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -213,7 +213,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             style={{
               flex: 1, minWidth: 0,
               fontSize: 12, fontFamily: 'inherit',
-              border: '1px solid #0066ff',
+              border: '1px solid #0a0a0a',
               borderRadius: 2, padding: '0 3px',
               outline: 'none', background: '#fff',
               color: '#333',
@@ -245,7 +245,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
               e.stopPropagation()
               if (activeArtboardId) toggleElementVisibility(activeArtboardId, id)
             }}
-            title={isHidden ? 'Показать элемент' : 'Скрыть элемент'}
+            title={isHidden ? 'Show element' : 'Hide element'}
             style={{
               marginLeft: 'auto',
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -295,7 +295,7 @@ function DragGhost({ id, artboard }: { id: string; artboard: Artboard }) {
   return (
     <div style={{
       padding: '4px 12px', fontSize: 12, background: '#fff',
-      border: '1px solid #0066ff', borderRadius: 4,
+      border: '1px solid #0a0a0a', borderRadius: 4,
       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
       display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none',
     }}>
@@ -524,11 +524,11 @@ export function Layers({ artboard }: Props) {
         borderBottom: '1px solid #e0e0e0',
         display: 'flex', alignItems: 'center', gap: 4,
       }}>
-        <span>Слои</span>
+        <span>Layers</span>
         {expandedLayers.size > 0 && (
           <button
             onClick={collapseAll}
-            title="Свернуть все слои — скрыть все вложенные элементы в дереве"
+            title="Collapse all layers"
             style={{
               border: 'none', background: 'none', cursor: 'pointer',
               color: '#aaa', fontSize: 10, padding: '0 2px', lineHeight: 1,
@@ -544,7 +544,7 @@ export function Layers({ artboard }: Props) {
 
       <div ref={layersScrollRef} style={{ flex: 1, overflow: 'auto' }}>
         {artboard.rootChildren.length === 0 ? (
-          <div style={{ padding: 16, color: '#aaa', fontSize: 12 }}>Нет элементов</div>
+          <div style={{ padding: 16, color: '#aaa', fontSize: 12 }}>No elements</div>
         ) : (
           <DndContext
             sensors={sensors}

@@ -500,7 +500,7 @@ export function CanvasEditor() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   height: '100%', color: '#aaa', fontSize: 12, padding: 16, textAlign: 'center',
                 }}>
-                  Кликни на артборд для редактирования
+                  Click an artboard to edit
                 </div>
               )}
             </div>

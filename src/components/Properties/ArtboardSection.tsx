@@ -14,9 +14,9 @@ export function ArtboardSection({
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <CollapsibleSection label="Артборд" tooltip="Артборд — рабочая область (страница). Задай имя и размеры" defaultOpen>
+      <CollapsibleSection label="Artboard" tooltip="Artboard — workspace (page). Set name and dimensions" defaultOpen>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <PropertyRow label="Имя">
+          <PropertyRow label="Name">
             <input
               value={artboard.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
@@ -26,9 +26,9 @@ export function ArtboardSection({
         </div>
       </CollapsibleSection>
 
-      <div style={{ height: 1, background: '#e0e0e0', margin: '4px 0' }} />
+      {/* Spacing between sections handled by CollapsibleSection borderTop */}
 
-      <CollapsibleSection label="Размер" tooltip="Размер артборда — ширина определяется брейкпоинтом, высоту можно задать вручную" defaultOpen>
+      <CollapsibleSection label="Size" tooltip="Artboard size — width is set by breakpoint, height is manual" defaultOpen>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <PropertyRow label="W">
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -37,11 +37,11 @@ export function ArtboardSection({
                 value={effectiveWidth}
                 readOnly
                 title={`Ширина задаётся брейкпоинтом (${breakpointLabel})`}
-                style={{ ...inputStyle, color: '#aaa', cursor: 'not-allowed', flex: 1 }}
+                style={{ ...inputStyle, color: '#a3a3a3', cursor: 'not-allowed', flex: 1 }}
               />
               <span
                 title={`Ширина задаётся брейкпоинтом (${breakpointLabel})`}
-                style={{ fontSize: 10, color: '#aaa', whiteSpace: 'nowrap', cursor: 'default' }}
+                style={{ fontSize: 10, color: '#a3a3a3', whiteSpace: 'nowrap', cursor: 'default' }}
               >
                 {breakpointLabel}
               </span>
@@ -66,7 +66,7 @@ export function ArtboardSection({
 }
 
 const inputStyle: React.CSSProperties = {
-  flex: 1, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4,
+  flex: 1, padding: '3px 6px', border: '1px solid #e5e5e5', borderRadius: 4,
   fontSize: 12, background: '#fafafa', outline: 'none', width: '100%', minWidth: 0,
-  color: '#1a1a1a',
+  color: '#0a0a0a',
 }

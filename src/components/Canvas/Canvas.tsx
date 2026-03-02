@@ -367,7 +367,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           height: artboard.height, color: '#aaa', fontSize: 13,
         }}>
-          Добавь первый элемент через панель инструментов
+          Add your first element using the toolbar
         </div>
       ) : (
         artboard.rootChildren.map(renderElement)

@@ -5,7 +5,7 @@ export function SegmentedControl({ value, options, onChange }: {
 }) {
   return (
     <div style={{
-      display: 'flex', background: '#efefef', borderRadius: 6,
+      display: 'flex', background: '#f0f0f0', borderRadius: 5,
       padding: 2, gap: 1, flex: 1, minWidth: 0,
     }}>
       {options.map((opt) => {
@@ -16,11 +16,13 @@ export function SegmentedControl({ value, options, onChange }: {
             title={opt.tooltip ?? opt.label}
             onClick={() => onChange(opt.value)}
             style={{
-              flex: 1, minWidth: 0, padding: '3px 4px', fontSize: 11, border: 'none',
-              borderRadius: 4, cursor: 'default', transition: 'all 0.1s',
-              background: active ? '#1a1a1a' : 'transparent',
-              color: active ? '#fff' : '#888',
+              flex: 1, minWidth: 0, padding: '2px 4px', fontSize: 10, border: 'none',
+              borderRadius: 4, cursor: 'default', lineHeight: '16px',
+              transition: 'all 0.15s ease',
+              background: active ? '#0a0a0a' : 'transparent',
+              color: active ? '#fff' : '#737373',
               fontWeight: active ? 500 : 400,
+              boxShadow: active ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
               whiteSpace: 'nowrap',
             }}
           >

@@ -143,8 +143,8 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
             width: 400,
           }}
         >
-          <div style={{ fontSize: 14, color: '#888' }}>Нет выбранных элементов для переименования</div>
-          <button onClick={onClose} style={btnStyle}>Закрыть</button>
+          <div style={{ fontSize: 14, color: '#888' }}>No selected elements to rename</div>
+          <button onClick={onClose} style={btnStyle}>Close</button>
         </div>
       </div>,
       document.body,
@@ -174,7 +174,7 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
           fontSize: 14, fontWeight: 600, color: '#333',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span>Переименовать слои ({elements.length})</span>
+          <span>Rename layers ({elements.length})</span>
           <button
             onClick={onClose}
             style={{
@@ -187,30 +187,30 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
         {/* Body */}
         <div style={{ padding: '16px 20px', overflow: 'auto', flex: 1 }}>
           {/* Template */}
-          <label style={labelStyle}>Переименовать в</label>
+          <label style={labelStyle}>Rename to</label>
           <input
             ref={templateInputRef}
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleRename() }}
-            placeholder="Новое имя (шаблон)"
+            placeholder="New name (template)"
             style={inputStyle}
           />
 
           {/* Helper tokens */}
           <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-            <TokenBtn label="Текущее имя" onClick={() => {
+            <TokenBtn label="Current name" onClick={() => {
               if (elements.length === 1) setTemplate(elements[0].name)
             }} />
-            <TokenBtn label="↑ $nn" onClick={() => insertToken('$nn')} />
-            <TokenBtn label="↓ $NN" onClick={() => insertToken('$NN')} />
+            <TokenBtn label="$nn" onClick={() => insertToken('$nn')} />
+            <TokenBtn label="$NN" onClick={() => insertToken('$NN')} />
             <TokenBtn label="$n" onClick={() => insertToken('$n')} />
             <TokenBtn label="$nnn" onClick={() => insertToken('$nnn')} />
           </div>
 
           {/* Start number */}
           <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={{ ...labelStyle, marginBottom: 0 }}>Начать с</label>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>Start from</label>
             <input
               type="number"
               value={startNum}
@@ -220,16 +220,16 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
           </div>
 
           {/* Match */}
-          <label style={{ ...labelStyle, marginTop: 14 }}>Совпадение (find/replace)</label>
+          <label style={{ ...labelStyle, marginTop: 14 }}>Match (find/replace)</label>
           <input
             value={matchPattern}
             onChange={(e) => setMatchPattern(e.target.value)}
-            placeholder="Текст или /regex/"
+            placeholder="Text or /regex/"
             style={inputStyle}
           />
 
           {/* Preview */}
-          <label style={{ ...labelStyle, marginTop: 16 }}>Превью</label>
+          <label style={{ ...labelStyle, marginTop: 16 }}>Preview</label>
           <div style={{
             border: '1px solid #e0e0e0', borderRadius: 4,
             maxHeight: 200, overflow: 'auto',
@@ -246,7 +246,7 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
                 }}>{p.oldName}</span>
                 <span style={{ color: '#bbb', flexShrink: 0 }}>→</span>
                 <span style={{
-                  flex: 1, color: p.oldName !== p.newName ? '#0066ff' : '#333',
+                  flex: 1, color: p.oldName !== p.newName ? '#0a0a0a' : '#333',
                   fontWeight: p.oldName !== p.newName ? 500 : 400,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{p.newName}</span>
@@ -261,18 +261,18 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
           borderTop: '1px solid #eee',
           display: 'flex', justifyContent: 'flex-end', gap: 8,
         }}>
-          <button onClick={onClose} style={btnStyle}>Отмена</button>
+          <button onClick={onClose} style={btnStyle}>Cancel</button>
           <button
             onClick={handleRename}
             disabled={!hasChanges}
             style={{
               ...btnStyle,
-              background: hasChanges ? '#0066ff' : '#ccc',
+              background: hasChanges ? '#0a0a0a' : '#ccc',
               color: '#fff',
               cursor: hasChanges ? 'pointer' : 'default',
             }}
           >
-            Переименовать
+            Rename
           </button>
         </div>
       </div>

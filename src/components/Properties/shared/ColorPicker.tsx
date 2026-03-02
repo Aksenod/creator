@@ -201,11 +201,11 @@ export function ColorPicker({ color, anchorRect, onChange, onClose }: ColorPicke
         left,
         width: POPUP_W,
         background: '#fff',
-        border: '1px solid #e0e0e0',
-        borderRadius: 8,
+        border: '1px solid #e5e5e5',
+        borderRadius: 12,
         padding: POPUP_PAD,
         zIndex: 99999,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
         userSelect: 'none',
       }}
       onMouseDown={e => e.stopPropagation()}
@@ -284,7 +284,7 @@ export function ColorPicker({ color, anchorRect, onChange, onClose }: ColorPicke
 
       {/* Hex input row */}
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, gap: 4 }}>
-        <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>#</span>
+        <span style={{ fontSize: 12, color: '#737373', flexShrink: 0 }}>#</span>
         <input
           value={hexDisplay}
           onChange={e => setHexInput(e.target.value)}
@@ -295,7 +295,7 @@ export function ColorPicker({ color, anchorRect, onChange, onClose }: ColorPicke
           style={{
             flex: 1,
             minWidth: 0,
-            border: '1px solid #e0e0e0',
+            border: '1px solid #e5e5e5',
             borderRadius: 4,
             padding: '4px 6px',
             fontSize: 12,

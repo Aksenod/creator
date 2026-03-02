@@ -1,5 +1,5 @@
 import type { ElementStyles } from '../../types'
-import { CollapsibleSection, PropertyRow, ColorInput } from './shared'
+import { CollapsibleSection, PropertyRow, ColorInput, CompactInput } from './shared'
 
 type Props = {
   styles: ElementStyles
@@ -10,43 +10,40 @@ export function BorderSection({ styles, onUpdate }: Props) {
   const radius = styles.borderRadius ?? 0
 
   return (
-    <CollapsibleSection label="Borders" tooltip="Borders — рамка вокруг элемента и скругление углов. Стиль, толщина и цвет рамки" defaultOpen>
+    <CollapsibleSection label="Borders" tooltip="Borders — border style, width, color and corner radius" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Radius */}
         <PropertyRow label="Radius" labelWidth={44}>
-          <div title="Скругление углов — чем больше значение, тем более круглые углы. 0 = прямые углы, 50+ = таблетка/круг" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
+          <div title="Corner radius — higher value = rounder corners. 0 = sharp, 50+ = pill/circle" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <input
               type="range"
               min={0}
               max={100}
               value={radius}
               onChange={e => onUpdate({ borderRadius: Number(e.target.value) })}
-              style={{ flex: 1, minWidth: 0, height: 4, accentColor: '#0066ff' }}
+              style={{ flex: 1, minWidth: 0 }}
             />
-            <input
-              type="number"
-              min={0}
-              value={radius}
+            <CompactInput
+              value={radius} min={0}
               onChange={e => onUpdate({ borderRadius: Number(e.target.value) })}
-              style={{ width: 36, flexShrink: 0, padding: '3px 4px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none', textAlign: 'center' }}
+              suffix="PX" style={{ width: 52, flex: 'none' }}
             />
-            <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>PX</span>
           </div>
         </PropertyRow>
 
         {/* Border section */}
         <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Border</span>
+          <span style={{ fontSize: 10, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Border</span>
 
           {/* Style */}
           <PropertyRow label="Style" labelWidth={44}>
             <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
               {([
-                { value: 'none', label: '×', tooltip: 'Без рамки — убрать border у элемента' },
-                { value: 'solid', label: '—', tooltip: 'Сплошная рамка — непрерывная линия вокруг элемента' },
-                { value: 'dashed', label: '- -', tooltip: 'Пунктирная рамка — рамка из штрихов (----)' },
-                { value: 'dotted', label: '···', tooltip: 'Точечная рамка — рамка из мелких точек (····)' },
+                { value: 'none', label: '×', tooltip: 'No border' },
+                { value: 'solid', label: '—', tooltip: 'Solid border' },
+                { value: 'dashed', label: '- -', tooltip: 'Dashed border' },
+                { value: 'dotted', label: '···', tooltip: 'Dotted border' },
               ] as const).map(opt => (
                 <button
                   key={opt.value}
@@ -55,8 +52,8 @@ export function BorderSection({ styles, onUpdate }: Props) {
                   style={{
                     flex: 1, minWidth: 0, padding: '4px 0', border: 'none', borderRadius: 4, cursor: 'default',
                     fontSize: opt.value === 'none' ? 12 : 10,
-                    background: (styles.borderStyle ?? 'none') === opt.value ? '#1a1a1a' : 'transparent',
-                    color: (styles.borderStyle ?? 'none') === opt.value ? '#fff' : '#888',
+                    background: (styles.borderStyle ?? 'none') === opt.value ? '#0a0a0a' : 'transparent',
+                    color: (styles.borderStyle ?? 'none') === opt.value ? '#fff' : '#737373',
                   }}
                 >
                   {opt.label}
@@ -67,16 +64,12 @@ export function BorderSection({ styles, onUpdate }: Props) {
 
           {/* Width */}
           <PropertyRow label="Width" labelWidth={44}>
-            <div title="Толщина рамки в пикселях — 1–2px для тонких разделителей, 3–4px для акцентных рамок" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
-              <input
-                type="number"
-                min={0}
-                value={styles.borderWidth ?? 0}
-                onChange={e => onUpdate({ borderWidth: Number(e.target.value) })}
-                style={{ flex: 1, minWidth: 0, padding: '3px 6px', border: '1px solid #e0e0e0', borderRadius: 4, fontSize: 12, background: '#fafafa', outline: 'none' }}
-              />
-              <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>PX</span>
-            </div>
+            <CompactInput
+              value={styles.borderWidth ?? 0} min={0}
+              onChange={e => onUpdate({ borderWidth: Number(e.target.value) })}
+              suffix="PX"
+              title="Border width in pixels"
+            />
           </PropertyRow>
 
           {/* Color */}
