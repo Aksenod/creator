@@ -237,7 +237,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         : isDropAfter
         ? '0 2px 0 0 #0066ff'
         : undefined,
-      opacity: isDragging ? 0.4 : 1,
+      opacity: isDragging ? (s.opacity ?? 1) * 0.4 : (s.opacity ?? 1),
       cursor: 'default',
       boxSizing: 'border-box',
     }

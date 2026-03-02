@@ -68,6 +68,7 @@ export type ElementStyles = {
   bottom?: number
   left?: number
   zIndex?: number
+  opacity?: number  // 0–1, default 1
 
   // Typography
   fontFamily?: string

@@ -154,6 +154,35 @@ export function Properties() {
 
             <Divider />
 
+            <PropertyRow label="Opacity">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+                <input
+                  type="range"
+                  min={0} max={100} step={1}
+                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
+                  onChange={e => updateStyle({ opacity: Number(e.target.value) / 100 })}
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                <input
+                  type="number"
+                  min={0} max={100} step={1}
+                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
+                  onChange={e => {
+                    const v = Math.max(0, Math.min(100, Number(e.target.value)))
+                    updateStyle({ opacity: v / 100 })
+                  }}
+                  style={{
+                    width: 36, flexShrink: 0, padding: '3px 2px', border: '1px solid #e0e0e0',
+                    borderRadius: 4, fontSize: 12, background: '#fafafa',
+                    outline: 'none', textAlign: 'right',
+                  }}
+                />
+                <span style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>%</span>
+              </div>
+            </PropertyRow>
+
+            <Divider />
+
             <BackgroundSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
@@ -237,6 +266,35 @@ export function Properties() {
             <Divider />
 
             <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            <Divider />
+
+            <PropertyRow label="Opacity">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
+                <input
+                  type="range"
+                  min={0} max={100} step={1}
+                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
+                  onChange={e => updateStyle({ opacity: Number(e.target.value) / 100 })}
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                <input
+                  type="number"
+                  min={0} max={100} step={1}
+                  value={Math.round((effectiveStyles.opacity ?? 1) * 100)}
+                  onChange={e => {
+                    const v = Math.max(0, Math.min(100, Number(e.target.value)))
+                    updateStyle({ opacity: v / 100 })
+                  }}
+                  style={{
+                    width: 36, flexShrink: 0, padding: '3px 2px', border: '1px solid #e0e0e0',
+                    borderRadius: 4, fontSize: 12, background: '#fafafa',
+                    outline: 'none', textAlign: 'right',
+                  }}
+                />
+                <span style={{ fontSize: 11, color: '#999', flexShrink: 0 }}>%</span>
+              </div>
+            </PropertyRow>
 
             <Divider />
 
