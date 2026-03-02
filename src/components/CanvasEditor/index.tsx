@@ -163,18 +163,18 @@ export function CanvasEditor() {
     active: boolean
   } | null>(null)
   const artboardElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const patternSizeRef = useRef<number>((project?.canvasPatternSize ?? 20) + (project?.canvasPatternGap ?? 0))
+  const patternSizeRef = useRef<number>(project?.canvasPatternSize ?? 20)
   const { cameraRef, fitToScreen, scalePercent, applyTransform } = useCanvasTransform(
     containerRef as React.RefObject<HTMLElement>,
     worldRef as React.RefObject<HTMLElement>,
     patternSizeRef,
   )
 
-  // Sync patternSizeRef and re-apply when size or gap changes
+  // Sync patternSizeRef and re-apply when size changes
   useEffect(() => {
-    patternSizeRef.current = (project?.canvasPatternSize ?? 20) + (project?.canvasPatternGap ?? 0)
+    patternSizeRef.current = project?.canvasPatternSize ?? 20
     applyTransform()
-  }, [project?.canvasPatternSize, project?.canvasPatternGap]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [project?.canvasPatternSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const parsedCustom = parseInt(customWidth)
   const displayWidth = customWidth && !isNaN(parsedCustom) && parsedCustom > 0 ? parsedCustom : viewportWidth
@@ -540,7 +540,7 @@ export function CanvasEditor() {
             flex: 1,
             overflow: 'hidden',
             background: project?.canvasBackground ?? '#e8e8e8',
-            backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots', project?.canvasBackground ?? '#e8e8e8', project?.canvasPatternColor, project?.canvasPatternSize ?? 20, project?.canvasPatternGap ?? 0),
+            backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots', project?.canvasBackground ?? '#e8e8e8', project?.canvasPatternColor),
             position: 'relative',
             outline: 'none',
           }}
@@ -754,7 +754,7 @@ function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 128
 }
 
-function getPatternImage(pattern: CanvasPattern, bg = '#e8e8e8', patternColor?: string, size = 20, gap = 0): string {
+function getPatternImage(pattern: CanvasPattern, bg = '#e8e8e8', patternColor?: string): string {
   let c: string
   let ce: string
   let ca: string
@@ -768,8 +768,6 @@ function getPatternImage(pattern: CanvasPattern, bg = '#e8e8e8', patternColor?: 
     ce = light ? '%23000000' : '%23ffffff'
     ca = light ? '0.18' : '0.2'
   }
-  const ts = size + gap
-  const o = ts / 2 - 10 // offset to center the 20x20 shape in the tile
   switch (pattern) {
     case 'none':
       return 'none'
@@ -778,9 +776,9 @@ function getPatternImage(pattern: CanvasPattern, bg = '#e8e8e8', patternColor?: 
     case 'grid':
       return `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`
     case 'cross':
-      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${ts}' height='${ts}'%3E%3Cg transform='translate(${o},${o})'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3C/g%3E%3C/svg%3E")`
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3C/svg%3E")`
     case 'hearts':
-      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${ts}' height='${ts}'%3E%3Cg transform='translate(${o},${o})'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='${ce}' fill-opacity='${ca}'/%3E%3C/g%3E%3C/svg%3E")`
+      return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='${ce}' fill-opacity='${ca}'/%3E%3C/svg%3E")`
     default:
       return `radial-gradient(circle, ${c} 1px, transparent 1px)`
   }

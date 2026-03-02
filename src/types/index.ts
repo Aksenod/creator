@@ -145,6 +145,5 @@ export type Project = {
   canvasPattern?: CanvasPattern  // дефолт 'dots'
   canvasPatternSize?: number     // дефолт 20 (px)
   canvasPatternColor?: string    // дефолт — авто по фону
-  canvasPatternGap?: number      // дефолт 0 (px), доп. расстояние между элементами паттерна
 }
 
