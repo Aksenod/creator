@@ -1,5 +1,8 @@
 import type { Artboard, CanvasElement, ElementStyles } from '../types'
+import type { Fill } from '../types/fills'
 import { BREAKPOINT_ORDER, BREAKPOINT_WIDTHS, type BreakpointId } from '../constants/breakpoints'
+import { hexToRgb } from './colorUtils'
+import { migrateFills } from './fillUtils'
 
 // camelCase → kebab-case: "backgroundColor" → "background-color"
 function toKebab(prop: string): string {
@@ -35,6 +38,60 @@ const STRING_PROPS = new Set<string>([
 ])
 
 /**
+ * Конвертирует fills[] в CSS-декларации для экспорта.
+ */
+function fillsToCSSDecls(fills: Fill[]): string[] {
+  const visible = fills.filter(f => f.visible)
+  if (visible.length === 0) return []
+
+  const images: string[] = []
+  const sizes: string[] = []
+  const positions: string[] = []
+  const repeats: string[] = []
+
+  for (const fill of visible) {
+    switch (fill.type) {
+      case 'solid': {
+        const { r, g, b } = hexToRgb(fill.color)
+        const a = fill.opacity
+        images.push(`linear-gradient(rgba(${r},${g},${b},${a}), rgba(${r},${g},${b},${a}))`)
+        sizes.push('auto')
+        positions.push('initial')
+        repeats.push('repeat')
+        break
+      }
+      case 'gradient': {
+        const stops = fill.stops.map(s => {
+          const { r, g, b } = hexToRgb(s.color)
+          return `rgba(${r},${g},${b},${fill.opacity}) ${Math.round(s.position * 100)}%`
+        }).join(', ')
+        images.push(fill.gradientType === 'radial'
+          ? `radial-gradient(circle, ${stops})`
+          : `linear-gradient(${fill.angle}deg, ${stops})`)
+        sizes.push('auto')
+        positions.push('initial')
+        repeats.push('repeat')
+        break
+      }
+      case 'image': {
+        images.push(`url(${fill.url})`)
+        sizes.push(fill.scaleMode === 'fill' ? 'cover' : fill.scaleMode === 'fit' ? 'contain' : 'auto')
+        positions.push('center')
+        repeats.push(fill.scaleMode === 'tile' ? 'repeat' : 'no-repeat')
+        break
+      }
+    }
+  }
+
+  const decls: string[] = []
+  decls.push(`background-image: ${images.join(', ')};`)
+  decls.push(`background-size: ${sizes.join(', ')};`)
+  decls.push(`background-position: ${positions.join(', ')};`)
+  decls.push(`background-repeat: ${repeats.join(', ')};`)
+  return decls
+}
+
+/**
  * Конвертирует ElementStyles в набор CSS-деклараций.
  * Возвращает массив строк вида "property: value;"
  */
@@ -47,6 +104,13 @@ function stylesToCSS(
   // Position
   if (positionMode && positionMode !== 'static') {
     decls.push(`position: ${positionMode};`)
+  }
+
+  // Fills (новая система) — приоритет над backgroundColor
+  const fills = migrateFills(styles)
+  const hasFills = fills && fills.some(f => f.visible)
+  if (hasFills) {
+    decls.push(...fillsToCSSDecls(fills!))
   }
 
   // Padding shorthand
@@ -74,6 +138,13 @@ function stylesToCSS(
     'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
     'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
   ])
+
+  // Если fills обработаны — пропускаем backgroundColor и backgroundImage
+  if (hasFills) {
+    handled.add('backgroundColor')
+    handled.add('backgroundImage')
+    handled.add('fills')
+  }
 
   for (const [key, value] of Object.entries(styles)) {
     if (value === undefined || value === null) continue
