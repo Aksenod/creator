@@ -64,6 +64,7 @@ type EditorState = {
   updateArtboard: (id: string, patch: ArtboardPatch) => void
   updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string }) => void
   toggleElementVisibility: (artboardId: string, elementId: string) => void
+  renameElements: (artboardId: string, renames: Array<{ id: string; name: string }>) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -679,6 +680,28 @@ export const useEditorStore = create<EditorState>()(
             selectedElementIds: state.selectedElementIds.filter(id => id !== elementId),
           } : {}),
         }
+      }),
+
+      renameElements: (artboardId, renames) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        if (!ab || !state.project || renames.length === 0) return state
+
+        const newElements = { ...ab.elements }
+        for (const { id, name } of renames) {
+          const el = newElements[id]
+          if (!el || el.type === 'body') continue
+          newElements[id] = { ...el, name, className: slugify(name) }
+        }
+
+        const newProject: Project = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: newElements },
+          },
+          updatedAt: Date.now(),
+        }
+        return pushHistory(state.history, state.historyIndex, state.project, newProject)
       }),
 
       duplicateElement: () => set((state) => {

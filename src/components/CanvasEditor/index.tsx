@@ -8,6 +8,7 @@ import { Topbar } from '../Canvas/PageEditor/Topbar'
 import { BREAKPOINTS, detectBreakpoint, type Breakpoint } from '../Canvas/PageEditor/BreakpointBar'
 import { GridEditOverlay } from '../GridEditOverlay'
 import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
+import { RenameLayersModal } from '../RenameLayersModal'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
 import type { CanvasPattern } from '../../types'
@@ -89,6 +90,7 @@ export function CanvasEditor() {
   const [viewportWidth, setViewportWidth] = useState<number>(() => detectBreakpoint())
   const [customWidth, setCustomWidth] = useState<string>('')
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
+  const [showRenameModal, setShowRenameModal] = useState(false)
   const [snapLines, setSnapLines] = useState<SnapLine[]>([])
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -316,6 +318,7 @@ export function CanvasEditor() {
           selIds.forEach(eid => toggleElementVisibility(abId, eid))
         }
       }
+      if (mod && e.code === 'KeyR') { e.preventDefault(); setShowRenameModal(true) }
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); setPanelsHidden(v => !v)
       }
@@ -538,6 +541,15 @@ export function CanvasEditor() {
       {/* Grid child span resize handles */}
       {!isPreview && activeArtboardId && (
         <GridChildResizeOverlay artboardId={activeArtboardId} />
+      )}
+
+      {/* Rename layers modal */}
+      {showRenameModal && activeArtboardId && (
+        <RenameLayersModal
+          artboardId={activeArtboardId}
+          elementIds={useEditorStore.getState().selectedElementIds}
+          onClose={() => setShowRenameModal(false)}
+        />
       )}
     </div>
   )

@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
 import { CONTAINER_TYPES } from '../../store/helpers'
 import type { Artboard } from '../../types'
-import { findParentId, isDescendantOf, collectDescendantIds } from '../../utils/treeUtils'
+import { findParentId, isDescendantOf, collectDescendantIds, getVisibleLayerIds } from '../../utils/treeUtils'
 
 // ─── Eye Icon ─────────────────────────────────────────────────────────────────
 
@@ -54,6 +54,11 @@ type LayerItemProps = {
   expandedLayers: Set<string>
   onToggleExpand: (id: string, altKey: boolean) => void
   dropIndicator: DropIndicator
+  renamingId: string | null
+  onStartRename: (id: string) => void
+  onFinishRename: (id: string, newName: string) => void
+  onCancelRename: () => void
+  onTabRename: (id: string, direction: 'next' | 'prev') => void
 }
 
 // ─── Drop line indicator ──────────────────────────────────────────────────────
@@ -74,15 +79,18 @@ function DropLine({ depth }: { depth: number }) {
 
 // ─── Layer item ───────────────────────────────────────────────────────────────
 
-function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIndicator }: LayerItemProps) {
+function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIndicator, renamingId, onStartRename, onFinishRename, onCancelRename, onTabRename }: LayerItemProps) {
   const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement, activeArtboardId, toggleElementVisibility } = useEditorStore()
   const el = artboard.elements[id]
   const [isHovered, setIsHovered] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [localName, setLocalName] = useState('')
+  const isRenaming = renamingId === id
+  const commitRef = useRef(false)
 
-  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id, disabled: el.type === 'body' })
+  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id, disabled: el?.type === 'body' || isRenaming })
   const { setNodeRef: setDropRef } = useDroppable({ id })
 
-  // Merge refs onto the row element (NOT the outer wrapper, so nested droppables don't overlap)
   const setRowRef = useCallback(
     (node: HTMLDivElement | null) => {
       setDragRef(node)
@@ -90,6 +98,17 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
     },
     [setDragRef, setDropRef],
   )
+
+  useEffect(() => {
+    if (isRenaming && el) {
+      setLocalName(el.name)
+      commitRef.current = false
+      setTimeout(() => {
+        inputRef.current?.focus()
+        inputRef.current?.select()
+      }, 0)
+    }
+  }, [isRenaming]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!el) return null
 
@@ -105,19 +124,29 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
 
   const showEyeIcon = isHidden || isHovered
 
+  const commitRename = () => {
+    if (commitRef.current) return
+    commitRef.current = true
+    const trimmed = localName.trim()
+    if (trimmed && trimmed !== el.name) {
+      onFinishRename(id, trimmed)
+    } else {
+      onCancelRename()
+    }
+  }
+
   return (
     <div style={{ opacity: isDragging ? 0.35 : 1 }} data-layer-id={id}>
-      {/* Синяя линия ВЫШЕ */}
       {isDropAbove && <DropLine depth={depth} />}
 
-      {/* Строка слоя — единственная droppable-зона */}
       <div
         ref={setRowRef}
-        {...listeners}
-        {...attributes}
+        {...(isRenaming ? {} : listeners)}
+        {...(isRenaming ? {} : attributes)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={(e) => {
+          if (isRenaming) return
           if (e.shiftKey) toggleSelectElement(id)
           else selectElement(id)
         }}
@@ -136,7 +165,6 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           opacity: isHidden ? 0.4 : 1,
         }}
       >
-        {/* Шеврон */}
         <span
           onClick={(e) => {
             e.stopPropagation()
@@ -158,8 +186,52 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         </span>
 
         <span style={{ marginRight: 6, opacity: 0.4, fontSize: 10 }}>{getIcon(el.type)}</span>
-        {el.name}
-        {el.className && (
+
+        {isRenaming ? (
+          <input
+            ref={inputRef}
+            value={localName}
+            onChange={(e) => setLocalName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                commitRename()
+              } else if (e.key === 'Escape') {
+                e.preventDefault()
+                commitRef.current = true
+                onCancelRename()
+              } else if (e.key === 'Tab') {
+                e.preventDefault()
+                const trimmed = localName.trim()
+                if (trimmed && trimmed !== el.name) {
+                  onFinishRename(id, trimmed)
+                }
+                onTabRename(id, e.shiftKey ? 'prev' : 'next')
+              }
+            }}
+            onBlur={commitRename}
+            style={{
+              flex: 1, minWidth: 0,
+              fontSize: 12, fontFamily: 'inherit',
+              border: '1px solid #0066ff',
+              borderRadius: 2, padding: '0 3px',
+              outline: 'none', background: '#fff',
+              color: '#333',
+            }}
+          />
+        ) : (
+          <span
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              if (el.type !== 'body') onStartRename(id)
+            }}
+            style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
+            {el.name}
+          </span>
+        )}
+
+        {!isRenaming && el.className && (
           <span style={{ fontSize: 10, color: '#bbb', marginLeft: 4, fontFamily: 'monospace' }}>
             .{el.className}
           </span>
@@ -190,10 +262,8 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         )}
       </div>
 
-      {/* Синяя линия НИЖЕ */}
       {isDropBelow && <DropLine depth={depth} />}
 
-      {/* Дочерние слои — вне droppable-зоны родителя */}
       {hasChildren && isExpanded &&
         el.children.map((childId) => (
           <LayerItem
@@ -204,6 +274,11 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             expandedLayers={expandedLayers}
             onToggleExpand={onToggleExpand}
             dropIndicator={dropIndicator}
+            renamingId={renamingId}
+            onStartRename={onStartRename}
+            onFinishRename={onFinishRename}
+            onCancelRename={onCancelRename}
+            onTabRename={onTabRename}
           />
         ))
       }
@@ -244,11 +319,12 @@ function getIcon(type: string) {
 
 export function Layers({ artboard }: Props) {
   const {
-    activeArtboardId, moveElement, selectedElementId,
+    activeArtboardId, moveElement, selectedElementId, updateElement,
     expandedLayers, expandLayers, collapseLayers, collapseAllLayers,
   } = useEditorStore()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropIndicator, setDropIndicator] = useState<DropIndicator>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
   const mouseYRef = useRef(0)
   const expandTimerRef = useRef<{ timer: ReturnType<typeof setTimeout>; targetId: string } | null>(null)
   const layersScrollRef = useRef<HTMLDivElement>(null)
@@ -404,6 +480,34 @@ export function Layers({ artboard }: Props) {
     clearExpandTimer()
   }
 
+  const handleStartRename = (id: string) => {
+    setRenamingId(id)
+  }
+
+  const handleFinishRename = (id: string, newName: string) => {
+    if (activeArtboardId) {
+      updateElement(activeArtboardId, id, { name: newName })
+    }
+    setRenamingId(null)
+  }
+
+  const handleCancelRename = () => {
+    setRenamingId(null)
+  }
+
+  const handleTabRename = (id: string, direction: 'next' | 'prev') => {
+    const visible = getVisibleLayerIds(artboard, expandedLayers)
+    const filtered = visible.filter(vid => artboard.elements[vid]?.type !== 'body')
+    const idx = filtered.indexOf(id)
+    if (idx === -1) { setRenamingId(null); return }
+    const nextIdx = direction === 'next' ? idx + 1 : idx - 1
+    if (nextIdx >= 0 && nextIdx < filtered.length) {
+      setRenamingId(filtered[nextIdx])
+    } else {
+      setRenamingId(null)
+    }
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{
@@ -451,6 +555,11 @@ export function Layers({ artboard }: Props) {
                 expandedLayers={expandedLayers}
                 onToggleExpand={toggleExpand}
                 dropIndicator={dropIndicator}
+                renamingId={renamingId}
+                onStartRename={handleStartRename}
+                onFinishRename={handleFinishRename}
+                onCancelRename={handleCancelRename}
+                onTabRename={handleTabRename}
               />
             ))}
             <DragOverlay>

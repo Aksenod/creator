@@ -47,3 +47,23 @@ export const getSiblingInfo = (
   }
   return null
 }
+
+// Плоский список видимых слоёв в порядке дерева (для Tab-навигации при inline rename)
+export const getVisibleLayerIds = (
+  artboard: Artboard,
+  expandedLayers: Set<string>,
+): string[] => {
+  const result: string[] = []
+  const walk = (ids: string[]) => {
+    for (const id of ids) {
+      const el = artboard.elements[id]
+      if (!el) continue
+      result.push(id)
+      if (el.children.length > 0 && expandedLayers.has(id)) {
+        walk(el.children)
+      }
+    }
+  }
+  walk(artboard.rootChildren)
+  return result
+}
