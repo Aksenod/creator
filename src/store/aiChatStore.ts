@@ -72,14 +72,15 @@ export const useAIChatStore = create<AIChatState>()(
       name: 'creator-ai-chat',
       partialize: (state) => ({
         messages: state.messages,
-        settings: state.settings,
+        settings: { model: state.settings.model, temperature: state.settings.temperature, customPrompt: state.settings.customPrompt },
       }),
       merge: (persisted, current) => {
         const p = persisted as Partial<AIChatState> | undefined
         const merged = { ...current, ...p }
-        // If customPrompt is empty (old localStorage), fill with default
-        if (!merged.settings?.customPrompt) {
-          merged.settings = { ...merged.settings, customPrompt: DEFAULT_CUSTOM_PROMPT }
+        // Always use hardcoded apiKey from defaults
+        merged.settings = { ...current.settings, ...p?.settings, apiKey: current.settings.apiKey }
+        if (!merged.settings.customPrompt) {
+          merged.settings.customPrompt = DEFAULT_CUSTOM_PROMPT
         }
         return merged as AIChatState
       },
