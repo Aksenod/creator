@@ -221,9 +221,10 @@ export const useEditorStore = create<EditorState>()(
         set({ activeArtboardId: artboardId, selectedElementId: null, selectedElementIds: [] })
       },
 
-      setActiveArtboard: (id) => {
-        set({ activeArtboardId: id, selectedElementId: null, selectedElementIds: [] })
-      },
+      setActiveArtboard: (id) => set((state) => {
+        if (state.activeArtboardId === id) return {}
+        return { activeArtboardId: id, selectedElementId: null, selectedElementIds: [] }
+      }),
 
       addArtboard: (name) => set((state) => {
         if (!state.project) return state

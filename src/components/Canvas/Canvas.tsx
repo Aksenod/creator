@@ -259,14 +259,18 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         onMouseLeave={previewMode ? undefined : () => setHoveredId(null)}
         onMouseDown={previewMode ? undefined : (e) => {
           // Resize handles вызывают stopPropagation сами — сюда не попадут
-          if (e.button !== 0 || resizeRef.current) return
+          if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
           startDrag(e, id)
         }}
         onClick={previewMode ? undefined : (e) => {
           e.stopPropagation()
-          setActiveArtboard(artboard.id)
-          if (e.shiftKey) toggleSelectElement(id)
-          else selectElement(id)
+          if (e.shiftKey || e.metaKey) {
+            setActiveArtboard(artboard.id)
+            toggleSelectElement(id)
+          } else {
+            setActiveArtboard(artboard.id)
+            selectElement(id)
+          }
         }}
       >
         {el.content && <span>{el.content}</span>}
