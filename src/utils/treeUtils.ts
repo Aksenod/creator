@@ -67,3 +67,16 @@ export const getVisibleLayerIds = (
   walk(artboard.rootChildren)
   return result
 }
+
+// Проверить что все элементы имеют одного родителя (один уровень вложенности)
+// Возвращает { parentId, valid } где valid = true если все элементы одного уровня
+// parentId = null означает что все элементы корневые
+export const getCommonParentId = (
+  ab: Artboard,
+  elementIds: string[],
+): { parentId: string | null; valid: boolean } => {
+  if (elementIds.length === 0) return { parentId: null, valid: false }
+  const firstParent = findParentId(ab, elementIds[0])
+  const allSameParent = elementIds.every(id => findParentId(ab, id) === firstParent)
+  return { parentId: firstParent, valid: allSameParent }
+}

@@ -35,7 +35,8 @@ export function useCanvasTransform(
 
     if (worldRef.current) {
       worldRef.current.style.transform =
-        `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
+        `translate(${offsetX / scale}px, ${offsetY / scale}px)`
+      worldRef.current.style.zoom = `${scale}`
     }
 
     if (containerRef.current) {

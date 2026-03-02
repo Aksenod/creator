@@ -182,6 +182,21 @@ export function Properties() {
                     />
                   </div>
                 </PropertyRow>
+                {(element.type === 'text' || element.type === 'button' || element.type === 'input') && (
+                  <PropertyRow label="Контент">
+                    <textarea
+                      value={element.content ?? ''}
+                      onChange={(e) => updateField({ content: e.target.value })}
+                      placeholder={element.type === 'text' ? 'Введите текст' : element.type === 'button' ? 'Текст кнопки' : 'Placeholder'}
+                      rows={3}
+                      style={{
+                        ...inputStyle,
+                        resize: 'vertical',
+                        fontFamily: element.type === 'text' ? 'inherit' : undefined,
+                      }}
+                    />
+                  </PropertyRow>
+                )}
               </div>
             </CollapsibleSection>
 

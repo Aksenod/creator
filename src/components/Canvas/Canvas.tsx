@@ -69,6 +69,9 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
   const resizeRef = useRef<ResizeState | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const editingInputRef = useRef<HTMLInputElement | null>(null)
+  const editingTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const { startDrag, dropIndicator, draggingId, cellDropTarget, cellDragParentId } = useCanvasDnD(previewMode ? null : artboard)
 
@@ -112,6 +115,19 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       window.removeEventListener('mouseup', onMouseUp)
     }
   }, [previewMode, scale, cameraRef, activeArtboardId, updateElement])
+
+  // Авто-фокус на input/textarea при начале редактирования
+  useEffect(() => {
+    if (editingId) {
+      if (editingInputRef.current) {
+        editingInputRef.current.focus()
+        editingInputRef.current.select()
+      } else if (editingTextareaRef.current) {
+        editingTextareaRef.current.focus()
+        editingTextareaRef.current.select()
+      }
+    }
+  }, [editingId])
 
   const startResize = (e: React.MouseEvent, id: string, handle: HandleDir) => {
     e.stopPropagation()
@@ -294,18 +310,39 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
     // Image с src → рендерим <img> внутри wrapper <div>
     if (el.type === 'image' && el.src) {
+      const heightIsAuto = !s.height || s.height === 'auto'
+      const hasNaturalDims = !!(el.naturalWidth && el.naturalHeight)
+
+      // Wrapper нуждается в position:relative чтобы img (absolute) заполнил его
+      const imgWrapperStyle: React.CSSProperties = {
+        ...style,
+        position: needsRelative ? 'relative' : cssPosition,
+        overflow: style.overflow ?? 'hidden',
+      }
+      // Если position static/relative — гарантируем relative для img inset:0
+      if (imgWrapperStyle.position === 'static') {
+        imgWrapperStyle.position = 'relative'
+      }
+
+      // Режим auto-ratio: height auto + известны натуральные размеры
+      if (heightIsAuto && hasNaturalDims) {
+        imgWrapperStyle.aspectRatio = `${el.naturalWidth} / ${el.naturalHeight}`
+      }
+
       return (
         <div
           key={id}
           data-element-id={id}
-          style={style}
+          style={imgWrapperStyle}
           {...wrapperHandlers}
         >
           <img
             src={el.src}
             alt={el.alt || ''}
+            draggable={false}
             style={{
-              display: 'block',
+              position: 'absolute',
+              inset: 0,
               width: '100%',
               height: '100%',
               objectFit: s.objectFit ?? 'cover',
@@ -323,13 +360,114 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         key={id}
         data-element-id={id}
         style={style}
-        {...wrapperHandlers}
+        onMouseEnter={previewMode ? undefined : (e) => { e.stopPropagation(); setHoveredId(id) }}
+        onMouseLeave={previewMode ? undefined : () => setHoveredId(null)}
+        onMouseDown={previewMode ? undefined : (e) => {
+          // Resize handles вызывают stopPropagation сами — сюда не попадут
+          if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
+          startDrag(e, id)
+        }}
+        onClick={previewMode ? undefined : (e) => {
+          e.stopPropagation()
+          if (e.shiftKey || e.metaKey) {
+            setActiveArtboard(artboard.id)
+            toggleSelectElement(id)
+          } else {
+            setActiveArtboard(artboard.id)
+            selectElement(id)
+          }
+        }}
+        onDoubleClick={previewMode || editingId !== null ? undefined : (e) => {
+          e.stopPropagation()
+          if (el.type === 'text' || el.type === 'button' || el.type === 'input') {
+            setEditingId(id)
+          }
+        }}
       >
-        {el.content && <span>{el.content}</span>}
+        {editingId === id ? (
+          el.type === 'text' ? (
+            <textarea
+              ref={editingTextareaRef}
+              value={el.content ?? ''}
+              onChange={(e) => updateElement(artboard.id, id, { content: e.target.value })}
+              onBlur={() => setEditingId(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setEditingId(null)
+                }
+              }}
+              style={{
+                width: '100%',
+                minHeight: '1.2em',
+                border: '1px solid #0066ff',
+                borderRadius: 2,
+                padding: 2,
+                background: '#fff',
+                color: s.color,
+                fontSize: s.fontSize,
+                fontWeight: s.fontWeight,
+                fontFamily: s.fontFamily,
+                lineHeight: s.lineHeight,
+                resize: 'none',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          ) : (
+            <input
+              ref={editingInputRef}
+              type="text"
+              value={el.content ?? ''}
+              onChange={(e) => updateElement(artboard.id, id, { content: e.target.value })}
+              onBlur={() => setEditingId(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  setEditingId(null)
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setEditingId(null)
+                }
+              }}
+              style={{
+                width: '100%',
+                border: '1px solid #0066ff',
+                borderRadius: 2,
+                padding: '2px 4px',
+                background: '#fff',
+                color: s.color,
+                fontSize: s.fontSize,
+                fontWeight: s.fontWeight,
+                fontFamily: s.fontFamily,
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          )
+        ) : (
+          el.content && <span>{el.content}</span>
+        )}
         {el.children.map(renderElement)}
 
         {/* Resize handles — только для выбранного элемента, не в preview, не для body */}
-        {resizeHandles}
+        {isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
+          <div
+            key={h.id}
+            style={{
+              position: 'absolute',
+              width: 8,
+              height: 8,
+              background: '#fff',
+              border: '1.5px solid #0066ff',
+              borderRadius: 1,
+              zIndex: 10,
+              cursor: HANDLE_CURSORS[h.id],
+              ...h.style,
+            }}
+            onMouseDown={(e) => startResize(e, id, h.id)}
+          />
+        ))}
       </div>
     )
   }
