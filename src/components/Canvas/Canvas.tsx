@@ -58,6 +58,8 @@ type Props = {
 }
 
 export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isActive, onArtboardClick, displayWidth }: Props) {
+  const effectiveWidth = displayWidth ?? artboard.width
+
   const {
     selectElement, selectedElementId, selectedElementIds,
     toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
@@ -183,12 +185,12 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
     const style: React.CSSProperties = {
       position: needsRelative ? 'relative' : cssPosition,
-      width: resolveVpUnit(s.width, artboard.width, artboard.height) ?? 'auto',
-      height: resolveVpUnit(s.height, artboard.width, artboard.height) ?? 'auto',
-      minWidth: resolveVpUnit(s.minWidth, artboard.width, artboard.height),
-      maxWidth: resolveVpUnit(s.maxWidth, artboard.width, artboard.height),
-      minHeight: resolveVpUnit(s.minHeight, artboard.width, artboard.height) ?? 20,
-      maxHeight: resolveVpUnit(s.maxHeight, artboard.width, artboard.height),
+      width: resolveVpUnit(s.width, effectiveWidth, artboard.height) ?? 'auto',
+      height: resolveVpUnit(s.height, effectiveWidth, artboard.height) ?? 'auto',
+      minWidth: resolveVpUnit(s.minWidth, effectiveWidth, artboard.height),
+      maxWidth: resolveVpUnit(s.maxWidth, effectiveWidth, artboard.height),
+      minHeight: resolveVpUnit(s.minHeight, effectiveWidth, artboard.height) ?? 20,
+      maxHeight: resolveVpUnit(s.maxHeight, effectiveWidth, artboard.height),
       display: s.display ?? 'block',
       flexDirection: s.flexDirection,
       flexWrap: s.flexWrap,
@@ -302,7 +304,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     <div
       data-testid="artboard-frame"
       style={{
-        width: displayWidth ?? artboard.width,
+        width: effectiveWidth,
         minHeight: artboard.height,
         background: '#fff',
         flexShrink: 0,
