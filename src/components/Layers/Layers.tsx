@@ -168,16 +168,16 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         <span
           onClick={(e) => {
             e.stopPropagation()
-            if (hasChildren) onToggleExpand(id, e.altKey)
+            if (hasChildren && !isBody) onToggleExpand(id, e.altKey)
           }}
-          title={hasChildren ? (isExpanded ? 'Свернуть вложенные элементы (Alt+клик — рекурсивно все потомки)' : 'Развернуть вложенные элементы (Alt+клик — рекурсивно все потомки)') : undefined}
+          title={hasChildren && !isBody ? (isExpanded ? 'Свернуть вложенные элементы (Alt+клик — рекурсивно все потомки)' : 'Развернуть вложенные элементы (Alt+клик — рекурсивно все потомки)') : undefined}
           style={{
             width: 16, height: 16,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             marginRight: 2, flexShrink: 0,
             fontSize: 9,
-            color: hasChildren ? '#999' : 'transparent',
-            cursor: hasChildren ? 'pointer' : 'default',
+            color: hasChildren && !isBody ? '#999' : 'transparent',
+            cursor: hasChildren && !isBody ? 'pointer' : 'default',
             transform: hasChildren && isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
             transition: 'transform 0.15s',
           }}
@@ -240,6 +240,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         {/* Eye toggle — видимость слоя (всегда в DOM, чтобы не дёргался layout) */}
         {!isBody && (
           <span
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation()
               if (activeArtboardId) toggleElementVisibility(activeArtboardId, id)
@@ -320,7 +321,7 @@ function getIcon(type: string) {
 export function Layers({ artboard }: Props) {
   const {
     activeArtboardId, moveElement, selectedElementId, updateElement,
-    expandedLayers, expandLayers, collapseLayers, collapseAllLayers,
+    expandedLayers, expandLayers, collapseLayers,
   } = useEditorStore()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropIndicator, setDropIndicator] = useState<DropIndicator>(null)
@@ -359,7 +360,13 @@ export function Layers({ artboard }: Props) {
     }
   }
 
-  const collapseAll = () => collapseAllLayers()
+  const collapseAll = () => {
+    const bodyIds = Object.entries(artboard.elements)
+      .filter(([, el]) => el.type === 'body')
+      .map(([id]) => id)
+    const toCollapse = [...expandedLayers].filter(id => !bodyIds.includes(id))
+    collapseLayers(toCollapse)
+  }
 
   // Отслеживать Y курсора глобально для вычисления above/into/below
   useEffect(() => {
