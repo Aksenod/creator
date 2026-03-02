@@ -85,6 +85,10 @@ export type ElementStyles = {
   backgroundImage?: string
   backgroundClip?: 'border-box' | 'padding-box' | 'content-box' | 'text'
 
+  // Image
+  objectFit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
+  objectPosition?: string
+
   // Borders (individual sides)
   borderTopWidth?: number
   borderRightWidth?: number
@@ -113,6 +117,8 @@ export type CanvasElement = {
   breakpointStyles?: Partial<Record<import('../constants/breakpoints').BreakpointId, Partial<ElementStyles>>>
   children: string[] // id дочерних элементов
   content?: string   // для text/button
+  src?: string       // для image (URL изображения)
+  alt?: string       // для image (alt текст)
   hidden?: boolean   // скрыт ли элемент (eye toggle)
 }
 

@@ -293,7 +293,7 @@ export const useEditorStore = create<EditorState>()(
           div:     { width: '100%',  height: '100px', display: 'flex', backgroundColor: '#f9f9f9' },
           section: { width: '100%',  height: '200px', display: 'flex', backgroundColor: '#ffffff' },
           text:    { width: 'auto',  height: 'auto',  fontSize: 16,    color: '#1a1a1a' },
-          image:   { width: '200px', height: '150px', backgroundColor: '#e0e0e0' },
+          image:   { width: '200px', height: '150px', backgroundColor: '#e0e0e0', objectFit: 'cover', overflow: 'hidden' },
           button:  { width: 'auto',  height: 'auto',  backgroundColor: '#0066ff' },
           input:   { width: '200px', height: '40px',  backgroundColor: '#fff' },
           body:    { width: '100%',  display: 'block' },
@@ -310,6 +310,7 @@ export const useEditorStore = create<EditorState>()(
           styles: defaults[type],
           children: [],
           content: type === 'text' ? 'Текст' : type === 'button' ? 'Кнопка' : undefined,
+          ...(type === 'image' ? { src: '', alt: '' } : {}),
         }
 
         const updatedElements = { ...ab.elements, [id]: newElement }

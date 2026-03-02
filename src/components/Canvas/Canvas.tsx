@@ -254,50 +254,82 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       style.left   = s.left   !== undefined ? s.left   : el.pin?.left
     }
 
+    // Общие обработчики для wrapper
+    const wrapperHandlers = previewMode ? {} : {
+      onMouseEnter: (e: React.MouseEvent) => { e.stopPropagation(); setHoveredId(id) },
+      onMouseLeave: () => setHoveredId(null),
+      onMouseDown: (e: React.MouseEvent) => {
+        if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
+        startDrag(e, id)
+      },
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (e.shiftKey || e.metaKey) {
+          setActiveArtboard(artboard.id)
+          toggleSelectElement(id)
+        } else {
+          setActiveArtboard(artboard.id)
+          selectElement(id)
+        }
+      },
+    }
+
+    const resizeHandles = isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
+      <div
+        key={h.id}
+        style={{
+          position: 'absolute',
+          width: 8,
+          height: 8,
+          background: '#fff',
+          border: '1.5px solid #0066ff',
+          borderRadius: 1,
+          zIndex: 10,
+          cursor: HANDLE_CURSORS[h.id],
+          ...h.style,
+        }}
+        onMouseDown={(e) => startResize(e, id, h.id)}
+      />
+    ))
+
+    // Image с src → рендерим <img> внутри wrapper <div>
+    if (el.type === 'image' && el.src) {
+      return (
+        <div
+          key={id}
+          data-element-id={id}
+          style={style}
+          {...wrapperHandlers}
+        >
+          <img
+            src={el.src}
+            alt={el.alt || ''}
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: s.objectFit ?? 'cover',
+              objectPosition: s.objectPosition ?? 'center',
+              pointerEvents: 'none',
+            }}
+          />
+          {resizeHandles}
+        </div>
+      )
+    }
+
     return (
       <div
         key={id}
         data-element-id={id}
         style={style}
-        onMouseEnter={previewMode ? undefined : (e) => { e.stopPropagation(); setHoveredId(id) }}
-        onMouseLeave={previewMode ? undefined : () => setHoveredId(null)}
-        onMouseDown={previewMode ? undefined : (e) => {
-          // Resize handles вызывают stopPropagation сами — сюда не попадут
-          if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
-          startDrag(e, id)
-        }}
-        onClick={previewMode ? undefined : (e) => {
-          e.stopPropagation()
-          if (e.shiftKey || e.metaKey) {
-            setActiveArtboard(artboard.id)
-            toggleSelectElement(id)
-          } else {
-            setActiveArtboard(artboard.id)
-            selectElement(id)
-          }
-        }}
+        {...wrapperHandlers}
       >
         {el.content && <span>{el.content}</span>}
         {el.children.map(renderElement)}
 
         {/* Resize handles — только для выбранного элемента, не в preview, не для body */}
-        {isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
-          <div
-            key={h.id}
-            style={{
-              position: 'absolute',
-              width: 8,
-              height: 8,
-              background: '#fff',
-              border: '1.5px solid #0066ff',
-              borderRadius: 1,
-              zIndex: 10,
-              cursor: HANDLE_CURSORS[h.id],
-              ...h.style,
-            }}
-            onMouseDown={(e) => startResize(e, id, h.id)}
-          />
-        ))}
+        {resizeHandles}
       </div>
     )
   }

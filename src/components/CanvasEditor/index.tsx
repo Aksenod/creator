@@ -75,6 +75,60 @@ function computeSnap(
   return { x: finalX, y: finalY, lines }
 }
 
+// ─── Image drop/paste helpers ────────────────────────────────────────────────
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+function getImageDimensions(src: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => resolve({ width: 200, height: 150 })
+    img.src = src
+  })
+}
+
+function constrainDimensions(w: number, h: number, maxSize = 800): { width: number; height: number } {
+  if (w <= maxSize && h <= maxSize) return { width: w, height: h }
+  const ratio = Math.min(maxSize / w, maxSize / h)
+  return { width: Math.round(w * ratio), height: Math.round(h * ratio) }
+}
+
+async function addImageFromFile(file: File) {
+  console.log('[Image drop] file:', file.name, file.type)
+  const state = useEditorStore.getState()
+  let abId = state.activeArtboardId
+  // Если нет активного артборда — активируем первый
+  if (!abId && state.project) {
+    abId = state.project.artboardOrder[0] ?? null
+    if (abId) state.setActiveArtboard(abId)
+  }
+  if (!abId) { console.warn('[Image drop] no artboard'); return }
+  const src = await readFileAsDataURL(file)
+  const dims = await getImageDimensions(src)
+  const { width, height } = constrainDimensions(dims.width, dims.height)
+  console.log('[Image drop] dims:', width, 'x', height)
+  // Добавляем image через стандартный addElement, затем обновляем src и размеры
+  state.addElement(abId, 'image', state.selectedElementId)
+  const s2 = useEditorStore.getState()
+  const newId = s2.selectedElementId
+  if (newId && s2.activeArtboardId) {
+    s2.updateElement(s2.activeArtboardId, newId, {
+      src,
+      alt: '',
+      styles: { width: `${width}px`, height: `${height}px`, objectFit: 'cover', overflow: 'hidden' },
+    })
+    console.log('[Image drop] created element:', newId)
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function CanvasEditor() {
@@ -308,7 +362,8 @@ export function CanvasEditor() {
       if (mod && e.code === 'KeyZ' && !e.shiftKey) { e.preventDefault(); undo() }
       if (mod && e.code === 'KeyZ' && e.shiftKey) { e.preventDefault(); redo() }
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
-      if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
+      // Cmd+V — не перехватываем, пусть сработает paste event (обработчик ниже)
+      if (mod && e.key === 'v') return
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
       if (mod && e.shiftKey && e.code === 'KeyH') {
         e.preventDefault()
@@ -335,6 +390,59 @@ export function CanvasEditor() {
     selectElement, deleteElement, undo, redo, copyElement, pasteElement,
     duplicateElement, setActiveBreakpoint, toggleElementVisibility,
   ])
+
+  // Image drag-drop + paste
+  useEffect(() => {
+    const onDragOver = (e: DragEvent) => {
+      if (e.dataTransfer?.types?.includes('Files')) {
+        e.preventDefault()
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
+      }
+    }
+    const onDrop = (e: DragEvent) => {
+      const files = e.dataTransfer?.files
+      if (!files || files.length === 0) return
+      let hasImage = false
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          hasImage = true
+          addImageFromFile(file)
+        }
+      }
+      if (hasImage) e.preventDefault()
+    }
+    const onPaste = (e: ClipboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      e.preventDefault()
+
+      const items = e.clipboardData?.items
+      console.log('[paste] items:', items?.length, 'types:', Array.from(items ?? []).map(i => i.type))
+
+      if (items) {
+        for (const item of items) {
+          if (item.type.startsWith('image/')) {
+            console.log('[paste] found image:', item.type)
+            const file = item.getAsFile()
+            if (file) addImageFromFile(file)
+            return
+          }
+        }
+      }
+
+      // Нет image в clipboard — fallback на внутренний paste элемента
+      console.log('[paste] no image, fallback to pasteElement')
+      useEditorStore.getState().pasteElement()
+    }
+    window.addEventListener('dragover', onDragOver)
+    window.addEventListener('drop', onDrop)
+    window.addEventListener('paste', onPaste)
+    return () => {
+      window.removeEventListener('dragover', onDragOver)
+      window.removeEventListener('drop', onDrop)
+      window.removeEventListener('paste', onPaste)
+    }
+  }, [])
 
   if (!project) return null
 
