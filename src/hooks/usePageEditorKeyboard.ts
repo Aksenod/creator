@@ -34,7 +34,7 @@ export function usePageEditorKeyboard({
   onClearCustomWidth,
   onTogglePanels,
 }: Options) {
-  const { deleteElement, undo, redo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint } = useEditorStore()
+  const { deleteElement, undo, redo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint, toggleElementVisibility } = useEditorStore()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -71,6 +71,15 @@ export function usePageEditorKeyboard({
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
+      if (mod && e.shiftKey && e.code === 'KeyH') {
+        e.preventDefault()
+        const s = useEditorStore.getState()
+        const selIds = s.selectedElementIds.length > 0 ? s.selectedElementIds : (s.selectedElementId ? [s.selectedElementId] : [])
+        const abId = s.activeArtboardId
+        if (abId && selIds.length > 0) {
+          selIds.forEach(eid => toggleElementVisibility(abId, eid))
+        }
+      }
       // Cmd+Ё / Ctrl+\ — скрыть/показать боковые панели как в Figma
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); onTogglePanels()
@@ -82,6 +91,6 @@ export function usePageEditorKeyboard({
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId, BREAKPOINTS,
     onExitArtboard, onClosePreview, onCloseSettings, onSetViewportWidth, onClearCustomWidth,
     deleteElement, undo, redo, copyElement, pasteElement, duplicateElement, setActiveBreakpoint,
-    onTogglePanels,
+    onTogglePanels, toggleElementVisibility,
   ])
 }

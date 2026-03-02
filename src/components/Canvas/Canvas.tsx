@@ -146,6 +146,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
   const renderElement = (id: string): React.ReactNode => {
     const el = artboard.elements[id]
     if (!el) return null
+    if (el.hidden) return null
 
     const isSelected = selectedElementIds.includes(id) || selectedElementId === id
     const isDragging = draggingId === id

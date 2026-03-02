@@ -108,6 +108,7 @@ export type CanvasElement = {
   breakpointStyles?: Partial<Record<import('../constants/breakpoints').BreakpointId, Partial<ElementStyles>>>
   children: string[] // id дочерних элементов
   content?: string   // для text/button
+  hidden?: boolean   // скрыт ли элемент (eye toggle)
 }
 
 // Артборд (страница)

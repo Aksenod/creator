@@ -81,7 +81,7 @@ export function CanvasEditor() {
     closeProject, addArtboard, setActiveArtboard, selectElement,
     selectedElementId, activeBreakpointId, setActiveBreakpoint,
     deleteElement, undo, redo, copyElement, pasteElement, duplicateElement,
-    gridEditElementId,
+    gridEditElementId, toggleElementVisibility,
   } = useEditorStore()
 
   const [isPreview, setIsPreview] = useState(false)
@@ -307,6 +307,15 @@ export function CanvasEditor() {
       if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
       if (mod && e.key === 'v') { e.preventDefault(); pasteElement() }
       if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
+      if (mod && e.shiftKey && e.code === 'KeyH') {
+        e.preventDefault()
+        const s = useEditorStore.getState()
+        const selIds = s.selectedElementIds.length > 0 ? s.selectedElementIds : (s.selectedElementId ? [s.selectedElementId] : [])
+        const abId = s.activeArtboardId
+        if (abId && selIds.length > 0) {
+          selIds.forEach(eid => toggleElementVisibility(abId, eid))
+        }
+      }
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); setPanelsHidden(v => !v)
       }
@@ -316,7 +325,7 @@ export function CanvasEditor() {
   }, [
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId,
     selectElement, deleteElement, undo, redo, copyElement, pasteElement,
-    duplicateElement, setActiveBreakpoint,
+    duplicateElement, setActiveBreakpoint, toggleElementVisibility,
   ])
 
   if (!project) return null

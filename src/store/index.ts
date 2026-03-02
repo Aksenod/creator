@@ -64,6 +64,7 @@ type EditorState = {
   setGridEditElementId: (id: string | null) => void
   updateArtboard: (id: string, patch: ArtboardPatch) => void
   updateCanvasSettings: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string }) => void
+  toggleElementVisibility: (artboardId: string, elementId: string) => void
 }
 
 const createDefaultArtboard = (name: string, x = 0, y = 0): Artboard => {
@@ -640,6 +641,35 @@ export const useEditorStore = create<EditorState>()(
           updatedAt: Date.now(),
         }
         return pushHistory(state.history, state.historyIndex, state.project, newProject)
+      }),
+
+      toggleElementVisibility: (artboardId, elementId) => set((state) => {
+        const ab = state.project?.artboards[artboardId]
+        const el = ab?.elements[elementId]
+        if (!ab || !el || !state.project) return state
+        if (el.type === 'body') return state
+
+        const newHidden = !el.hidden
+        const updated: CanvasElement = { ...el, hidden: newHidden }
+        const newElements = { ...ab.elements, [elementId]: updated }
+
+        const newProject: Project = {
+          ...state.project,
+          artboards: {
+            ...state.project.artboards,
+            [artboardId]: { ...ab, elements: newElements },
+          },
+          updatedAt: Date.now(),
+        }
+
+        const deselect = newHidden && (state.selectedElementIds.includes(elementId) || state.selectedElementId === elementId)
+        return {
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
+          ...(deselect ? {
+            selectedElementId: null,
+            selectedElementIds: state.selectedElementIds.filter(id => id !== elementId),
+          } : {}),
+        }
       }),
 
       duplicateElement: () => set((state) => {

@@ -18,6 +18,26 @@ import { CONTAINER_TYPES } from '../../store/helpers'
 import type { Artboard } from '../../types'
 import { findParentId, isDescendantOf, collectDescendantIds } from '../../utils/treeUtils'
 
+// ─── Eye Icon ─────────────────────────────────────────────────────────────────
+
+function EyeIcon({ hidden, size = 14 }: { hidden?: boolean; size?: number }) {
+  if (hidden) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 2L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M4.5 5.8C3.4 6.7 2.5 7.8 2.5 8C2.5 8.5 4.5 12 8 12C8.8 12 9.5 11.8 10.2 11.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M6.5 4.3C7 4.1 7.5 4 8 4C11.5 4 13.5 7.5 13.5 8C13.5 8.3 12.8 9.3 11.8 10.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    )
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 8C2.5 8 4.5 4 8 4C11.5 4 13.5 8 13.5 8C13.5 8 11.5 12 8 12C4.5 12 2.5 8 2.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
+    </svg>
+  )
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Props = { artboard: Artboard }
@@ -55,8 +75,9 @@ function DropLine({ depth }: { depth: number }) {
 // ─── Layer item ───────────────────────────────────────────────────────────────
 
 function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIndicator }: LayerItemProps) {
-  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement } = useEditorStore()
+  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement, activeArtboardId, toggleElementVisibility } = useEditorStore()
   const el = artboard.elements[id]
+  const [isHovered, setIsHovered] = useState(false)
 
   const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id, disabled: el.type === 'body' })
   const { setNodeRef: setDropRef } = useDroppable({ id })
@@ -75,10 +96,14 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
   const isSelected = selectedElementIds.includes(id) || selectedElementId === id
   const hasChildren = el.children.length > 0
   const isExpanded = expandedLayers.has(id)
+  const isHidden = !!el.hidden
+  const isBody = el.type === 'body'
 
   const isDropAbove = dropIndicator?.targetId === id && dropIndicator.position === 'above'
   const isDropBelow = dropIndicator?.targetId === id && dropIndicator.position === 'below'
   const isDropInto = dropIndicator?.targetId === id && dropIndicator.position === 'into'
+
+  const showEyeIcon = isHidden || isHovered
 
   return (
     <div style={{ opacity: isDragging ? 0.35 : 1 }} data-layer-id={id}>
@@ -90,6 +115,8 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         ref={setRowRef}
         {...listeners}
         {...attributes}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         onClick={(e) => {
           if (e.shiftKey) toggleSelectElement(id)
           else selectElement(id)
@@ -106,6 +133,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           userSelect: 'none',
           outline: isDropInto ? '1.5px solid rgba(0,102,255,0.35)' : 'none',
           outlineOffset: -1,
+          opacity: isHidden ? 0.4 : 1,
         }}
       >
         {/* Шеврон */}
@@ -134,6 +162,30 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         {el.className && (
           <span style={{ fontSize: 10, color: '#bbb', marginLeft: 4, fontFamily: 'monospace' }}>
             .{el.className}
+          </span>
+        )}
+
+        {/* Eye toggle — видимость слоя (всегда в DOM, чтобы не дёргался layout) */}
+        {!isBody && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation()
+              if (activeArtboardId) toggleElementVisibility(activeArtboardId, id)
+            }}
+            title={isHidden ? 'Показать элемент' : 'Скрыть элемент'}
+            style={{
+              marginLeft: 'auto',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 20, height: 20,
+              flexShrink: 0,
+              cursor: 'pointer',
+              color: isHidden ? '#999' : '#aaa',
+              borderRadius: 3,
+              opacity: showEyeIcon ? 1 : 0,
+              transition: 'opacity 0.1s',
+            }}
+          >
+            <EyeIcon hidden={isHidden} size={14} />
           </span>
         )}
       </div>
