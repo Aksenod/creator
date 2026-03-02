@@ -40,12 +40,11 @@ const labelStyle: React.CSSProperties = {
 }
 
 export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
-  const [apiKey, setApiKey] = useState(settings.apiKey)
   const [model, setModel] = useState(settings.model)
   const [temperature, setTemperature] = useState(settings.temperature)
 
   const handleSave = () => {
-    onSave({ apiKey, model, temperature })
+    onSave({ model, temperature })
     onClose()
   }
 
@@ -79,17 +78,6 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
       >
         <div style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>
           AI Chat Settings
-        </div>
-
-        <div>
-          <label style={labelStyle}>API Key (OpenRouter)</label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-or-..."
-            style={inputStyle}
-          />
         </div>
 
         <div>
