@@ -23,7 +23,6 @@ type EditorState = {
   history: Project[]
   historyIndex: number
   future: Project[]
-  clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null
   gridEditElementId: string | null
   expandedLayers: Set<string>
 
@@ -98,7 +97,7 @@ function syncProjectToAll(allProjects: Project[], project: Project): Project[] {
 
 export const useEditorStore = create<EditorState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       allProjects: [],
       project: null,
       activeProjectId: null,
@@ -109,7 +108,6 @@ export const useEditorStore = create<EditorState>()(
       history: [],
       historyIndex: -1,
       future: [],
-      clipboard: null,
       gridEditElementId: null,
       expandedLayers: new Set<string>(),
 
@@ -529,38 +527,48 @@ export const useEditorStore = create<EditorState>()(
         }
       }),
 
-      copyElement: () => set((state) => {
+      copyElement: () => {
+        const state = get()
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
         const id = state.selectedElementId
-        if (!ab || !id || !ab.elements[id]) return state
+        if (!ab || !id || !ab.elements[id]) return
 
         const descendants: Record<string, CanvasElement> = {}
         collectDescendantIds(ab.elements, id).forEach(eid => {
           descendants[eid] = ab.elements[eid]
         })
 
-        return { clipboard: { element: ab.elements[id], descendants } }
-      }),
+        try {
+          localStorage.setItem('creator-clipboard', JSON.stringify({ element: ab.elements[id], descendants }))
+        } catch { /* quota exceeded */ }
+      },
 
       pasteElement: () => set((state) => {
         const ab = state.activeArtboardId ? state.project?.artboards[state.activeArtboardId] : null
-        if (!ab || !state.clipboard || !state.project) return state
+        if (!ab || !state.project) return state
+
+        let clipboard: { element: CanvasElement; descendants: Record<string, CanvasElement> } | null = null
+        try {
+          const raw = localStorage.getItem('creator-clipboard')
+          if (raw) clipboard = JSON.parse(raw)
+        } catch { return state }
+        if (!clipboard) return state
 
         const idMap: Record<string, string> = {}
-        Object.keys(state.clipboard.descendants).forEach(oldId => { idMap[oldId] = generateId() })
+        Object.keys(clipboard.descendants).forEach(oldId => { idMap[oldId] = generateId() })
 
         const newElements: Record<string, CanvasElement> = {}
-        Object.entries(state.clipboard.descendants).forEach(([oldId, el]) => {
+        Object.entries(clipboard.descendants).forEach(([oldId, el]) => {
           const newId = idMap[oldId]
           newElements[newId] = {
             ...el,
             id: newId,
-            name: el.id === state.clipboard!.element.id ? el.name + ' (copy)' : el.name,
+            name: el.id === clipboard!.element.id ? el.name + ' (copy)' : el.name,
             children: el.children.map(c => idMap[c] ?? c),
           }
         })
 
-        const newRootId = idMap[state.clipboard.element.id]
+        const newRootId = idMap[clipboard.element.id]
         const mergedElements = { ...ab.elements, ...newElements }
 
         const selectedEl = state.selectedElementId ? ab.elements[state.selectedElementId] : null
