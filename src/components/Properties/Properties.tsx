@@ -157,7 +157,6 @@ export function Properties() {
             canvasPattern={project?.canvasPattern ?? 'dots'}
             canvasPatternSize={project?.canvasPatternSize ?? 20}
             canvasPatternColor={project?.canvasPatternColor}
-            canvasPatternGap={project?.canvasPatternGap ?? 0}
             onUpdate={updateCanvasSettings}
           />
         ) : (
