@@ -253,7 +253,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
   return (
     <>
       {/* Direction */}
-      <PropertyRow label="Direction">
+      <PropertyRow label="Direction" onReset={() => onUpdate({ flexDirection: undefined })}>
         <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
           {dirOptions.map(opt => {
             const active = dir === opt.value
@@ -273,7 +273,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       {/* Wrap */}
-      <PropertyRow label="Wrap">
+      <PropertyRow label="Wrap" onReset={() => onUpdate({ flexWrap: undefined })}>
         <SegmentedControl
           value={wrap}
           options={[
@@ -286,7 +286,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       {/* Align */}
-      <PropertyRow label="Align">
+      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })}>
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -311,7 +311,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
         </div>
       </PropertyRow>
 
-      <PropertyRow label="Gap">
+      <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined })}>
         <div title="Gap — space between child elements inside flex container" style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
           <input
             type="range" min={0} max={120} value={gap}
@@ -429,7 +429,7 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
   }
 
   return (
-    <PropertyRow label="Gap">
+    <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined, columnGap: undefined, rowGap: undefined })}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         {locked ? (
           <>
@@ -524,7 +524,7 @@ function GridControls({ styles, onUpdate, elementId }: {
       <GridGapRow styles={styles} onUpdate={onUpdate} />
 
       {/* Auto-flow direction */}
-      <PropertyRow label="Direction">
+      <PropertyRow label="Direction" onReset={() => onUpdate({ gridAutoFlow: undefined })}>
         <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
           {[{ value: 'row', label: '→ Row', tooltip: 'By rows → items fill rows left to right, then wrap to next row' }, { value: 'column', label: '↓ Column', tooltip: 'By columns ↓ items fill columns top to bottom, then move to next column' }].map(opt => {
             const active = autoFlow === opt.value
@@ -548,7 +548,7 @@ function GridControls({ styles, onUpdate, elementId }: {
       </PropertyRow>
 
       {/* Align */}
-      <PropertyRow label="Align">
+      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })}>
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -596,7 +596,7 @@ export function LayoutSection({ styles, onUpdate, elementId }: Props & { element
     <CollapsibleSection label="Layout" tooltip="Layout — how element organizes children: Block, Flex (row/column), Grid (2D). Defines the layout structure" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {/* Display */}
-        <PropertyRow label="Display">
+        <PropertyRow label="Display" onReset={() => onUpdate({ display: undefined })}>
           <SegmentedControl
             value={display}
             options={[

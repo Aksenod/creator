@@ -1,11 +1,16 @@
 import { useState } from 'react'
+import { useAltKey } from './useAltKey'
 
-export function PropertyRow({ label, children, labelWidth = 52 }: {
+export function PropertyRow({ label, children, labelWidth = 52, onReset }: {
   label: string
   children: React.ReactNode
   labelWidth?: number
+  onReset?: () => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const altPressed = useAltKey(!!onReset)
+
+  const resetHint = onReset && altPressed && hovered
 
   return (
     <div
@@ -18,7 +23,24 @@ export function PropertyRow({ label, children, labelWidth = 52 }: {
         transition: 'background 0.1s',
       }}
     >
-      <span style={{ fontSize: 10, color: '#a3a3a3', width: labelWidth, flexShrink: 0 }}>{label}</span>
+      <span
+        title={onReset ? '⌥ Click to reset' : undefined}
+        onClick={onReset ? (e) => {
+          if (e.altKey) {
+            e.preventDefault()
+            e.stopPropagation()
+            onReset()
+          }
+        } : undefined}
+        style={{
+          fontSize: 10, color: resetHint ? '#ef4444' : '#a3a3a3', width: labelWidth, flexShrink: 0,
+          cursor: onReset ? 'default' : undefined,
+          userSelect: onReset ? 'none' : undefined,
+          transition: 'color 0.15s',
+        }}
+      >
+        {label}
+      </span>
       <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>{children}</div>
     </div>
   )

@@ -69,6 +69,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
                 allowAuto
                 testId="size-width"
                 onChange={(v) => onUpdate({ width: v || undefined })}
+                onReset={() => onUpdate({ width: undefined })}
               />
             </div>
             <div title="Height — element height. Auto = fit content" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
@@ -79,6 +80,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
                 allowAuto
                 testId="size-height"
                 onChange={(v) => onUpdate({ height: v || undefined })}
+                onReset={() => onUpdate({ height: undefined })}
               />
             </div>
           </div>
@@ -93,6 +95,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               value={styles.minWidth ?? ''}
               placeholder="Min W"
               onChange={(v) => onUpdate({ minWidth: v || undefined })}
+              onReset={() => onUpdate({ minWidth: undefined })}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Min height — element won't shrink below this">
@@ -102,6 +105,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               value={styles.minHeight ?? ''}
               placeholder="Min H"
               onChange={(v) => onUpdate({ minHeight: v || undefined })}
+              onReset={() => onUpdate({ minHeight: undefined })}
             />
           </div>
         </div>
@@ -116,6 +120,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               placeholder="Max W"
               allowNone
               onChange={(v) => onUpdate({ maxWidth: v || undefined })}
+              onReset={() => onUpdate({ maxWidth: undefined })}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Max height — element won't grow beyond this">
@@ -126,6 +131,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               placeholder="Max H"
               allowNone
               onChange={(v) => onUpdate({ maxHeight: v || undefined })}
+              onReset={() => onUpdate({ maxHeight: undefined })}
             />
           </div>
         </div>

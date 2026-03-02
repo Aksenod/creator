@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection } from './shared'
+import { useAltKey } from './shared/useAltKey'
 
 const PRESETS = [0, 10, 20, 40, 60, 100, 140, 220]
 
@@ -140,11 +141,13 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
   const [hover, setHover] = useState(false)
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
+  const altPressed = useAltKey(true)
 
   const scrubRef = useRef<{ startX: number; startVal: number } | null>(null)
   const didScrub = useRef(false)
 
   const hasValue = value !== undefined && value !== 0
+  const resetHint = altPressed && hover && hasValue
 
   const openPopover = useCallback(() => {
     if (!triggerRef.current) return
@@ -200,7 +203,8 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           height: 18,
           padding: '0 4px',
           border: `1px solid ${
-            open ? '#0a0a0a'
+            resetHint ? '#ef4444'
+            : open ? '#0a0a0a'
             : hover || hasValue ? (hasValue ? '#0a0a0a' : '#a3a3a3')
             : 'transparent'
           }`,
@@ -209,15 +213,15 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           textAlign: 'center',
           lineHeight: '16px',
           background: open ? '#f0f0f0' : hasValue ? '#f0f0f0' : 'transparent',
-          color: open || hasValue ? '#0a0a0a' : '#a3a3a3',
+          color: resetHint ? '#ef4444' : open || hasValue ? '#0a0a0a' : '#a3a3a3',
           cursor: 'ew-resize',
           userSelect: 'none',
-          transition: 'border-color 0.1s, background 0.1s',
+          transition: 'border-color 0.1s, background 0.1s, color 0.15s',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        title="Click to edit. Drag to scrub. Shift = 10x step"
+        title="Click to edit · Drag to scrub · Shift = 10×"
         data-spacing-trigger="true"
       >
         {hasValue ? `${value}px` : '–'}

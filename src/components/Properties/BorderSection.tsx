@@ -14,7 +14,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Radius */}
-        <PropertyRow label="Radius" labelWidth={44}>
+        <PropertyRow label="Radius" labelWidth={44} onReset={() => onUpdate({ borderRadius: undefined })}>
           <div title="Corner radius — higher value = rounder corners. 0 = sharp, 50+ = pill/circle" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <input
               type="range"
@@ -37,7 +37,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
           <span style={{ fontSize: 10, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Border</span>
 
           {/* Style */}
-          <PropertyRow label="Style" labelWidth={44}>
+          <PropertyRow label="Style" labelWidth={44} onReset={() => onUpdate({ borderStyle: undefined })}>
             <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
               {([
                 { value: 'none', label: '×', tooltip: 'No border' },
@@ -63,7 +63,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
           </PropertyRow>
 
           {/* Width */}
-          <PropertyRow label="Width" labelWidth={44}>
+          <PropertyRow label="Width" labelWidth={44} onReset={() => onUpdate({ borderWidth: undefined })}>
             <CompactInput
               value={styles.borderWidth ?? 0} min={0}
               onChange={e => onUpdate({ borderWidth: Number(e.target.value) })}
@@ -73,7 +73,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
           </PropertyRow>
 
           {/* Color */}
-          <PropertyRow label="Color" labelWidth={44}>
+          <PropertyRow label="Color" labelWidth={44} onReset={() => onUpdate({ borderColor: undefined })}>
             <ColorInput
               value={styles.borderColor}
               onChange={v => onUpdate({ borderColor: v })}

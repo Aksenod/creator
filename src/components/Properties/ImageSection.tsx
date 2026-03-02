@@ -90,7 +90,7 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
         </PropertyRow>
 
         {/* Object Fit */}
-        <PropertyRow label="Fit">
+        <PropertyRow label="Fit" onReset={() => onUpdateStyle({ objectFit: undefined })}>
           <SegmentedControl
             value={styles.objectFit ?? 'cover'}
             options={OBJECT_FIT_OPTIONS}
@@ -99,7 +99,7 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
         </PropertyRow>
 
         {/* Object Position */}
-        <PropertyRow label="Position">
+        <PropertyRow label="Position" onReset={() => onUpdateStyle({ objectPosition: undefined })}>
           <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
             <select
               value={POSITION_PRESETS.includes(styles.objectPosition ?? 'center') ? (styles.objectPosition ?? 'center') : '__custom'}

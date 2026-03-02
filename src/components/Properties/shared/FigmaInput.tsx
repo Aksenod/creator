@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import { useAltKey } from './useAltKey'
 
 // ─── CSS Unit utilities ──────────────────────────────────────────────────────
 
@@ -27,16 +28,20 @@ export function composeCssValue(num: string, unit: CssUnit | SpecialValue): stri
 
 // ─── FigmaInput ───────────────────────────────────────────────────────────────
 
-export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, testId }: {
+export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, onReset, testId }: {
   prefix: React.ReactNode
   value: string
   placeholder?: string
   allowAuto?: boolean
   allowNone?: boolean
   onChange: (v: string) => void
+  onReset?: () => void
   testId?: string
 }) {
   const [focused, setFocused] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const altPressed = useAltKey(!!onReset)
+  const resetHint = onReset && altPressed && hovered
   const parsed = parseCssValue(value)
   const isSpecial = parsed.unit === 'auto' || parsed.unit === 'none'
 
@@ -107,26 +112,35 @@ export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, o
   }, [parsed, isSpecial, onChange])
 
   return (
-    <div style={{
-      flex: 1, minWidth: 0,
-      display: 'flex', alignItems: 'center',
-      height: 30,
-      background: focused ? '#fff' : '#f0f0f0',
-      borderRadius: 6,
-      border: focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
-      padding: '0 3px 0 6px',
-      gap: 4,
-      boxSizing: 'border-box',
-      transition: 'background 0.1s, border-color 0.1s',
-    }}>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onReset ? (e) => {
+        if (e.altKey) { e.preventDefault(); e.stopPropagation(); onReset() }
+      } : undefined}
+      title={onReset ? '⌥ Click to reset' : undefined}
+      style={{
+        flex: 1, minWidth: 0,
+        display: 'flex', alignItems: 'center',
+        height: 30,
+        background: focused ? '#fff' : '#f0f0f0',
+        borderRadius: 6,
+        border: focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
+        padding: '0 3px 0 6px',
+        gap: 4,
+        boxSizing: 'border-box',
+        transition: 'background 0.1s, border-color 0.1s',
+      }}
+    >
       {/* Prefix — drag to scrub */}
       <span
         onMouseDown={handlePrefixMouseDown}
         style={{
-          fontSize: 11, color: '#737373', flexShrink: 0,
+          fontSize: 11, color: resetHint ? '#ef4444' : '#737373', flexShrink: 0,
           display: 'flex', alignItems: 'center',
           userSelect: 'none', fontWeight: 500,
           cursor: 'ew-resize',
+          transition: 'color 0.15s',
         }}
       >
         {prefix}

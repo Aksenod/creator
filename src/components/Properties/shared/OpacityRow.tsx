@@ -10,7 +10,7 @@ export function OpacityRow({ value, onChange }: Props) {
   const pct = Math.round((value ?? 1) * 100)
 
   return (
-    <PropertyRow label="Opacity">
+    <PropertyRow label="Opacity" onReset={() => onChange(1)}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         <input
           type="range"

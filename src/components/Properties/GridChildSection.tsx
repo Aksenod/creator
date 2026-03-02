@@ -22,7 +22,7 @@ function GridLineInput({ label, value, onChange }: {
   const { start, end, isSpan } = parseGridLine(value)
 
   return (
-    <PropertyRow label={label}>
+    <PropertyRow label={label} onReset={() => onChange(undefined)}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         <CompactInput
           value={start}
@@ -99,14 +99,14 @@ export function GridChildSection({ styles, onUpdate }: Props) {
         {mode === 'auto' ? (
           /* Span-only inputs */
           <>
-            <PropertyRow label="Column span">
+            <PropertyRow label="Column span" onReset={() => onUpdate({ gridColumn: undefined })}>
               <CompactInput
                 value={getSpanString(styles.gridColumn) || '1'} min={1}
                 onChange={(e) => onUpdate({ gridColumn: spanVal(e.target.value) })}
                 style={{ width: 60 }}
               />
             </PropertyRow>
-            <PropertyRow label="Row span">
+            <PropertyRow label="Row span" onReset={() => onUpdate({ gridRow: undefined })}>
               <CompactInput
                 value={getSpanString(styles.gridRow) || '1'} min={1}
                 onChange={(e) => onUpdate({ gridRow: spanVal(e.target.value) })}
@@ -123,7 +123,7 @@ export function GridChildSection({ styles, onUpdate }: Props) {
         )}
 
         {/* Align self / Justify self */}
-        <PropertyRow label="Align">
+        <PropertyRow label="Align" onReset={() => onUpdate({ alignSelf: undefined, justifySelf: undefined })}>
           <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 10, color: '#a3a3a3', flexShrink: 0 }}>Self</span>
