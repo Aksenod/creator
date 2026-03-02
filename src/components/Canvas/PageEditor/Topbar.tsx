@@ -19,6 +19,7 @@ type Props = {
   onBreakpointSelect: (bp: Breakpoint) => void
   onSetShowSettings: (show: boolean) => void
   onAddArtboard: () => void
+  onExportHTML?: () => void
 }
 
 export function Topbar({
@@ -38,6 +39,7 @@ export function Topbar({
   onBreakpointSelect,
   onSetShowSettings,
   onAddArtboard,
+  onExportHTML,
 }: Props) {
   const settingsRef = useRef<HTMLDivElement>(null)
   const detectedWidth = detectBreakpoint()
@@ -175,6 +177,18 @@ export function Topbar({
 
       {/* Правая секция */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+        {onExportHTML && (
+          <button
+            onClick={onExportHTML}
+            title="Экспортировать активный артборд как standalone HTML-файл с responsive @media"
+            style={{
+              padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
+              border: '1px solid #ddd', background: '#fff', color: '#333',
+            }}
+          >
+            ↓ HTML
+          </button>
+        )}
         <button
           onClick={onAddArtboard}
           title="Добавить артборд — новая страница или секция проекта на холсте"

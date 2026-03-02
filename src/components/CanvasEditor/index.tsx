@@ -10,6 +10,7 @@ import { GridEditOverlay } from '../GridEditOverlay'
 import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
+import { exportArtboardHTML, downloadHTML } from '../../utils/exportHTML'
 import type { CanvasPattern } from '../../types'
 
 // ─── Snap logic ─────────────────────────────────────────────────────────────
@@ -352,6 +353,10 @@ export function CanvasEditor() {
         onBreakpointSelect={handleBreakpointSelect}
         onSetShowSettings={setShowCanvasSettings}
         onAddArtboard={() => addArtboard('Artboard ' + (project.artboardOrder.length + 1))}
+        onExportHTML={activeArtboard ? () => {
+          const html = exportArtboardHTML(activeArtboard)
+          downloadHTML(html, `${activeArtboard.name}.html`)
+        } : undefined}
       />
 
       {/* Основная область */}
