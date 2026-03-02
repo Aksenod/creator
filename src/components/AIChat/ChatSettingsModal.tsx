@@ -6,8 +6,8 @@ const MODELS = [
   'anthropic/claude-haiku-4',
   'openai/gpt-4o',
   'openai/gpt-4o-mini',
-  'google/gemini-2.0-flash',
-  'google/gemini-2.5-pro-preview-03-25',
+  'google/gemini-2.0-flash-001',
+  'google/gemini-2.5-flash',
   'deepseek/deepseek-chat-v3-0324',
 ]
 
