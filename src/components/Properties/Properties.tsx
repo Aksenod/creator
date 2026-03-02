@@ -10,7 +10,7 @@ import { resolveStyles } from '../../utils/resolveStyles'
 import { LayoutSection } from './LayoutSection'
 import { SizeSection } from './SizeSection'
 import { TypographySection } from './TypographySection'
-import { BackgroundSection } from './BackgroundSection'
+import { FillSection } from './FillSection'
 import { BorderSection } from './BorderSection'
 import { PositionSection } from './PositionSection'
 import { SpacingSection } from './SpacingSection'
@@ -183,7 +183,7 @@ export function Properties() {
 
             <Divider />
 
-            <BackgroundSection styles={effectiveStyles} onUpdate={updateStyle} />
+            <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 
@@ -298,7 +298,7 @@ export function Properties() {
 
             <Divider />
 
-            <BackgroundSection styles={effectiveStyles} onUpdate={updateStyle} />
+            <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
 
             <Divider />
 

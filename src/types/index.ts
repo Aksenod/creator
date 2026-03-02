@@ -1,4 +1,6 @@
 export type { BreakpointId } from '../constants/breakpoints'
+import type { Fill, BlendMode } from './fills'
+export type { Fill, BlendMode } from './fills'
 
 export type CanvasPattern = 'none' | 'dots' | 'grid' | 'cross' | 'hearts'
 
@@ -52,6 +54,8 @@ export type ElementStyles = {
   justifySelf?: 'auto' | 'start' | 'end' | 'center' | 'stretch'
 
   backgroundColor?: string
+  fills?: Fill[]             // массив заливок (приоритет над backgroundColor)
+  blendMode?: BlendMode      // layer-level mix-blend-mode
   color?: string
   fontSize?: number
   fontWeight?: string

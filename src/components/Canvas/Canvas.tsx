@@ -4,6 +4,7 @@ import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
 import { getCSSPosition } from '../../utils/cssUtils'
+import { migrateFills, fillsToCSS } from '../../utils/fillUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
 import { getGridCellsById } from '../../utils/gridUtils'
 import type { Camera } from '../../hooks/useCanvasTransform'
@@ -207,7 +208,10 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       gridRow: s.gridRow,
       alignSelf: s.alignSelf,
       justifySelf: s.justifySelf,
-      backgroundColor: s.backgroundColor,
+      ...fillsToCSS(migrateFills(s), s.backgroundColor),
+      backgroundClip: s.backgroundClip,
+      WebkitBackgroundClip: s.backgroundClip,
+      mixBlendMode: s.blendMode as React.CSSProperties['mixBlendMode'],
       color: s.color,
       fontSize: s.fontSize,
       fontWeight: s.fontWeight,
