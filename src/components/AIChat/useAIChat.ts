@@ -6,6 +6,7 @@ import { buildSystemPrompt } from './systemPrompt'
 import type { ChatMessage, ToolCall } from './types'
 
 const MAX_TOOL_ITERATIONS = 10
+const MAX_API_MESSAGES = 40
 
 /**
  * Sanitize message history: remove orphaned tool results
@@ -73,6 +74,8 @@ export function useAIChat() {
       abortRef.current = abortController
 
       try {
+        let prevToolKey = ''
+
         for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
           // Add empty assistant message for streaming
           useAIChatStore.getState().addMessage({ role: 'assistant', content: '' })
@@ -133,6 +136,21 @@ export function useAIChat() {
             break
           }
 
+          // Loop detection: if same tools with same args as previous iteration, break
+          const toolKey = toolCalls
+            .map((tc) => `${tc.function.name}:${tc.function.arguments}`)
+            .sort()
+            .join('|')
+          if (toolKey === prevToolKey) {
+            console.warn('[AIChat] loop detected — same tool calls repeated, breaking')
+            useAIChatStore.getState().updateLastAssistant(
+              contentAcc || '(Repeated action detected — stopping to avoid loop)',
+              toolCalls,
+            )
+            break
+          }
+          prevToolKey = toolKey
+
           // Update last assistant with tool calls
           useAIChatStore.getState().updateLastAssistant(contentAcc, toolCalls)
 
@@ -152,10 +170,11 @@ export function useAIChat() {
             useAIChatStore.getState().addMessage(msg)
           }
 
-          // Rebuild apiMessages for next iteration
+          // Rebuild apiMessages for next iteration (limit history size)
+          const allMsgs = sanitizeMessages(useAIChatStore.getState().messages)
           apiMessages = [
             systemMsg,
-            ...sanitizeMessages(useAIChatStore.getState().messages),
+            ...allMsgs.slice(-MAX_API_MESSAGES),
           ]
         }
       } catch (err) {
