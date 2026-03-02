@@ -296,7 +296,11 @@ export function exportArtboardHTML(artboard: Artboard): string {
     const cls = cssClass(el)
 
     // Base (desktop) стили
-    const baseDecls = stylesToCSS(el.styles, el.positionMode)
+    // Body needs position:relative so absolute children position correctly
+    const effectivePosition = el.type === 'body' && el.positionMode === 'static'
+      ? 'relative'
+      : el.positionMode
+    const baseDecls = stylesToCSS(el.styles, effectivePosition)
     if (baseDecls.length > 0) {
       cssRules.push(`.${cls} { ${baseDecls.join(' ')} }`)
     }
