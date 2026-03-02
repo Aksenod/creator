@@ -209,6 +209,15 @@ export function Properties() {
               />
             )}
 
+            <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
+
+            {isGridChild && (
+              <GridChildSection styles={effectiveStyles} onUpdate={updateStyle} />
+            )}
+
+            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} elementId={selectedElementId} />
+            <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
+
             {element.type !== 'body' && (
               <PositionSection
                 positionMode={element.positionMode}
@@ -218,14 +227,6 @@ export function Properties() {
               />
             )}
 
-            <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
-
-            {isGridChild && (
-              <GridChildSection styles={effectiveStyles} onUpdate={updateStyle} />
-            )}
-
-            <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} elementId={selectedElementId} />
-            <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
             <OpacityRow value={effectiveStyles.opacity} onChange={v => updateStyle({ opacity: v })} />
             <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
             <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
