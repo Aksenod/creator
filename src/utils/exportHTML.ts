@@ -35,6 +35,7 @@ const STRING_PROPS = new Set<string>([
   'backgroundColor', 'color', 'fontWeight', 'fontFamily', 'textAlign',
   'textDecoration', 'textTransform', 'borderColor', 'borderStyle',
   'overflow', 'backgroundImage', 'backgroundClip',
+  'objectFit', 'objectPosition',
 ])
 
 /**
@@ -232,6 +233,7 @@ function tagForType(type: string): string {
     case 'section': return 'section'
     case 'button': return 'button'
     case 'text': return 'p'
+    case 'image': return 'img'
     default: return 'div'
   }
 }
@@ -340,6 +342,14 @@ export function exportArtboardHTML(artboard: Artboard): string {
 
     const tag = tagForType(el.type)
     const cls = cssClass(el)
+
+    // Image с src → self-closing <img>
+    if (el.type === 'image' && el.src) {
+      const srcAttr = ` src="${esc(el.src)}"`
+      const altAttr = ` alt="${esc(el.alt || '')}"`
+      return `${indent}<img class="${cls}"${srcAttr}${altAttr} />`
+    }
+
     const open = `${indent}<${tag} class="${cls}">`
 
     // Контент + дети

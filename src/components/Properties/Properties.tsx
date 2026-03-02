@@ -12,6 +12,7 @@ import { SizeSection } from './SizeSection'
 import { TypographySection } from './TypographySection'
 import { FillSection } from './FillSection'
 import { BorderSection } from './BorderSection'
+import { ImageSection } from './ImageSection'
 import { PositionSection } from './PositionSection'
 import { SpacingSection } from './SpacingSection'
 import { GridChildSection } from './GridChildSection'
@@ -237,6 +238,18 @@ export function Properties() {
             </CollapsibleSection>
 
             <Divider />
+
+            {element.type === 'image' && (
+              <>
+                <ImageSection
+                  element={element}
+                  styles={effectiveStyles}
+                  onUpdateField={updateField}
+                  onUpdateStyle={updateStyle}
+                />
+                <Divider />
+              </>
+            )}
 
             {element.type !== 'body' && (
               <>
