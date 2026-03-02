@@ -141,8 +141,8 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
 
-  // Scrubbing state
   const scrubRef = useRef<{ startX: number; startVal: number } | null>(null)
+  const didScrub = useRef(false)
 
   const hasValue = value !== undefined && value !== 0
 
@@ -160,36 +160,34 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
   }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.altKey) {
-      // Scrubbing mode — no popover
-      e.preventDefault()
-      const startX = e.clientX
-      const startVal = value ?? 0
-      scrubRef.current = { startX, startVal }
+    e.preventDefault()
+    const startX = e.clientX
+    const startVal = value ?? 0
+    scrubRef.current = { startX, startVal }
+    didScrub.current = false
 
-      const onMove = (me: MouseEvent) => {
-        if (!scrubRef.current) return
-        const delta = me.clientX - scrubRef.current.startX
-        const step = me.shiftKey ? 10 : 1
-        const newVal = Math.round((scrubRef.current.startVal + delta * step * 0.5))
-        onChange(newVal === 0 ? undefined : newVal)
-      }
-      const onUp = () => {
-        scrubRef.current = null
-        document.removeEventListener('mousemove', onMove)
-        document.removeEventListener('mouseup', onUp)
-        document.body.style.cursor = ''
-      }
-      document.addEventListener('mousemove', onMove)
-      document.addEventListener('mouseup', onUp)
+    const onMove = (me: MouseEvent) => {
+      if (!scrubRef.current) return
+      const delta = me.clientX - scrubRef.current.startX
+      if (!didScrub.current && Math.abs(delta) < 3) return
+      didScrub.current = true
       document.body.style.cursor = 'ew-resize'
+      const step = me.shiftKey ? 10 : 1
+      const newVal = Math.round(scrubRef.current.startVal + delta * step * 0.5)
+      onChange(newVal === 0 ? undefined : newVal)
     }
-  }, [value, onChange])
-
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (scrubRef.current) return // was scrubbing
-    if (!e.altKey) openPopover()
-  }, [openPopover])
+    const onUp = () => {
+      const wasScrub = didScrub.current
+      scrubRef.current = null
+      didScrub.current = false
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      if (!wasScrub) openPopover()
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [value, onChange, openPopover])
 
   return (
     <div ref={triggerRef} style={{ ...style, zIndex: 1 }}>
@@ -197,7 +195,6 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         onMouseDown={handleMouseDown}
-        onClick={handleClick}
         style={{
           minWidth: 28,
           height: 18,
@@ -213,14 +210,14 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
           lineHeight: '16px',
           background: open ? '#f0f0f0' : hasValue ? '#f0f0f0' : 'transparent',
           color: open || hasValue ? '#0a0a0a' : '#a3a3a3',
-          cursor: 'default',
+          cursor: 'ew-resize',
           userSelect: 'none',
           transition: 'border-color 0.1s, background 0.1s',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        title="Click to edit. Alt+drag to scrub. Shift = 10x step"
+        title="Click to edit. Drag to scrub. Shift = 10x step"
         data-spacing-trigger="true"
       >
         {hasValue ? `${value}px` : '–'}

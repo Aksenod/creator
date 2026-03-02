@@ -22,7 +22,7 @@ const PX_PROPS = new Set<string>([
   'borderWidth', 'borderRadius', 'borderTopWidth', 'borderRightWidth',
   'borderBottomWidth', 'borderLeftWidth', 'borderTopLeftRadius',
   'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius',
-  'top', 'right', 'bottom', 'left', 'zIndex', 'letterSpacing',
+  'zIndex', 'letterSpacing',
   'lineHeight',
 ])
 
@@ -36,6 +36,7 @@ const STRING_PROPS = new Set<string>([
   'textDecoration', 'textTransform', 'borderColor', 'borderStyle',
   'overflow', 'backgroundImage', 'backgroundClip',
   'objectFit', 'objectPosition',
+  'top', 'right', 'bottom', 'left',
 ])
 
 /**

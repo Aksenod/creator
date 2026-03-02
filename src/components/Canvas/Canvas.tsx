@@ -263,11 +263,14 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     }
 
     // Offsets для non-static positioning (только если не needsRelative)
+    // normalizeOffset: backward compat — legacy числовые значения → "Npx"
+    const normalizeOffset = (v: string | number | undefined) =>
+      typeof v === 'number' ? `${v}px` : v
     if (cssPosition !== 'static') {
-      style.top    = s.top    !== undefined ? s.top    : el.pin?.top
-      style.right  = s.right  !== undefined ? s.right  : el.pin?.right
-      style.bottom = s.bottom !== undefined ? s.bottom : el.pin?.bottom
-      style.left   = s.left   !== undefined ? s.left   : el.pin?.left
+      style.top    = normalizeOffset(s.top)    ?? el.pin?.top
+      style.right  = normalizeOffset(s.right)  ?? el.pin?.right
+      style.bottom = normalizeOffset(s.bottom) ?? el.pin?.bottom
+      style.left   = normalizeOffset(s.left)   ?? el.pin?.left
     }
 
     // Общие обработчики для wrapper
