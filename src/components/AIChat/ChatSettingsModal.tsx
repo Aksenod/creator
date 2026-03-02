@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import type { AISettings } from './types'
 
 const MODELS = [
-  'anthropic/claude-sonnet-4',
-  'anthropic/claude-haiku-4',
-  'openai/gpt-4o',
-  'openai/gpt-4o-mini',
-  'google/gemini-2.0-flash',
-  'google/gemini-2.5-pro-preview-03-25',
-  'deepseek/deepseek-chat-v3-0324',
+  'google/gemini-3.1-pro-preview',
+  'google/gemini-3-pro-preview',
+  'google/gemini-3-flash-preview',
+  'qwen/qwen3.5-397b-a17b',
+  'qwen/qwen3-coder-plus',
+  'qwen/qwen3.5-plus-02-15',
+  'qwen/qwen3-max-thinking',
+  'moonshotai/kimi-k2-thinking',
 ]
 
 type Props = {

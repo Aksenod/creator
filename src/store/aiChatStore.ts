@@ -33,7 +33,7 @@ export const useAIChatStore = create<AIChatState>()(
       error: null,
       settings: {
         apiKey: '',
-        model: 'anthropic/claude-sonnet-4',
+        model: 'google/gemini-3.1-pro-preview',
         temperature: 0.4,
         customPrompt: DEFAULT_CUSTOM_PROMPT,
       },
