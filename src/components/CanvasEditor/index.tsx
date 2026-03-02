@@ -80,7 +80,7 @@ function computeSnap(
 export function CanvasEditor() {
   const {
     activeProjectId, project, activeArtboardId,
-    closeProject, addArtboard, setActiveArtboard, selectElement,
+    closeProject, addArtboard, deleteArtboard, setActiveArtboard, selectElement,
     selectedElementId, activeBreakpointId, setActiveBreakpoint,
     deleteElement, undo, redo, copyElement, pasteElement, duplicateElement,
     gridEditElementId, toggleElementVisibility,
@@ -296,9 +296,11 @@ export function CanvasEditor() {
         }
       }
 
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && activeArtboardId) {
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        if (selectedElementId && activeArtboardId) {
           deleteElement(activeArtboardId, selectedElementId)
+        } else if (!selectedElementId && activeArtboardId) {
+          deleteArtboard(activeArtboardId)
         }
       }
 
@@ -328,7 +330,7 @@ export function CanvasEditor() {
     return () => window.removeEventListener('keydown', onKey)
   }, [
     isPreview, showCanvasSettings, selectedElementId, activeArtboardId,
-    selectElement, deleteElement, undo, redo, copyElement, pasteElement,
+    selectElement, deleteElement, deleteArtboard, undo, redo, copyElement, pasteElement,
     duplicateElement, setActiveBreakpoint, toggleElementVisibility,
   ])
 

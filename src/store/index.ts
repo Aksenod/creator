@@ -38,6 +38,7 @@ type EditorState = {
   enterArtboard: (artboardId: string) => void
   setActiveArtboard: (id: string | null) => void
   addArtboard: (name: string) => void
+  deleteArtboard: (id: string) => void
   moveArtboard: (id: string, x: number, y: number) => void
   moveArtboardTemp: (id: string, x: number, y: number) => void
 
@@ -241,6 +242,29 @@ export const useEditorStore = create<EditorState>()(
           updatedAt: Date.now(),
         }
         return pushHistory(state.history, state.historyIndex, state.project, newProject)
+      }),
+
+      deleteArtboard: (id) => set((state) => {
+        if (!state.project) return state
+        const order = state.project.artboardOrder
+        if (order.length <= 1) return state
+
+        const { [id]: _, ...remainingArtboards } = state.project.artboards
+        const newOrder = order.filter(aid => aid !== id)
+        const newActiveId = state.activeArtboardId === id ? newOrder[0] : state.activeArtboardId
+
+        const newProject: Project = {
+          ...state.project,
+          artboards: remainingArtboards,
+          artboardOrder: newOrder,
+          updatedAt: Date.now(),
+        }
+        return {
+          ...pushHistory(state.history, state.historyIndex, state.project, newProject),
+          activeArtboardId: newActiveId,
+          selectedElementId: null,
+          selectedElementIds: [],
+        }
       }),
 
       moveArtboard: (id, x, y) => set((state) => {
