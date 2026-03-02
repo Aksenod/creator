@@ -114,9 +114,9 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
 
   const isSelected = selectedElementIds.includes(id) || selectedElementId === id
   const hasChildren = el.children.length > 0
-  const isExpanded = expandedLayers.has(id)
-  const isHidden = !!el.hidden
   const isBody = el.type === 'body'
+  const isExpanded = isBody || expandedLayers.has(id)
+  const isHidden = !!el.hidden
 
   const isDropAbove = dropIndicator?.targetId === id && dropIndicator.position === 'above'
   const isDropBelow = dropIndicator?.targetId === id && dropIndicator.position === 'below'
@@ -347,12 +347,26 @@ export function Layers({ artboard }: Props) {
     if (toExpand.length > 0) expandLayers(toExpand)
   }, [artboard.elements]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Scroll-into-view при смене выделения
+  // Авто-раскрытие родительской цепочки + scroll-into-view при выборе элемента
   useEffect(() => {
-    if (!selectedElementId || !layersScrollRef.current) return
-    const el = layersScrollRef.current.querySelector(`[data-layer-id="${selectedElementId}"]`)
-    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [selectedElementId])
+    if (!selectedElementId) return
+    // Раскрываем все свёрнутые родители, чтобы элемент стал видимым в дереве
+    const toExpand: string[] = []
+    let current = selectedElementId
+    while (true) {
+      const parentId = findParentId(artboard, current)
+      if (!parentId) break
+      if (!expandedLayers.has(parentId)) toExpand.push(parentId)
+      current = parentId
+    }
+    if (toExpand.length > 0) expandLayers(toExpand)
+    // Scroll-into-view (setTimeout чтобы DOM успел обновиться после expand)
+    setTimeout(() => {
+      if (!layersScrollRef.current) return
+      const el = layersScrollRef.current.querySelector(`[data-layer-id="${selectedElementId}"]`)
+      if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }, 0)
+  }, [selectedElementId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleExpand = (id: string, altKey: boolean) => {
     if (altKey) {
