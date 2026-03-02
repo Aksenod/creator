@@ -56,14 +56,14 @@ Spacing: paddingTop, paddingRight, paddingBottom, paddingLeft, marginTop, margin
 Colors: backgroundColor (hex string "#1a1a1a"), color (hex string)
 Typography: fontSize (number), fontWeight (string "400"/"700"/"bold"), fontFamily (string), lineHeight (number), textAlign ("left"/"center"/"right"/"justify"), textDecoration, letterSpacing (number), textTransform ("uppercase"/"lowercase"/"capitalize")
 Borders: borderWidth (number), borderColor (hex), borderStyle ("solid"/"dashed"/"dotted"), borderRadius (number), individual sides: borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth, individual corners: borderTopLeftRadius, borderTopRightRadius, borderBottomRightRadius, borderBottomLeftRadius
-Position: positionMode ("static"/"relative"/"absolute"/"fixed"/"sticky") — separate field, NOT inside styles. top, right, bottom, left (numbers in px) — inside styles. zIndex (number) — inside styles.
+Position: positionMode ("static"/"relative"/"absolute"/"fixed"/"sticky") — separate field, NOT inside styles. top, right, bottom, left (string values with units: "50px", "10%", "50vh", "calc(50% - 100px)") — inside styles. zIndex (number) — inside styles.
 Other: opacity (0-1), overflow ("visible"/"hidden"/"scroll"/"auto"), objectFit ("cover"/"contain"/"fill"), objectPosition (string)
 
 ## Working Rules
 
 1. ALWAYS call get_artboard_info FIRST to understand current structure before making any changes.
 2. Use add_element with styles in the same call for efficiency. Create parent container first, then children one by one.
-3. String values for width/height (e.g. "100%", "200px", "auto"). Number values for padding/margin/gap/fontSize/borderWidth etc.
+3. String values for width/height/top/right/bottom/left (e.g. "100%", "200px", "auto", "50vh"). Number values for padding/margin/gap/fontSize/borderWidth etc.
 4. When creating repeated layouts (grids, lists, cards): add the grid/flex container first, then add each child element sequentially.
 5. For centering with flex: set parent display "flex", justifyContent "center", alignItems "center".
 6. positionMode is a SEPARATE parameter in add_element/update_element, NOT inside styles object.

@@ -66,11 +66,11 @@ export type ElementStyles = {
   borderRadius?: number
   overflow?: 'visible' | 'hidden' | 'scroll' | 'auto'
 
-  // Position offsets (top/right/bottom/left in px, for relative/absolute/fixed/sticky)
-  top?: number
-  right?: number
-  bottom?: number
-  left?: number
+  // Position offsets (top/right/bottom/left with units, for relative/absolute/fixed/sticky)
+  top?: string
+  right?: string
+  bottom?: string
+  left?: string
   zIndex?: number
   opacity?: number  // 0–1, default 1
 
