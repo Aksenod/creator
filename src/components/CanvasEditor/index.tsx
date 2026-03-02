@@ -321,7 +321,11 @@ export function CanvasEditor() {
           selIds.forEach(eid => toggleElementVisibility(abId, eid))
         }
       }
-      if (mod && e.code === 'KeyR') { e.preventDefault(); setShowRenameModal(true) }
+      if (mod && e.code === 'KeyR') {
+        const s = useEditorStore.getState()
+        const hasSelection = s.selectedElementIds.length > 0 || !!s.selectedElementId
+        if (hasSelection) { e.preventDefault(); setShowRenameModal(true) }
+      }
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); setPanelsHidden(v => !v)
       }
