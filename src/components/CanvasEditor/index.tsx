@@ -10,6 +10,7 @@ import { GridEditOverlay } from '../GridEditOverlay'
 import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 import { RenameLayersModal } from '../RenameLayersModal'
 import { Toast } from '../Toast/Toast'
+import { AIChat } from '../AIChat/AIChat'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo, getCommonParentId } from '../../utils/treeUtils'
 import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
@@ -149,6 +150,7 @@ export function CanvasEditor() {
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [snapLines, setSnapLines] = useState<SnapLine[]>([])
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [rightTab, setRightTab] = useState<'properties' | 'ai'>('properties')
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
@@ -385,6 +387,9 @@ export function CanvasEditor() {
       }
       if ((e.metaKey || e.ctrlKey) && (e.code === 'Backquote' || e.code === 'Backslash')) {
         e.preventDefault(); setPanelsHidden(v => !v)
+      }
+      if (mod && e.code === 'Period') {
+        e.preventDefault(); setRightTab(t => t === 'properties' ? 'ai' : 'properties')
       }
 
       // Shift+A — обернуть выбранные элементы в div
@@ -661,7 +666,7 @@ export function CanvasEditor() {
           )}
         </div>
 
-        {/* Панель свойств */}
+        {/* Правая панель (Properties / AI Chat) */}
         {!isPreview && (
           <div style={{
             width: panelsHidden ? 0 : 240,
@@ -670,8 +675,41 @@ export function CanvasEditor() {
             overflow: 'hidden',
             transition: 'width 160ms ease',
           }}>
-            <div style={{ width: 240, height: '100%', borderLeft: '1px solid #e0e0e0' }}>
-              <Properties />
+            <div style={{ width: 240, height: '100%', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column' }}>
+              {/* Табы */}
+              <div style={{
+                display: 'flex',
+                borderBottom: '1px solid #e5e5e5',
+                flexShrink: 0,
+              }}>
+                {(['properties', 'ai'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setRightTab(tab)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 0',
+                      border: 'none',
+                      borderBottom: rightTab === tab ? '2px solid #0a0a0a' : '2px solid transparent',
+                      background: 'none',
+                      fontSize: 10,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      color: rightTab === tab ? '#0a0a0a' : '#999',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      transition: 'color 0.15s, border-color 0.15s',
+                    }}
+                  >
+                    {tab === 'properties' ? 'Properties' : 'AI Chat'}
+                  </button>
+                ))}
+              </div>
+              {/* Содержимое */}
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                {rightTab === 'properties' ? <Properties /> : <AIChat />}
+              </div>
             </div>
           </div>
         )}
