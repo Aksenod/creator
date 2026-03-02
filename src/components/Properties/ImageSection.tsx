@@ -29,15 +29,7 @@ export function ImageSection({ element, styles, onUpdateField, onUpdateStyle }: 
     if (!file || !file.type.startsWith('image/')) return
     const reader = new FileReader()
     reader.onload = () => {
-      const dataUrl = reader.result as string
-      const img = new Image()
-      img.onload = () => {
-        onUpdateField({ src: dataUrl, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight })
-      }
-      img.onerror = () => {
-        onUpdateField({ src: dataUrl })
-      }
-      img.src = dataUrl
+      onUpdateField({ src: reader.result as string })
     }
     reader.readAsDataURL(file)
     e.target.value = ''

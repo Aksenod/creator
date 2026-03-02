@@ -119,8 +119,6 @@ export type CanvasElement = {
   content?: string   // для text/button
   src?: string       // для image (URL изображения)
   alt?: string       // для image (alt текст)
-  naturalWidth?: number   // натуральная ширина изображения (для aspect-ratio)
-  naturalHeight?: number  // натуральная высота изображения (для aspect-ratio)
   hidden?: boolean   // скрыт ли элемент (eye toggle)
 }
 

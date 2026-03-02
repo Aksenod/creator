@@ -310,9 +310,6 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
     // Image с src → рендерим <img> внутри wrapper <div>
     if (el.type === 'image' && el.src) {
-      const heightIsAuto = !s.height || s.height === 'auto'
-      const hasNaturalDims = !!(el.naturalWidth && el.naturalHeight)
-
       // Wrapper нуждается в position:relative чтобы img (absolute) заполнил его
       const imgWrapperStyle: React.CSSProperties = {
         ...style,
@@ -323,12 +320,6 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       if (imgWrapperStyle.position === 'static') {
         imgWrapperStyle.position = 'relative'
       }
-
-      // Режим auto-ratio: height auto + известны натуральные размеры
-      if (heightIsAuto && hasNaturalDims) {
-        imgWrapperStyle.aspectRatio = `${el.naturalWidth} / ${el.naturalHeight}`
-      }
-
       return (
         <div
           key={id}
