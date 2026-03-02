@@ -4,7 +4,6 @@ import type { BreakpointId } from '../../../constants/breakpoints'
 
 type Props = {
   projectName: string
-  isPreview: boolean
   activeBreakpointId: BreakpointId
   displayWidth: number
   customWidth: string
@@ -24,7 +23,6 @@ type Props = {
 
 export function Topbar({
   projectName,
-  isPreview,
   activeBreakpointId,
   displayWidth,
   customWidth,
@@ -54,27 +52,6 @@ export function Topbar({
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
   }, [showCanvasSettings, onSetShowSettings])
-
-  if (isPreview) {
-    return (
-      <div style={{
-        height: 40, background: '#1a1a1a', borderBottom: '1px solid #333',
-        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12, flexShrink: 0,
-      }}>
-        <button
-          onClick={onTogglePreview}
-          title="Выйти из Preview и вернуться в режим редактирования"
-          style={{
-            padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-            border: 'none', background: '#333', color: '#fff',
-          }}
-        >
-          ← Редактор
-        </button>
-        <span style={{ color: '#888', fontSize: 12 }}>{projectName}</span>
-      </div>
-    )
-  }
 
   return (
     <div style={{
@@ -201,15 +178,15 @@ export function Topbar({
         </button>
         <button
           onClick={onTogglePreview}
-          title="Предпросмотр — показать сайт как его увидит пользователь, без рамок редактора и панелей"
+          title="Предпросмотр — экспортировать артборд как HTML и открыть в новой вкладке"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
             border: 'none',
-            background: isPreview ? '#1a1a1a' : '#f0f0f0',
-            color: isPreview ? '#fff' : '#333',
+            background: '#f0f0f0',
+            color: '#333',
           }}
         >
-          {isPreview ? '← Редактор' : '▶ Preview'}
+          ▶ Preview
         </button>
       </div>
     </div>

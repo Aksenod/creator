@@ -11,7 +11,7 @@ import { GridChildResizeOverlay } from '../GridChildResizeOverlay'
 import { RenameLayersModal } from '../RenameLayersModal'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo } from '../../utils/treeUtils'
-import { exportArtboardHTML, downloadHTML } from '../../utils/exportHTML'
+import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
 import type { CanvasPattern } from '../../types'
 
 // ─── Snap logic ─────────────────────────────────────────────────────────────
@@ -338,14 +338,18 @@ export function CanvasEditor() {
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
       <Topbar
         projectName={project.name}
-        isPreview={isPreview}
         activeBreakpointId={activeBreakpointId}
         displayWidth={displayWidth}
         customWidth={customWidth}
         scale={scalePercent / 100}
         showCanvasSettings={showCanvasSettings}
         onCloseProject={closeProject}
-        onTogglePreview={() => setIsPreview(!isPreview)}
+        onTogglePreview={() => {
+          if (activeArtboard) {
+            const html = exportArtboardHTML(activeArtboard)
+            previewHTML(html)
+          }
+        }}
         onToggleSettings={() => setShowCanvasSettings(s => !s)}
         onCustomWidthChange={setCustomWidth}
         onCustomWidthBlur={(v) => {

@@ -341,6 +341,15 @@ ${bodyParts.join('\n')}
 }
 
 /**
+ * Открывает HTML в новой вкладке браузера через blob URL.
+ */
+export function previewHTML(html: string) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+}
+
+/**
  * Скачивает строку как файл.
  */
 export function downloadHTML(html: string, filename: string) {
