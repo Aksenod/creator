@@ -46,12 +46,6 @@ export function useAIChat() {
     async (userText: string) => {
       console.log('[AIChat] send called:', userText)
       const currentSettings = useAIChatStore.getState().settings
-      console.log('[AIChat] apiKey present:', !!currentSettings.apiKey, 'model:', currentSettings.model)
-      if (!currentSettings.apiKey) {
-        useAIChatStore.getState().setError('API key is not set. Open settings (⚙) to configure.')
-        return
-      }
-
       useAIChatStore.getState().setError(null)
       useAIChatStore.getState().setStreaming(true)
 

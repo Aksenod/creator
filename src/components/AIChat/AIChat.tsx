@@ -11,8 +11,6 @@ export function AIChat() {
   const { send, stop } = useAIChat()
   const [showSettings, setShowSettings] = useState(false)
 
-  const hasApiKey = !!settings.apiKey
-
   return (
     <div
       style={{
@@ -105,7 +103,6 @@ export function AIChat() {
         onSend={send}
         onStop={stop}
         isStreaming={isStreaming}
-        disabled={!hasApiKey}
       />
 
       {/* Settings modal */}
