@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
-import { CONTAINER_TYPES } from '../../store/helpers'
+import { CONTAINER_TYPES, isContainerType } from '../../store/helpers'
 import type { Artboard } from '../../types'
 import { findParentId, isDescendantOf, collectDescendantIds, getVisibleLayerIds } from '../../utils/treeUtils'
 
@@ -453,9 +453,10 @@ export function Layers({ artboard }: Props) {
     if (isDescendantOf(artboard.elements, targetId, draggedId)) return
 
     if (position === 'into') {
-      // Вставить как последнего ребёнка контейнера
+      // Guard: нельзя вложить в не-контейнер
       const target = artboard.elements[targetId]
-      moveElement(activeArtboardId, draggedId, targetId, target?.children.length ?? 0)
+      if (!target || !isContainerType(target.type)) return
+      moveElement(activeArtboardId, draggedId, targetId, target.children.length)
     } else {
       // Найти родителя targetId и вставить до/после него
       const parentId = findParentId(artboard, targetId)

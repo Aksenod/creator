@@ -21,9 +21,9 @@ export function Toolbar() {
   const handleAdd = (type: ElementType) => {
     if (!project || !activeArtboardId) return
     const artboard = project.artboards[activeArtboardId]
-    const parentId = selectedElementId && artboard.elements[selectedElementId]
-      ? selectedElementId
-      : null
+    const selectedEl = selectedElementId ? artboard.elements[selectedElementId] : null
+    // Если выбранный элемент — не-контейнер, передаём его id (addElement сам найдёт родителя)
+    const parentId = selectedEl ? selectedElementId : null
     addElement(activeArtboardId, type, parentId)
   }
 

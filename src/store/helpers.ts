@@ -1,4 +1,4 @@
-import type { Project, CanvasElement, ElementStyles } from '../types'
+import type { Project, CanvasElement, ElementStyles, ElementType } from '../types'
 import type { BreakpointId } from '../constants/breakpoints'
 
 export const generateId = () => Math.random().toString(36).slice(2, 10)
@@ -7,6 +7,10 @@ const HISTORY_MAX_SIZE = 50
 
 // Типы-контейнеры, которые принимают дочерние элементы
 export const CONTAINER_TYPES = ['div', 'section', 'body'] as const
+
+// Проверка: может ли элемент данного типа содержать дочерние элементы
+export const isContainerType = (type: ElementType): boolean =>
+  CONTAINER_TYPES.includes(type as typeof CONTAINER_TYPES[number])
 
 // Сохранить текущий проект в историю и вернуть обновлённые поля
 export const pushHistory = (

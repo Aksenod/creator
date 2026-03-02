@@ -7,6 +7,7 @@ import { slugify } from '../utils/slugify'
 import {
   generateId,
   CONTAINER_TYPES,
+  isContainerType,
   pushHistory,
   applyStyleUpdate,
 } from './helpers'
@@ -314,13 +315,28 @@ export const useEditorStore = create<EditorState>()(
         const updatedElements = { ...ab.elements, [id]: newElement }
         let updatedRootChildren = ab.rootChildren
 
-        const effectiveParentId = (parentId && ab.elements[parentId])
+        let effectiveParentId = (parentId && ab.elements[parentId])
           ? parentId
           : (ab.rootChildren.find(cid => ab.elements[cid]?.type === 'body') ?? null)
 
+        // Если выбранный родитель — не-контейнер (text, image, button, input),
+        // поднимаемся к ближайшему контейнеру-предку и вставляем рядом
+        let insertAfterSiblingId: string | null = null
+        if (effectiveParentId && !isContainerType(ab.elements[effectiveParentId].type)) {
+          insertAfterSiblingId = effectiveParentId
+          effectiveParentId = findParentId(ab, effectiveParentId)
+        }
+
         if (effectiveParentId) {
           const parent = ab.elements[effectiveParentId]
-          updatedElements[effectiveParentId] = { ...parent, children: [...parent.children, id] }
+          const children = [...parent.children]
+          if (insertAfterSiblingId) {
+            const idx = children.indexOf(insertAfterSiblingId)
+            children.splice(idx + 1, 0, id)
+          } else {
+            children.push(id)
+          }
+          updatedElements[effectiveParentId] = { ...parent, children }
         } else {
           updatedRootChildren = [...ab.rootChildren, id]
         }
@@ -456,6 +472,9 @@ export const useEditorStore = create<EditorState>()(
       moveElement: (artboardId, elementId, newParentId, newIndex) => set((state) => {
         const ab = state.project?.artboards[artboardId]
         if (!ab || !state.project) return state
+
+        // Guard: нельзя перемещать элемент внутрь не-контейнера (text, image, button, input)
+        if (newParentId !== null && ab.elements[newParentId] && !isContainerType(ab.elements[newParentId].type)) return state
 
         // Guard: только уже корневые элементы могут оставаться в rootChildren
         if (newParentId === null && !ab.rootChildren.includes(elementId)) return state
