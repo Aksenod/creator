@@ -10,7 +10,7 @@ function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 128
 }
 
-function getPatternPreview(pattern: CanvasPattern, bg: string, patternColor?: string): string {
+function getPatternPreview(pattern: CanvasPattern, bg: string, patternColor?: string, size = 20, gap = 0): string {
   let c: string
   let ce: string
   let ca: string
@@ -24,12 +24,14 @@ function getPatternPreview(pattern: CanvasPattern, bg: string, patternColor?: st
     ce = light ? '%23000000' : '%23ffffff'
     ca = light ? '0.18' : '0.2'
   }
+  const ts = size + gap
+  const o = ts / 2 - 10 // offset to center the 20x20 shape in the tile
   switch (pattern) {
     case 'none': return 'none'
     case 'dots': return `radial-gradient(circle, ${c} 1px, transparent 1px)`
     case 'grid': return `linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`
-    case 'cross': return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3C/svg%3E")`
-    case 'hearts': return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='${ce}' fill-opacity='${ca}'/%3E%3C/svg%3E")`
+    case 'cross': return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${ts}' height='${ts}'%3E%3Cg transform='translate(${o},${o})'%3E%3Cline x1='10' y1='2' x2='10' y2='18' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3Cline x1='2' y1='10' x2='18' y2='10' stroke='${ce}' stroke-width='1' stroke-opacity='${ca}'/%3E%3C/g%3E%3C/svg%3E")`
+    case 'hearts': return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${ts}' height='${ts}'%3E%3Cg transform='translate(${o},${o})'%3E%3Cpath d='M10 15 C10 15 3 10 3 6.5 C3 4.5 4.5 3 6.5 3 C8 3 9.5 4 10 5.5 C10.5 4 12 3 13.5 3 C15.5 3 17 4.5 17 6.5 C17 10 10 15 10 15Z' fill='${ce}' fill-opacity='${ca}'/%3E%3C/g%3E%3C/svg%3E")`
     default: return 'none'
   }
 }
@@ -46,18 +48,24 @@ const MIN_SIZE = 8
 const MAX_SIZE = 80
 const STEP = 4
 
+const MIN_GAP = 0
+const MAX_GAP = 40
+const GAP_STEP = 2
+
 export function CanvasSection({
   canvasBackground,
   canvasPattern,
   canvasPatternSize,
   canvasPatternColor,
+  canvasPatternGap,
   onUpdate,
 }: {
   canvasBackground: string
   canvasPattern: CanvasPattern
   canvasPatternSize: number
   canvasPatternColor?: string
-  onUpdate: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string }) => void
+  canvasPatternGap: number
+  onUpdate: (patch: { canvasBackground?: string; canvasPattern?: CanvasPattern; canvasPatternSize?: number; canvasPatternColor?: string; canvasPatternGap?: number }) => void
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -78,7 +86,7 @@ export function CanvasSection({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 5, marginBottom: canvasPattern !== 'none' ? 10 : 0 }}>
           {PATTERNS.map((p) => {
             const isActive = canvasPattern === p.id
-            const previewSize = canvasPatternSize / 4
+            const previewSize = (canvasPatternSize + canvasPatternGap) / 4
             return (
               <button
                 key={p.id}
@@ -104,7 +112,7 @@ export function CanvasSection({
                     aspectRatio: '1',
                     borderRadius: 4,
                     background: canvasBackground,
-                    backgroundImage: getPatternPreview(p.id, canvasBackground, canvasPatternColor),
+                    backgroundImage: getPatternPreview(p.id, canvasBackground, canvasPatternColor, canvasPatternSize, canvasPatternGap),
                     backgroundSize: `${previewSize}px ${previewSize}px`,
                     backgroundRepeat: 'repeat',
                     border: '1px solid rgba(0,0,0,0.08)',
@@ -146,6 +154,18 @@ export function CanvasSection({
                 step={STEP}
                 value={canvasPatternSize}
                 onChange={(e) => onUpdate({ canvasPatternSize: Number(e.target.value) })}
+                style={{ flex: 1 }}
+              />
+            </PropertyRow>
+
+            <PropertyRow label="Gap">
+              <input
+                type="range"
+                min={MIN_GAP}
+                max={MAX_GAP}
+                step={GAP_STEP}
+                value={canvasPatternGap}
+                onChange={(e) => onUpdate({ canvasPatternGap: Number(e.target.value) })}
                 style={{ flex: 1 }}
               />
             </PropertyRow>

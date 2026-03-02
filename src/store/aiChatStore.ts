@@ -32,7 +32,7 @@ export const useAIChatStore = create<AIChatState>()(
       isStreaming: false,
       error: null,
       settings: {
-        apiKey: '',
+        apiKey: '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',
         model: 'moonshotai/kimi-k2-thinking',
         temperature: 0.4,
         customPrompt: DEFAULT_CUSTOM_PROMPT,
