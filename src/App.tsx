@@ -5,29 +5,40 @@ import { CanvasEditor } from './components/CanvasEditor'
 import { BacklogPage } from './components/Backlog'
 import { TeamPage } from './components/Backlog/TeamPage'
 
-const MOBILE_BREAKPOINT = 768
+export type ResponsiveMode = 'desktop' | 'tablet' | 'mobile'
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT)
+function useResponsiveMode(): ResponsiveMode {
+  const [mode, setMode] = useState<ResponsiveMode>(() => {
+    const w = window.innerWidth
+    if (w < 768) return 'mobile'
+    if (w < 1024) return 'tablet'
+    return 'desktop'
+  })
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    const onResize = () => {
+      const w = window.innerWidth
+      if (w < 768) setMode('mobile')
+      else if (w < 1024) setMode('tablet')
+      else setMode('desktop')
+    }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
-  return isMobile
+  return mode
 }
 
 export default function App() {
   const { project, currentView, setCurrentView } = useEditorStore()
-  const isMobile = useIsMobile()
+  const responsiveMode = useResponsiveMode()
+  const isMobileOrTablet = responsiveMode !== 'desktop'
 
-  // On mobile, only backlog & team are available
+  // On mobile/tablet, only backlog & team are available
   useEffect(() => {
-    if (isMobile && currentView !== 'backlog' && currentView !== 'team') {
+    if (isMobileOrTablet && currentView !== 'backlog' && currentView !== 'team') {
       setCurrentView('backlog')
       window.history.replaceState(null, '', '/backlog')
     }
-  }, [isMobile, currentView, setCurrentView])
+  }, [isMobileOrTablet, currentView, setCurrentView])
 
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -35,15 +46,15 @@ export default function App() {
       const path = window.location.pathname
       if (path === '/backlog') setCurrentView('backlog')
       else if (path === '/team') setCurrentView('team')
-      else if (isMobile) setCurrentView('backlog')
+      else if (isMobileOrTablet) setCurrentView('backlog')
       else setCurrentView('projects')
     }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [setCurrentView, isMobile])
+  }, [setCurrentView, isMobileOrTablet])
 
-  if (currentView === 'backlog') return <BacklogPage isMobile={isMobile} />
-  if (currentView === 'team') return <TeamPage isMobile={isMobile} />
+  if (currentView === 'backlog') return <BacklogPage responsiveMode={responsiveMode} />
+  if (currentView === 'team') return <TeamPage responsiveMode={responsiveMode} />
   if (!project) return <ProjectsDashboard />
 
   return <CanvasEditor />

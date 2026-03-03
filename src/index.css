@@ -72,3 +72,12 @@ input[type=range]::-moz-range-track {
   border-radius: 2px;
   border: none;
 }
+
+/* Hide scrollbars globally while keeping scroll functionality */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

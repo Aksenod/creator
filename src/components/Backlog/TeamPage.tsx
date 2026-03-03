@@ -1,71 +1,145 @@
 import { useEditorStore } from '../../store'
 import { TeamSection } from './TeamSection'
+import { colors } from '../../styles/tokens'
+import type { ResponsiveMode } from '../../App'
 
-export function TeamPage({ isMobile = false }: { isMobile?: boolean }) {
+export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
 
+  const isMobile = responsiveMode === 'mobile'
+  const isTablet = responsiveMode === 'tablet'
+  const isDesktop = responsiveMode === 'desktop'
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#fafafa' }}>
-      {/* Mobile banner */}
-      {isMobile && (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      width: '100%', height: '100vh',
+      background: colors.bgSurface,
+    }}>
+      {/* Header */}
+      {isMobile ? (
+        <>
+          {/* Mobile header */}
+          <div style={{
+            height: 48, background: colors.bgCard,
+            borderBottom: `1px solid ${colors.border}`,
+            display: 'flex', alignItems: 'center',
+            padding: '0 16px', flexShrink: 0,
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                onClick={() => setCurrentView('projects')}
+                style={{ cursor: 'pointer', fontSize: 18, color: colors.textSecondary, lineHeight: 1 }}
+              >
+                &#8592;
+              </span>
+              <span style={{ fontWeight: 600, fontSize: 15, color: colors.text }}>Team</span>
+            </div>
+          </div>
+          {/* Mobile tabs bar */}
+          <div style={{
+            height: 40, background: colors.bgCard,
+            borderBottom: `1px solid ${colors.border}`,
+            display: 'flex', alignItems: 'center',
+            padding: '0 12px', flexShrink: 0,
+          }}>
+            <MobileTabButton active={false} label="Board" onClick={() => setCurrentView('backlog')} />
+            <MobileTabButton active label="Team" onClick={() => setCurrentView('team')} />
+          </div>
+        </>
+      ) : (
+        /* Desktop / Tablet header */
         <div style={{
-          background: '#f0f4ff', borderBottom: '1px solid #d0d8f0',
-          padding: '10px 16px', fontSize: 12, color: '#4a5568',
-          textAlign: 'center', flexShrink: 0,
+          height: isTablet ? 52 : 56,
+          background: colors.bgCard,
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex', alignItems: 'center',
+          padding: isTablet ? '0 16px' : '0 24px',
+          flexShrink: 0, justifyContent: 'space-between',
         }}>
-          💻 Для работы в редакторе откройте ссылку с компьютера
+          {/* Left */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: isTablet ? 10 : 12 }}>
+            <div
+              onClick={() => setCurrentView('projects')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                cursor: 'pointer', color: colors.textSecondary, fontSize: 13,
+              }}
+            >
+              <span style={{ fontSize: isTablet ? 18 : 13 }}>&#8592;</span>
+              {isDesktop && <span>Projects</span>}
+            </div>
+            {isDesktop && <span style={{ color: colors.textMuted, fontSize: 13 }}>/</span>}
+            <span style={{ fontWeight: 600, fontSize: isTablet ? 15 : 14, color: colors.text }}>
+              Team
+            </span>
+          </div>
+
+          {/* Center: Segmented pill tabs */}
+          <SegmentedTabs
+            active="team"
+            onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
+          />
+
+          {/* Right spacer */}
+          <div style={{ width: 120 }} />
         </div>
       )}
 
-      {/* Header */}
-      <div style={{
-        height: 56, background: '#fff', borderBottom: '1px solid #e0e0e0',
-        display: 'flex', alignItems: 'center', padding: isMobile ? '0 12px' : '0 32px',
-        flexShrink: 0, gap: isMobile ? 8 : 16,
-      }}>
-        {!isMobile && (
-          <button
-            onClick={() => setCurrentView('projects')}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, color: '#525252', padding: '4px 0',
-              display: 'flex', alignItems: 'center', gap: 4,
-            }}
-          >
-            &larr; Projects
-          </button>
-        )}
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>
-          Team
-        </span>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 16, marginLeft: isMobile ? 'auto' : 24 }}>
-          <TabButton active={false} label="Board" onClick={() => setCurrentView('backlog')} />
-          <TabButton active label="Team" onClick={() => setCurrentView('team')} />
-        </div>
-      </div>
-
       {/* Content */}
-      <TeamSection />
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <TeamSection />
+      </div>
     </div>
   )
 }
 
-function TabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+/* Segmented pill tabs: Board / Team */
+function SegmentedTabs({ active, onTabChange }: {
+  active: 'board' | 'team'
+  onTabChange: (tab: 'board' | 'team') => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center',
+      background: colors.bgSurface,
+      borderRadius: 8, padding: 3,
+    }}>
+      {(['board', 'team'] as const).map(tab => (
+        <button
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          style={{
+            background: active === tab ? colors.bgCard : 'transparent',
+            border: 'none', borderRadius: 6,
+            padding: '6px 16px', cursor: 'pointer',
+            fontSize: 12,
+            fontWeight: active === tab ? 600 : 400,
+            color: active === tab ? colors.text : colors.textMuted,
+            boxShadow: active === tab ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+            transition: 'all 0.15s',
+          }}
+        >
+          {tab === 'board' ? 'Board' : 'Team'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* Mobile underline tab button */
+function MobileTabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
       style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: 13,
-        fontWeight: active ? 600 : 400,
-        color: active ? '#0a0a0a' : '#a3a3a3',
-        padding: '4px 0',
-        borderBottom: active ? '2px solid #0a0a0a' : '2px solid transparent',
-        transition: 'color 0.15s',
+        background: 'none', border: 'none',
+        borderBottom: active ? `2px solid ${colors.text}` : '2px solid transparent',
+        cursor: 'pointer', padding: '0 14px',
+        height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 12, fontWeight: active ? 600 : 400,
+        color: active ? colors.text : colors.textMuted,
       }}
     >
       {label}

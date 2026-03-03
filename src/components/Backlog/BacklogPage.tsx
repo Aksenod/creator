@@ -4,39 +4,33 @@ import { useBacklogStore } from '../../store/backlogStore'
 import { KanbanBoard } from './KanbanBoard'
 import { TaskModal } from './TaskModal'
 import { PinModal } from './PinModal'
+import { colors, statusColors } from '../../styles/tokens'
+import type { ResponsiveMode } from '../../App'
+import type { TaskStatus } from '../../types/backlog'
 
-function TabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: 13,
-        fontWeight: active ? 600 : 400,
-        color: active ? '#0a0a0a' : '#a3a3a3',
-        padding: '4px 0',
-        borderBottom: active ? '2px solid #0a0a0a' : '2px solid transparent',
-        transition: 'color 0.15s',
-      }}
-    >
-      {label}
-    </button>
-  )
-}
+// Mobile groups 6 statuses into 4 filters
+type MobileFilter = 'backlog' | 'todo' | 'active' | 'done'
+const MOBILE_FILTERS: { key: MobileFilter; label: string; dotColor: string; statuses: TaskStatus[] }[] = [
+  { key: 'backlog', label: 'Backlog', dotColor: statusColors.backlog, statuses: ['backlog'] },
+  { key: 'todo', label: 'Todo', dotColor: statusColors.todo, statuses: ['todo'] },
+  { key: 'active', label: 'Active', dotColor: statusColors.in_progress, statuses: ['in_progress', 'design_review', 'code_review'] },
+  { key: 'done', label: 'Done', dotColor: statusColors.done, statuses: ['done'] },
+]
 
-export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
+export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
-  const { editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked, saving } = useBacklogStore()
+  const { tasks, editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked, saving } = useBacklogStore()
   const [showPin, setShowPin] = useState(false)
+  const [mobileFilter, setMobileFilter] = useState<MobileFilter>('backlog')
+
+  const isMobile = responsiveMode === 'mobile'
+  const isTablet = responsiveMode === 'tablet'
+  const isDesktop = responsiveMode === 'desktop'
 
   useEffect(() => {
-    // Wait for persist rehydration, then fetch from API
     const unsub = useBacklogStore.persist.onFinishHydration(() => {
       loadTasks()
     })
-    // If already hydrated (e.g. navigating back), load immediately
     if (useBacklogStore.persist.hasHydrated()) {
       loadTasks()
     }
@@ -47,85 +41,206 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
     setEditingTaskId('__new__')
   }
 
+  // Count tasks per mobile filter
+  const filterCounts = MOBILE_FILTERS.map(f => ({
+    ...f,
+    count: tasks.filter(t => f.statuses.includes(t.status)).length,
+  }))
+
+  // Active mobile filter statuses
+  const activeFilterStatuses = MOBILE_FILTERS.find(f => f.key === mobileFilter)?.statuses ?? []
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#fafafa' }}>
-      {/* Mobile banner */}
-      {isMobile && (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      width: '100%', height: '100vh',
+      background: colors.bgSurface,
+    }}>
+      {/* Header */}
+      {isMobile ? (
+        /* Mobile header: 48px */
         <div style={{
-          background: '#f0f4ff', borderBottom: '1px solid #d0d8f0',
-          padding: '10px 16px', fontSize: 12, color: '#4a5568',
-          textAlign: 'center', flexShrink: 0,
+          height: 48, background: colors.bgCard,
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex', alignItems: 'center',
+          padding: '0 16px', flexShrink: 0,
+          justifyContent: 'space-between',
         }}>
-          💻 Для работы в редакторе откройте ссылку с компьютера
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span
+              onClick={() => setCurrentView('projects')}
+              style={{ cursor: 'pointer', fontSize: 18, color: colors.textSecondary, lineHeight: 1 }}
+            >
+              &#8592;
+            </span>
+            <span style={{ fontWeight: 600, fontSize: 15, color: colors.text }}>Backlog</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {!isUnlocked && (
+              <span
+                onClick={() => setShowPin(true)}
+                style={{ cursor: 'pointer', color: colors.textSecondary, fontSize: 16 }}
+              >
+                &#128274;
+              </span>
+            )}
+            <button
+              onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
+              style={{
+                background: colors.text, color: colors.bgCard,
+                border: 'none', borderRadius: 6,
+                padding: '4px 10px', fontSize: 16,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+                fontWeight: 500,
+              }}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Desktop / Tablet header */
+        <div style={{
+          height: isTablet ? 52 : 56,
+          background: colors.bgCard,
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex', alignItems: 'center',
+          padding: isTablet ? '0 16px' : '0 24px',
+          flexShrink: 0, justifyContent: 'space-between',
+        }}>
+          {/* Left */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: isTablet ? 10 : 12 }}>
+            <div
+              onClick={() => setCurrentView('projects')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                cursor: 'pointer', color: colors.textSecondary, fontSize: 13,
+              }}
+            >
+              <span style={{ fontSize: isTablet ? 18 : 13 }}>&#8592;</span>
+              {isDesktop && <span>Projects</span>}
+            </div>
+            {isDesktop && <span style={{ color: colors.textMuted, fontSize: 13 }}>/</span>}
+            <span style={{ fontWeight: 600, fontSize: isTablet ? 15 : 14, color: colors.text }}>
+              Backlog
+            </span>
+          </div>
+
+          {/* Center: Segmented pill tabs */}
+          <SegmentedTabs
+            active="board"
+            onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
+          />
+
+          {/* Right */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {saving && (
+              <span style={{
+                fontSize: 11, color: colors.textMuted, fontWeight: 400,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                <span style={{
+                  width: 6, height: 6, borderRadius: 3,
+                  background: colors.accentGreen,
+                }} />
+                Saved
+              </span>
+            )}
+
+            {!isUnlocked && (
+              <button
+                onClick={() => setShowPin(true)}
+                style={{
+                  background: 'none', border: `1px solid ${colors.border}`,
+                  borderRadius: 6, padding: isTablet ? '5px 10px' : '6px 12px',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, fontWeight: 500, color: colors.textSecondary,
+                }}
+              >
+                &#128274;
+                {!isTablet && <span>Unlock</span>}
+              </button>
+            )}
+
+            <button
+              onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
+              style={{
+                background: colors.text, color: colors.bgCard,
+                border: 'none', borderRadius: 6,
+                padding: isTablet ? '5px 12px' : '6px 14px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, fontWeight: 500,
+              }}
+            >
+              <span style={{ fontSize: 13 }}>+</span>
+              {!isTablet && <span>New Task</span>}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Header */}
-      <div style={{
-        height: 56, background: '#fff', borderBottom: '1px solid #e0e0e0',
-        display: 'flex', alignItems: 'center', padding: isMobile ? '0 12px' : '0 32px',
-        flexShrink: 0, gap: isMobile ? 8 : 16,
-      }}>
-        {!isMobile && (
-          <button
-            onClick={() => setCurrentView('projects')}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, color: '#525252', padding: '4px 0',
-              display: 'flex', alignItems: 'center', gap: 4,
-            }}
-          >
-            &larr; Projects
-          </button>
-        )}
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>
-          Backlog
-        </span>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 16, marginLeft: isMobile ? 'auto' : 24 }}>
-          <TabButton active label="Board" onClick={() => setCurrentView('backlog')} />
-          <TabButton active={false} label="Team" onClick={() => setCurrentView('team')} />
+      {/* Mobile: Tabs bar */}
+      {isMobile && (
+        <div style={{
+          height: 40, background: colors.bgCard,
+          borderBottom: `1px solid ${colors.border}`,
+          display: 'flex', alignItems: 'center',
+          padding: '0 12px', flexShrink: 0,
+        }}>
+          <MobileTabButton active label="Board" onClick={() => setCurrentView('backlog')} />
+          <MobileTabButton active={false} label="Team" onClick={() => setCurrentView('team')} />
         </div>
+      )}
 
-        {saving && (
-          <span style={{
-            fontSize: 11, color: '#a3a3a3', fontWeight: 500,
-            display: 'flex', alignItems: 'center', gap: 4,
-          }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: 3,
-              background: '#f59e0b',
-            }} />
-            Saving...
-          </span>
-        )}
-
-        <button
-          onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
+      {/* Mobile: Status filter pills */}
+      {isMobile && (
+        <div
+          className="hide-scrollbar"
           style={{
-            marginLeft: isMobile ? 8 : 'auto',
-            padding: isMobile ? '7px 12px' : '7px 16px',
-            background: isUnlocked ? '#0a0a0a' : '#fff',
-            color: isUnlocked ? '#fff' : '#525252',
-            border: isUnlocked ? 'none' : '1px solid #e0e0e0',
-            borderRadius: 6,
-            fontSize: 13, cursor: 'pointer', fontWeight: 500,
-            display: 'flex', alignItems: 'center', gap: 6,
+            background: colors.bgCard,
+            display: 'flex', gap: 6,
+            padding: '8px 12px', flexShrink: 0,
+            overflowX: 'auto',
           }}
         >
-          {isUnlocked
-            ? (isMobile ? '+' : '+ New Task')
-            : (isMobile ? '🔒' : '🔒 Unlock')
-          }
-        </button>
-      </div>
+          {filterCounts.map(f => (
+            <button
+              key={f.key}
+              onClick={() => setMobileFilter(f.key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '4px 10px', borderRadius: 16,
+                border: mobileFilter === f.key ? 'none' : `1px solid ${colors.border}`,
+                background: mobileFilter === f.key ? colors.text : 'transparent',
+                color: mobileFilter === f.key ? colors.bgCard : colors.textMuted,
+                cursor: 'pointer', fontSize: 11, fontWeight: mobileFilter === f.key ? 500 : 400,
+                whiteSpace: 'nowrap', flexShrink: 0,
+              }}
+            >
+              <span style={{
+                width: 6, height: 6, borderRadius: 3,
+                background: mobileFilter === f.key ? colors.bgCard : f.dotColor,
+              }} />
+              {f.label}
+              <span style={{
+                fontSize: 10, fontWeight: 400,
+                color: mobileFilter === f.key ? colors.textMuted : colors.textMuted,
+              }}>
+                {f.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Content */}
       {loaded ? (
-        <KanbanBoard />
+        <KanbanBoard
+          responsiveMode={responsiveMode}
+          mobileFilterStatuses={isMobile ? activeFilterStatuses : undefined}
+        />
       ) : (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.textMuted }}>
           Loading...
         </div>
       )}
@@ -141,5 +256,57 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
         />
       )}
     </div>
+  )
+}
+
+/* Segmented pill tabs: Board / Team */
+function SegmentedTabs({ active, onTabChange }: {
+  active: 'board' | 'team'
+  onTabChange: (tab: 'board' | 'team') => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center',
+      background: colors.bgSurface,
+      borderRadius: 8, padding: 3,
+    }}>
+      {(['board', 'team'] as const).map(tab => (
+        <button
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          style={{
+            background: active === tab ? colors.bgCard : 'transparent',
+            border: 'none', borderRadius: 6,
+            padding: '6px 16px', cursor: 'pointer',
+            fontSize: 12,
+            fontWeight: active === tab ? 600 : 400,
+            color: active === tab ? colors.text : colors.textMuted,
+            boxShadow: active === tab ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+            transition: 'all 0.15s',
+          }}
+        >
+          {tab === 'board' ? 'Board' : 'Team'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* Mobile underline tab button */
+function MobileTabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: 'none', border: 'none',
+        borderBottom: active ? `2px solid ${colors.text}` : '2px solid transparent',
+        cursor: 'pointer', padding: '0 14px',
+        height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 12, fontWeight: active ? 600 : 400,
+        color: active ? colors.text : colors.textMuted,
+      }}
+    >
+      {label}
+    </button>
   )
 }

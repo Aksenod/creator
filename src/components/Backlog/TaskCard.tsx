@@ -2,22 +2,20 @@ import { useState } from 'react'
 import type { BacklogTask } from '../../types/backlog'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-
-const PRIORITY_COLORS: Record<string, string> = {
-  high: '#ef4444',
-  medium: '#f59e0b',
-  low: '#d4d4d4',
-}
+import { colors, priorityColors } from '../../styles/tokens'
 
 const TYPE_BADGE: Record<string, { bg: string; color: string }> = {
-  feature: { bg: '#dbeafe', color: '#1d4ed8' },
-  bug: { bg: '#fee2e2', color: '#dc2626' },
+  feature: { bg: colors.bgSurface, color: colors.textSecondary },
+  bug: { bg: colors.accentRedLight, color: colors.accentRed },
 }
 
 export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => void }) {
-  const badge = TYPE_BADGE[task.type]
+  const badge = TYPE_BADGE[task.type] ?? TYPE_BADGE.feature
   const thumb = task.screenshots[0]
   const [copied, setCopied] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const isDone = task.status === 'done'
+  const priColor = priorityColors[task.priority] ?? colors.textMuted
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -28,92 +26,132 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
     })
   }
 
+  const hasReview = task.reviewComments && task.reviewComments.length > 0
+  const lastComment = hasReview ? task.reviewComments![task.reviewComments!.length - 1].text : ''
+
   return (
     <div
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        background: '#fff',
-        border: '1px solid #e5e5e5',
-        borderRadius: 8,
-        padding: 12,
+        background: colors.bgCard,
+        border: `1px solid ${hovered ? colors.borderStrong : colors.border}`,
+        borderRadius: 10,
+        padding: '10px 12px',
         cursor: 'pointer',
-        borderLeft: `3px solid ${PRIORITY_COLORS[task.priority]}`,
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
+        opacity: isDone ? 0.5 : 1,
+        boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Top row: badge + priority dot */}
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
         <span style={{
-          fontSize: 10, fontWeight: 600,
-          padding: '1px 6px', borderRadius: 4,
+          fontSize: 10, fontWeight: 500,
+          padding: '2px 7px', borderRadius: 4,
           background: badge.bg, color: badge.color,
         }}>
           {task.type}
         </span>
-        {task.labels.map(l => (
-          <span key={l} style={{
-            fontSize: 10, padding: '1px 5px', borderRadius: 4,
-            background: '#f5f5f5', color: '#737373',
-          }}>
-            {l}
-          </span>
-        ))}
-        <button
-          onClick={handleCopyLink}
-          title="Скопировать ссылку на задачу"
-          style={{
-            marginLeft: 'auto',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '2px 4px',
-            borderRadius: 4,
-            fontSize: 12,
-            color: copied ? '#16a34a' : '#a3a3a3',
-            transition: 'color 0.15s',
-          }}
-          onMouseEnter={e => { if (!copied) (e.currentTarget.style.color = '#525252') }}
-          onMouseLeave={e => { if (!copied) (e.currentTarget.style.color = '#a3a3a3') }}
-        >
-          {copied ? '✓' : '🔗'}
-        </button>
+        <span style={{
+          width: 6, height: 6, borderRadius: 3,
+          background: priColor, flexShrink: 0,
+        }} />
       </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a', lineHeight: 1.3 }}>
+
+      {/* Title */}
+      <div style={{
+        fontSize: 13, fontWeight: 500,
+        color: colors.text, lineHeight: 1.35,
+      }}>
         {task.title}
       </div>
+
+      {/* Description */}
       {task.description && (
         <div style={{
-          fontSize: 12, color: '#737373', lineHeight: 1.4,
+          fontSize: 11, color: colors.textMuted, lineHeight: 1.4,
           overflow: 'hidden', display: '-webkit-box',
           WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         }}>
           {task.description}
         </div>
       )}
+
+      {/* Screenshot thumbnail */}
       {thumb && (
         <img
           src={`/api/backlog/screenshot/${thumb.split('/').pop()}`}
           alt=""
-          style={{ width: '100%', height: 48, objectFit: 'cover', borderRadius: 4, background: '#f5f5f5' }}
+          style={{
+            width: '100%', height: 48,
+            objectFit: 'cover', borderRadius: 4,
+            background: colors.bgSurface,
+          }}
         />
       )}
-      {task.reviewComments && task.reviewComments.length > 0 && (
+
+      {/* Footer: labels + link button */}
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {task.labels.map(l => (
+            <span key={l} style={{
+              fontSize: 10, padding: '1px 6px', borderRadius: 3,
+              border: `1px solid ${colors.border}`,
+              color: colors.textMuted,
+            }}>
+              {l}
+            </span>
+          ))}
+        </div>
+        <button
+          onClick={handleCopyLink}
+          title="Copy task link"
+          style={{
+            background: 'none', border: 'none',
+            cursor: 'pointer', padding: '2px 4px',
+            borderRadius: 4, fontSize: 12, lineHeight: 1,
+            color: copied ? colors.accentGreen : colors.textMuted,
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { if (!copied) (e.currentTarget.style.color = colors.textSecondary) }}
+          onMouseLeave={e => { if (!copied) (e.currentTarget.style.color = colors.textMuted) }}
+        >
+          {copied ? '\u2713' : '\uD83D\uDD17'}
+        </button>
+      </div>
+
+      {/* Review comment */}
+      {hasReview && (
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          fontSize: 11, color: '#6b7280',
+          display: 'flex', alignItems: 'flex-start', gap: 6,
+          background: colors.accentPurpleLight,
+          borderRadius: 6, padding: '5px 8px',
         }}>
           <span style={{
-            width: 14, height: 14, borderRadius: 7,
-            background: task.status === 'design_review' ? '#ede9fe' : task.status === 'code_review' ? '#dbeafe' : '#f3f4f6',
-            color: task.status === 'design_review' ? '#7c3aed' : task.status === 'code_review' ? '#1d4ed8' : '#6b7280',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 9, fontWeight: 700, flexShrink: 0,
+            fontSize: 11, color: colors.accentPurple,
+            lineHeight: 1, flexShrink: 0, marginTop: 1,
           }}>
-            {task.reviewComments.length}
+            &#x1F4AC;
           </span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {task.reviewComments[task.reviewComments.length - 1].text}
+          <span style={{
+            fontSize: 10, color: colors.accentPurple,
+            lineHeight: 1.3,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>
+            {lastComment}
           </span>
         </div>
       )}
@@ -127,7 +165,7 @@ export function SortableTaskCard({ task, onClick }: { task: BacklogTask; onClick
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   }
 
   return (

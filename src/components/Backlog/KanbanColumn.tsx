@@ -2,54 +2,84 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableTaskCard } from './TaskCard'
 import { useBacklogStore } from '../../store/backlogStore'
+import { colors, statusColors } from '../../styles/tokens'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
+import type { ResponsiveMode } from '../../App'
 
-const COLUMN_CONFIG: Record<TaskStatus, { label: string; dot: string }> = {
-  backlog: { label: 'Backlog', dot: '#a3a3a3' },
-  todo: { label: 'Todo', dot: '#f59e0b' },
-  in_progress: { label: 'In Progress', dot: '#0a0a0a' },
-  design_review: { label: 'Design Review', dot: '#8b5cf6' },
-  code_review: { label: 'Code Review', dot: '#3b82f6' },
-  done: { label: 'Done', dot: '#22c55e' },
+const COLUMN_CONFIG: Record<TaskStatus, { label: string }> = {
+  backlog: { label: 'Backlog' },
+  todo: { label: 'Todo' },
+  in_progress: { label: 'In Progress' },
+  design_review: { label: 'Design Review' },
+  code_review: { label: 'Code Review' },
+  done: { label: 'Done' },
 }
 
 type Props = {
   status: TaskStatus
   tasks: BacklogTask[]
+  responsiveMode: ResponsiveMode
 }
 
-export function KanbanColumn({ status, tasks }: Props) {
+export function KanbanColumn({ status, tasks, responsiveMode }: Props) {
   const { setEditingTaskId } = useBacklogStore()
   const config = COLUMN_CONFIG[status]
-  const { setNodeRef, isOver } = useDroppable({ id: status })
+  const dotColor = statusColors[status] || colors.textMuted
+  const { setNodeRef } = useDroppable({ id: status })
+
+  const isMobile = responsiveMode === 'mobile'
+  const isTablet = responsiveMode === 'tablet'
+
+  // Column container style
+  const columnStyle: React.CSSProperties = isMobile
+    ? {
+        display: 'flex', flexDirection: 'column', gap: 8,
+        width: '100%',
+      }
+    : isTablet
+    ? {
+        display: 'flex', flexDirection: 'column', gap: 8,
+        width: 240, minWidth: 240, flexShrink: 0,
+        height: '100%',
+      }
+    : {
+        display: 'flex', flexDirection: 'column', gap: 8,
+        flex: 1, minWidth: 0,
+        height: '100%',
+      }
+
+  // Header padding: desktop [10, 12], tablet [8, 10]
+  const headerPadding = isTablet ? '8px 10px' : '10px 12px'
 
   return (
-    <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', gap: 0 }}>
+    <div style={columnStyle}>
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '0 4px 12px',
+        padding: headerPadding, flexShrink: 0,
       }}>
         <span style={{
-          width: 8, height: 8, borderRadius: 4,
-          background: config.dot, flexShrink: 0,
+          width: 7, height: 7, borderRadius: '50%',
+          background: dotColor, flexShrink: 0,
         }} />
-        <span style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: colors.textSecondary }}>
           {config.label}
         </span>
-        <span style={{ fontSize: 12, color: '#a3a3a3', fontWeight: 500 }}>
+        <span style={{ fontSize: 11, color: colors.textMuted, fontWeight: 400 }}>
           {tasks.length}
         </span>
       </div>
 
-      {/* Cards */}
+      {/* Cards container — scrollable on desktop/tablet */}
       <div
         ref={setNodeRef}
+        className="hide-scrollbar"
         style={{
-          flex: 1, display: 'flex', flexDirection: 'column', gap: 8,
-          padding: 4, borderRadius: 8, minHeight: 100,
-          background: isOver ? '#f5f5f5' : 'transparent',
-          transition: 'background 0.15s',
+          flex: isMobile ? undefined : 1,
+          display: 'flex', flexDirection: 'column',
+          gap: 6,
+          overflowY: isMobile ? undefined : 'auto',
+          minHeight: isMobile ? undefined : 80,
         }}
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>

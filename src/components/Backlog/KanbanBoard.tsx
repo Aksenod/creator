@@ -12,12 +12,21 @@ import { useBacklogStore } from '../../store/backlogStore'
 import { KanbanColumn } from './KanbanColumn'
 import { TaskCard } from './TaskCard'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
+import type { ResponsiveMode } from '../../App'
 
 const COLUMNS: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'design_review', 'code_review', 'done']
 
-export function KanbanBoard() {
+type Props = {
+  responsiveMode: ResponsiveMode
+  mobileFilterStatuses?: TaskStatus[]
+}
+
+export function KanbanBoard({ responsiveMode, mobileFilterStatuses }: Props) {
   const { tasks, moveTask, isUnlocked } = useBacklogStore()
   const [activeTask, setActiveTask] = useState<BacklogTask | null>(null)
+
+  const isMobile = responsiveMode === 'mobile'
+  const isTablet = responsiveMode === 'tablet'
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: isUnlocked ? 5 : 99999 } })
@@ -41,7 +50,6 @@ export function KanbanBoard() {
     const task = tasks.find(t => t.id === taskId)
     if (!task) return
 
-    // Determine target status: either the column itself or the status of the task we dropped over
     let targetStatus: TaskStatus
     if (COLUMNS.includes(over.id as TaskStatus)) {
       targetStatus = over.id as TaskStatus
@@ -51,7 +59,6 @@ export function KanbanBoard() {
       targetStatus = overTask.status
     }
 
-    // Calculate new order
     const targetTasks = tasksByStatus(targetStatus).filter(t => t.id !== taskId)
     const overIndex = targetTasks.findIndex(t => t.id === over.id)
     const newOrder = overIndex >= 0 ? overIndex : targetTasks.length
@@ -59,26 +66,53 @@ export function KanbanBoard() {
     if (isUnlocked) moveTask(taskId, targetStatus, newOrder)
   }
 
+  // Mobile: show only filtered columns
+  const visibleColumns = isMobile && mobileFilterStatuses
+    ? COLUMNS.filter(s => mobileFilterStatuses.includes(s))
+    : COLUMNS
+
+  // Board container styles per responsive mode
+  const boardStyle: React.CSSProperties = isMobile
+    ? {
+        display: 'flex', flexDirection: 'column',
+        gap: 8, padding: 12,
+        flex: 1, overflowY: 'auto',
+      }
+    : isTablet
+    ? {
+        display: 'flex', gap: 8,
+        padding: 12, flex: 1,
+        overflowX: 'auto', overflowY: 'hidden',
+      }
+    : {
+        display: 'flex', gap: 8,
+        padding: '16px 12px', flex: 1,
+        overflowY: 'hidden',
+      }
+
   return (
-    <div style={{
-      display: 'flex', gap: 24, padding: 24,
-      flex: 1, overflow: 'auto', alignItems: 'flex-start',
-    }}>
+    <div className="hide-scrollbar" style={boardStyle}>
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {COLUMNS.map(status => (
+        {visibleColumns.map(status => (
           <KanbanColumn
             key={status}
             status={status}
             tasks={tasksByStatus(status)}
+            responsiveMode={responsiveMode}
           />
         ))}
         <DragOverlay>
           {activeTask && (
-            <div style={{ opacity: 0.85, boxShadow: '0 4px 16px rgba(0,0,0,0.15)', borderRadius: 8 }}>
+            <div style={{
+              opacity: 0.92,
+              transform: 'rotate(2deg)',
+              boxShadow: '0 8px 24px -2px rgba(0,0,0,0.09)',
+              borderRadius: 10,
+            }}>
               <TaskCard task={activeTask} onClick={() => {}} />
             </div>
           )}
