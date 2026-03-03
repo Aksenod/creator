@@ -30,6 +30,23 @@
       "order": 0,
       "createdAt": "2026-03-03T00:00:00Z",
       "updatedAt": 1772525919322
+    },
+    {
+      "id": "bug-stale-worktree",
+      "title": "Стейлый worktree блокирует все Bash-команды",
+      "description": "## Описание\n\nПосле использования EnterWorktree для изоляции задач, при сбое сессии или ручном удалении worktree, Claude Code сохраняет ссылку на несуществующий путь (например `.claude/worktrees/feature/layer-visibility`). Sandbox проверяет этот путь перед выполнением КАЖДОЙ Bash-команды и блокирует их все с ошибкой:\n\n```\nPath \"/Users/bugrov/Desktop/Обучение/creator/.claude/worktrees/feature/<name>\" does not exist\n```\n\nЭто также ломает Glob и Grep (через posix_spawn).\n\n## Воспроизведение\n\n1. Начать задачу с EnterWorktree\n2. Сессия сбрасывается (/clear) или обрывается до корректного завершения worktree\n3. В новой сессии — все Bash/Glob/Grep команды заблокированы\n\n## Влияние\n\n- **Критическое:** невозможно запустить dev server, tsc, playwright, git — вообще ничего\n- Блокирует весь pipeline (фазы 4-8)\n- Возникало минимум 3 раза\n\n## Текущий workaround\n\n```bash\ncd /Users/bugrov/Desktop/Обучение/creator\ngit worktree prune\nrm -rf .claude/worktrees\n```\n\nЗатем перезапустить сессию Claude Code.\n\n## Корневая причина\n\nClaude Code sandbox валидирует worktree path из session state, но не обрабатывает случай когда path удалён. Нет graceful fallback на основной репозиторий.\n\n## Возможное решение\n\n- Не использовать EnterWorktree до фикса со стороны Claude Code\n- Или: автоматически проверять `.claude/worktrees/` в начале сессии и чистить стейлые ссылки\n- Добавить в Phase 0/1 проверку: `git worktree prune` перед началом работы",
+      "type": "bug",
+      "status": "backlog",
+      "priority": "high",
+      "screenshots": [],
+      "labels": [
+        "systemic",
+        "devtools",
+        "blocker"
+      ],
+      "order": 1,
+      "createdAt": 1709424000000,
+      "updatedAt": 1709424000000
     }
   ]
 }
