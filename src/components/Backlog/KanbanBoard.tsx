@@ -19,8 +19,9 @@ export function KanbanBoard() {
   const { tasks, moveTask, isUnlocked } = useBacklogStore()
   const [activeTask, setActiveTask] = useState<BacklogTask | null>(null)
 
-  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  const sensors = useSensors(...(isUnlocked ? [pointerSensor] : []))
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: isUnlocked ? 5 : 99999 } })
+  )
 
   const tasksByStatus = (status: TaskStatus) =>
     tasks.filter(t => t.status === status).sort((a, b) => a.order - b.order)
