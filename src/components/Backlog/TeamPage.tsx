@@ -57,6 +57,7 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
           display: 'flex', alignItems: 'center',
           padding: isTablet ? '0 16px' : '0 24px',
           flexShrink: 0, justifyContent: 'space-between',
+          position: 'relative',
         }}>
           {/* Left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isTablet ? 10 : 12 }}>
@@ -76,11 +77,13 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
             </span>
           </div>
 
-          {/* Center: Segmented pill tabs */}
-          <SegmentedTabs
-            active="team"
-            onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
-          />
+          {/* Center: Segmented pill tabs — absolute center */}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <SegmentedTabs
+              active="team"
+              onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
+            />
+          </div>
 
           {/* Right spacer */}
           <div style={{ width: 120 }} />

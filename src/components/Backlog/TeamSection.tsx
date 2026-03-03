@@ -2,15 +2,9 @@ import { useState } from 'react'
 import { teamMembers, type TeamMember } from './teamData'
 
 const STATUS_COLORS: Record<string, string> = {
-  active: '#22c55e',
-  busy: '#f59e0b',
-  offline: '#d4d4d4',
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Online',
-  busy: 'Busy',
-  offline: 'Offline',
+  active: '#16A34A',
+  busy: '#D97706',
+  offline: '#D4D4D4',
 }
 
 function TeamMemberCard({ member }: { member: TeamMember }) {
@@ -27,33 +21,33 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
       style={{
         background: '#fff',
         border: '1px solid #e5e5e5',
-        borderRadius: 12,
-        padding: 20,
-        transition: 'box-shadow 0.15s, transform 0.15s',
+        borderRadius: 10,
+        padding: 16,
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
+        transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'
-        e.currentTarget.style.transform = 'translateY(-1px)'
+        e.currentTarget.style.borderColor = '#D4D4D4'
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
       }}
       onMouseLeave={e => {
+        e.currentTarget.style.borderColor = '#e5e5e5'
         e.currentTarget.style.boxShadow = 'none'
-        e.currentTarget.style.transform = 'none'
       }}
     >
-      {/* Avatar + status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+      {/* Top row: avatar + name/role */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ position: 'relative', flexShrink: 0, width: 40, height: 40 }}>
           {!imgError ? (
             <img
               src={member.avatarUrl}
               alt={member.name}
               onError={() => setImgError(true)}
               style={{
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 borderRadius: '50%',
                 objectFit: 'cover',
                 background: '#f5f5f5',
@@ -62,29 +56,29 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
           ) : (
             <div
               style={{
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 borderRadius: '50%',
-                background: '#0a0a0a',
-                color: '#fff',
+                background: '#f5f5f5',
+                color: '#737373',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 16,
-                fontWeight: 600,
+                fontSize: 14,
+                fontWeight: 500,
               }}
             >
               {initials}
             </div>
           )}
-          {/* Status dot */}
+          {/* Status dot — top-right */}
           <div
             style={{
               position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 12,
-              height: 12,
+              top: 0,
+              right: -2,
+              width: 10,
+              height: 10,
               borderRadius: '50%',
               background: STATUS_COLORS[member.status],
               border: '2px solid #fff',
@@ -93,49 +87,31 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#0a0a0a', lineHeight: 1.3 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: '#0a0a0a', lineHeight: 1.3 }}>
             {member.name}
           </div>
-          <div style={{ fontSize: 12, color: '#525252', lineHeight: 1.3, marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: '#525252', lineHeight: 1.3, marginTop: 2 }}>
             {member.role}
           </div>
         </div>
       </div>
 
-      {/* Info */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ fontSize: 12, color: '#737373', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>{member.flag}</span>
-          <span>{member.location}</span>
-        </div>
-        <div style={{ fontSize: 11, color: '#a3a3a3' }}>
-          {member.specialty}
-        </div>
+      {/* Info row: location · specialty */}
+      <div style={{ fontSize: 11, color: '#a3a3a3', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span>{member.location}</span>
+        <span>·</span>
+        <span>{member.specialty}</span>
       </div>
 
-      {/* Status badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            background: STATUS_COLORS[member.status],
-          }}
-        />
-        <span style={{ fontSize: 11, color: '#a3a3a3' }}>
-          {STATUS_LABELS[member.status]}
-        </span>
-      </div>
+      {/* Divider */}
+      <div style={{ height: 1, background: '#f5f5f5' }} />
 
       {/* Bio */}
       <div
         style={{
-          fontSize: 12,
-          color: '#525252',
-          lineHeight: 1.5,
-          paddingTop: 8,
-          borderTop: '1px solid #f5f5f5',
+          fontSize: 11,
+          color: '#a3a3a3',
+          lineHeight: 1.4,
         }}
       >
         {member.bio}
@@ -145,14 +121,15 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
 }
 
 export function TeamSection() {
-  const activeCount = teamMembers.filter(m => m.status === 'active').length
+  const activeCount = teamMembers.filter(m => m.status !== 'offline').length
   const totalCount = teamMembers.length
 
   return (
     <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>
-      {/* Stats */}
-      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <span style={{ fontSize: 13, color: '#737373' }}>
+      {/* Stats row */}
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A' }} />
+        <span style={{ fontSize: 12, color: '#525252' }}>
           {activeCount} / {totalCount} online
         </span>
         <div style={{
@@ -162,7 +139,7 @@ export function TeamSection() {
           <div style={{
             width: `${(activeCount / totalCount) * 100}%`,
             height: '100%',
-            background: '#22c55e',
+            background: '#16A34A',
             borderRadius: 2,
           }} />
         </div>
@@ -172,8 +149,8 @@ export function TeamSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          gap: 16,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 12,
         }}
       >
         {teamMembers.map(member => (

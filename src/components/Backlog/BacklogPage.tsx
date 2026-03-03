@@ -79,9 +79,9 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
             {!isUnlocked && (
               <span
                 onClick={() => setShowPin(true)}
-                style={{ cursor: 'pointer', color: colors.textSecondary, fontSize: 16 }}
+                style={{ cursor: 'pointer', color: colors.textSecondary, display: 'flex', alignItems: 'center' }}
               >
-                &#128274;
+                <LockIcon size={16} />
               </span>
             )}
             <button
@@ -107,6 +107,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
           display: 'flex', alignItems: 'center',
           padding: isTablet ? '0 16px' : '0 24px',
           flexShrink: 0, justifyContent: 'space-between',
+          position: 'relative',
         }}>
           {/* Left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isTablet ? 10 : 12 }}>
@@ -126,11 +127,13 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
             </span>
           </div>
 
-          {/* Center: Segmented pill tabs */}
-          <SegmentedTabs
-            active="board"
-            onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
-          />
+          {/* Center: Segmented pill tabs — absolute center */}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <SegmentedTabs
+              active="board"
+              onTabChange={(tab) => setCurrentView(tab === 'board' ? 'backlog' : 'team')}
+            />
+          </div>
 
           {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -157,7 +160,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
                   fontSize: 12, fontWeight: 500, color: colors.textSecondary,
                 }}
               >
-                &#128274;
+                <LockIcon size={14} />
                 {!isTablet && <span>Unlock</span>}
               </button>
             )}
@@ -289,6 +292,16 @@ function SegmentedTabs({ active, onTabChange }: {
         </button>
       ))}
     </div>
+  )
+}
+
+/* Lock icon — flat line style */
+function LockIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
   )
 }
 

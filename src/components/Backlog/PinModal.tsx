@@ -33,7 +33,8 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
         }}
       >
         <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a1a', textAlign: 'center' }}>
-          🔒 Введите PIN
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: 6 }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          Введите PIN
         </div>
         <div style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
           Для добавления и удаления задач
