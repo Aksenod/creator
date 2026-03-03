@@ -4,7 +4,8 @@ import { useBacklogStore } from '../../store/backlogStore'
 import { KanbanBoard } from './KanbanBoard'
 import { TaskModal } from './TaskModal'
 import { PinModal } from './PinModal'
-import { colors, statusColors } from '../../styles/tokens'
+import { colors, statusColors, shadows } from '../../styles/tokens'
+import { ArrowLeft, Lock, Plus } from '@phosphor-icons/react'
 import type { ResponsiveMode } from '../../App'
 import type { TaskStatus } from '../../types/backlog'
 
@@ -60,7 +61,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
       {isMobile ? (
         /* Mobile header: 48px */
         <div style={{
-          height: 48, background: colors.bgCard,
+          height: 48, background: colors.bg,
           borderBottom: `1px solid ${colors.border}`,
           display: 'flex', alignItems: 'center',
           padding: '0 16px', flexShrink: 0,
@@ -69,9 +70,9 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span
               onClick={() => setCurrentView('projects')}
-              style={{ cursor: 'pointer', fontSize: 18, color: colors.textSecondary, lineHeight: 1 }}
+              style={{ cursor: 'pointer', color: colors.textSecondary, display: 'flex', alignItems: 'center' }}
             >
-              &#8592;
+              <ArrowLeft size={18} weight="thin" />
             </span>
             <span style={{ fontWeight: 600, fontSize: 15, color: colors.text }}>Backlog</span>
           </div>
@@ -81,13 +82,13 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
                 onClick={() => setShowPin(true)}
                 style={{ cursor: 'pointer', color: colors.textSecondary, display: 'flex', alignItems: 'center' }}
               >
-                <LockIcon size={16} />
+                <Lock size={16} weight="thin" />
               </span>
             )}
             <button
               onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
               style={{
-                background: colors.text, color: colors.bgCard,
+                background: colors.text, color: colors.bg,
                 border: 'none', borderRadius: 6,
                 padding: '4px 10px', fontSize: 16,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
@@ -102,7 +103,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
         /* Desktop / Tablet header */
         <div style={{
           height: isTablet ? 52 : 56,
-          background: colors.bgCard,
+          background: colors.bg,
           borderBottom: `1px solid ${colors.border}`,
           display: 'flex', alignItems: 'center',
           padding: isTablet ? '0 16px' : '0 24px',
@@ -118,7 +119,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
                 cursor: 'pointer', color: colors.textSecondary, fontSize: 13,
               }}
             >
-              <span style={{ fontSize: isTablet ? 18 : 13 }}>&#8592;</span>
+              <ArrowLeft size={isTablet ? 18 : 14} weight="thin" />
               {isDesktop && <span>Projects</span>}
             </div>
             {isDesktop && <span style={{ color: colors.textMuted, fontSize: 13 }}>/</span>}
@@ -144,7 +145,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
               }}>
                 <span style={{
                   width: 6, height: 6, borderRadius: 3,
-                  background: colors.accentGreen,
+                  background: colors.text,
                 }} />
                 Saved
               </span>
@@ -160,7 +161,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
                   fontSize: 12, fontWeight: 500, color: colors.textSecondary,
                 }}
               >
-                <LockIcon size={14} />
+                <Lock size={14} weight="thin" />
                 {!isTablet && <span>Unlock</span>}
               </button>
             )}
@@ -168,14 +169,14 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
             <button
               onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
               style={{
-                background: colors.text, color: colors.bgCard,
+                background: colors.text, color: colors.bg,
                 border: 'none', borderRadius: 6,
                 padding: isTablet ? '5px 12px' : '6px 14px',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 12, fontWeight: 500,
               }}
             >
-              <span style={{ fontSize: 13 }}>+</span>
+              <Plus size={14} weight="thin" />
               {!isTablet && <span>New Task</span>}
             </button>
           </div>
@@ -185,7 +186,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
       {/* Mobile: Tabs bar */}
       {isMobile && (
         <div style={{
-          height: 40, background: colors.bgCard,
+          height: 40, background: colors.bg,
           borderBottom: `1px solid ${colors.border}`,
           display: 'flex', alignItems: 'center',
           padding: '0 12px', flexShrink: 0,
@@ -200,7 +201,7 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
         <div
           className="hide-scrollbar"
           style={{
-            background: colors.bgCard,
+            background: colors.bg,
             display: 'flex', gap: 6,
             padding: '8px 12px', flexShrink: 0,
             overflowX: 'auto',
@@ -215,14 +216,14 @@ export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode
                 padding: '4px 10px', borderRadius: 16,
                 border: mobileFilter === f.key ? 'none' : `1px solid ${colors.border}`,
                 background: mobileFilter === f.key ? colors.text : 'transparent',
-                color: mobileFilter === f.key ? colors.bgCard : colors.textMuted,
+                color: mobileFilter === f.key ? colors.bg : colors.textMuted,
                 cursor: 'pointer', fontSize: 11, fontWeight: mobileFilter === f.key ? 500 : 400,
                 whiteSpace: 'nowrap', flexShrink: 0,
               }}
             >
               <span style={{
                 width: 6, height: 6, borderRadius: 3,
-                background: mobileFilter === f.key ? colors.bgCard : f.dotColor,
+                background: mobileFilter === f.key ? colors.bg : f.dotColor,
               }} />
               {f.label}
               <span style={{
@@ -278,13 +279,13 @@ function SegmentedTabs({ active, onTabChange }: {
           key={tab}
           onClick={() => onTabChange(tab)}
           style={{
-            background: active === tab ? colors.bgCard : 'transparent',
+            background: active === tab ? colors.bg : 'transparent',
             border: 'none', borderRadius: 6,
             padding: '6px 16px', cursor: 'pointer',
             fontSize: 12,
             fontWeight: active === tab ? 600 : 400,
             color: active === tab ? colors.text : colors.textMuted,
-            boxShadow: active === tab ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+            boxShadow: active === tab ? shadows.xs : 'none',
             transition: 'all 0.15s',
           }}
         >
@@ -292,16 +293,6 @@ function SegmentedTabs({ active, onTabChange }: {
         </button>
       ))}
     </div>
-  )
-}
-
-/* Lock icon — flat line style */
-function LockIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
   )
 }
 

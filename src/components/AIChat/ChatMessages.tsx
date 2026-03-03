@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import type { ChatMessage } from './types'
 import { ToolCallBadge } from './ToolCallBadge'
+import { colors } from '../../styles/tokens'
 
 type Props = {
   messages: ChatMessage[]
@@ -38,7 +39,7 @@ export function ChatMessages({ messages, isStreaming }: Props) {
           alignItems: 'center',
           justifyContent: 'center',
           padding: 16,
-          color: '#aaa',
+          color: colors.textMuted,
           fontSize: 11,
           textAlign: 'center',
           lineHeight: 1.5,
@@ -79,8 +80,8 @@ export function ChatMessages({ messages, isStreaming }: Props) {
                   lineHeight: 1.45,
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                  background: isUser ? '#0a0a0a' : '#f4f4f4',
-                  color: isUser ? '#fff' : '#0a0a0a',
+                  background: isUser ? colors.bgActive : colors.bgSurface,
+                  color: isUser ? colors.bg : colors.text,
                 }}
               >
                 {msg.content || ''}

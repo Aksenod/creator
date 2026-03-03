@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import type { AISettings } from './types'
+import { colors, shadows } from '../../styles/tokens'
 
 const MODELS = [
   'google/gemini-3.1-pro-preview',
@@ -21,12 +22,12 @@ type Props = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '5px 8px',
-  border: '1px solid #e5e5e5',
+  border: `1px solid ${colors.border}`,
   borderRadius: 4,
   fontSize: 12,
   fontFamily: 'inherit',
-  background: '#fafafa',
-  color: '#0a0a0a',
+  background: colors.bgHover,
+  color: colors.text,
   outline: 'none',
   boxSizing: 'border-box',
 }
@@ -34,7 +35,7 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 500,
-  color: '#555',
+  color: colors.textSecondary,
   marginBottom: 3,
   display: 'block',
 }
@@ -54,7 +55,7 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.25)',
+        background: colors.overlay,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -64,19 +65,19 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#fff',
+          background: colors.bg,
           borderRadius: 10,
           padding: '20px 20px 16px',
           width: 320,
           maxHeight: '80vh',
           overflow: 'auto',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          boxShadow: shadows.xl,
           display: 'flex',
           flexDirection: 'column',
           gap: 14,
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: colors.text }}>
           AI Chat Settings
         </div>
 
@@ -106,7 +107,7 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
             step={0.05}
             value={temperature}
             onChange={(e) => setTemperature(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#0a0a0a' }}
+            style={{ width: '100%', accentColor: colors.text }}
           />
         </div>
 
@@ -115,13 +116,13 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
             onClick={onClose}
             style={{
               padding: '5px 14px',
-              border: '1px solid #e5e5e5',
+              border: `1px solid ${colors.border}`,
               borderRadius: 6,
-              background: '#fff',
+              background: colors.bg,
               fontSize: 12,
               fontFamily: 'inherit',
               cursor: 'pointer',
-              color: '#555',
+              color: colors.textSecondary,
             }}
           >
             Cancel
@@ -132,8 +133,8 @@ export function ChatSettingsModal({ settings, onSave, onClose }: Props) {
               padding: '5px 14px',
               border: 'none',
               borderRadius: 6,
-              background: '#0a0a0a',
-              color: '#fff',
+              background: colors.bgActive,
+              color: colors.bg,
               fontSize: 12,
               fontFamily: 'inherit',
               cursor: 'pointer',

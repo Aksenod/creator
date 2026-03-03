@@ -1,5 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { BreakpointBar, detectBreakpoint, type Breakpoint } from './BreakpointBar'
+import { ArrowLeft, CaretDown, ArrowCounterClockwise, DownloadSimple, Plus, Play } from '@phosphor-icons/react'
+import { colors, shadows, radius } from '../../../styles/tokens'
 import type { BreakpointId } from '../../../constants/breakpoints'
 
 type Props = {
@@ -55,7 +57,7 @@ export function Topbar({
 
   return (
     <div style={{
-      height: 48, background: '#fff', borderBottom: '1px solid #e0e0e0',
+      height: 48, background: colors.bg, borderBottom: `1px solid ${colors.border}`,
       display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0,
     }}>
       {/* Левая секция */}
@@ -63,11 +65,15 @@ export function Topbar({
         <button
           onClick={onCloseProject}
           title="Back to projects — current project is saved automatically"
-          style={{ padding: '4px 10px', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', background: '#fff', fontSize: 12 }}
+          style={{
+            padding: '4px 10px', border: `1px solid ${colors.border}`, borderRadius: 4,
+            cursor: 'pointer', background: colors.bg, fontSize: 12,
+            display: 'flex', alignItems: 'center', gap: 4, color: colors.text,
+          }}
         >
-          ← Projects
+          <ArrowLeft size={12} weight="thin" /> Projects
         </button>
-        <span style={{ fontWeight: 600 }}>{projectName}</span>
+        <span style={{ fontWeight: 600, color: colors.text }}>{projectName}</span>
       </div>
 
       {/* Центральная секция — Canvas Settings + Breakpoint bar */}
@@ -78,33 +84,31 @@ export function Topbar({
           title="Canvas settings — viewport width and scale. Keys 1–4 for quick breakpoint switching"
           style={{
             display: 'flex', alignItems: 'center', gap: 4,
-            padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: showCanvasSettings ? '#1a1a1a' : '#f0f0f0',
-            color: showCanvasSettings ? '#fff' : '#333',
+            padding: '3px 8px', borderRadius: radius.sm, border: 'none', cursor: 'pointer',
+            background: showCanvasSettings ? colors.bgActive : colors.bgSurface,
+            color: showCanvasSettings ? colors.bg : colors.text,
             fontSize: 12, fontVariantNumeric: 'tabular-nums', fontWeight: 500,
             transition: 'all 0.1s',
           }}
         >
           {displayWidth}px
-          <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
-            <path d="M1 1l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <CaretDown size={10} weight="thin" />
         </button>
 
         {/* Canvas Settings popover */}
         {showCanvasSettings && (
           <div style={{
             position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 100,
-            background: '#fff', borderRadius: 8, padding: 12,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: 220,
-            border: '1px solid #e0e0e0', fontSize: 12,
+            background: colors.bg, borderRadius: radius.md, padding: 12,
+            boxShadow: shadows.md, minWidth: 220,
+            border: `1px solid ${colors.border}`, fontSize: 12,
           }}>
-            <div style={{ marginBottom: 10, fontWeight: 600, color: '#aaa', letterSpacing: '0.05em', fontSize: 10, textTransform: 'uppercase' }}>
+            <div style={{ marginBottom: 10, fontWeight: 600, color: colors.textMuted, letterSpacing: '0.05em', fontSize: 10, textTransform: 'uppercase' }}>
               Canvas Settings
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-              <span style={{ color: '#555', flexShrink: 0 }}>Width</span>
+              <span style={{ color: colors.textSecondary, flexShrink: 0 }}>Width</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <input
                   type="number"
@@ -114,32 +118,34 @@ export function Topbar({
                   onChange={e => onCustomWidthChange(e.target.value)}
                   onBlur={e => onCustomWidthBlur(e.target.value)}
                   style={{
-                    width: 64, padding: '3px 6px', background: '#fafafa',
-                    border: customWidth ? '1px solid #0a0a0a' : '1px solid #e0e0e0',
-                    borderRadius: 4, color: '#1a1a1a', fontSize: 12,
+                    width: 64, padding: '3px 6px', background: colors.bgHover,
+                    border: customWidth ? `1px solid ${colors.borderFocus}` : `1px solid ${colors.border}`,
+                    borderRadius: 4, color: colors.text, fontSize: 12,
                     textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none',
                   }}
                 />
-                <span style={{ color: '#888' }}>px</span>
+                <span style={{ color: colors.textMuted }}>px</span>
                 {customWidth && (
                   <button
                     onClick={onClearCustomWidth}
-                    style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11, padding: '0 2px' }}
+                    style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
                     title="Reset to breakpoint"
-                  >↺</button>
+                  >
+                    <ArrowCounterClockwise size={12} weight="thin" />
+                  </button>
                 )}
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ color: '#555' }}>Scale</span>
-              <span style={{ fontVariantNumeric: 'tabular-nums', color: '#1a1a1a', fontWeight: 500 }}>
+              <span style={{ color: colors.textSecondary }}>Scale</span>
+              <span style={{ fontVariantNumeric: 'tabular-nums', color: colors.text, fontWeight: 500 }}>
                 {Math.round(scale * 100)}%
               </span>
             </div>
 
-            <div style={{ height: 1, background: '#e0e0e0', margin: '8px 0' }} />
-            <div style={{ color: '#aaa', fontSize: 10, lineHeight: 1.5 }}>
+            <div style={{ height: 1, background: colors.border, margin: '8px 0' }} />
+            <div style={{ color: colors.textMuted, fontSize: 10, lineHeight: 1.5 }}>
               Shortcuts: 1–4 to switch breakpoints
             </div>
           </div>
@@ -160,10 +166,11 @@ export function Topbar({
             title="Export active artboard as standalone HTML file with responsive @media"
             style={{
               padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-              border: '1px solid #ddd', background: '#fff', color: '#333',
+              border: `1px solid ${colors.border}`, background: colors.bg, color: colors.text,
+              display: 'flex', alignItems: 'center', gap: 4,
             }}
           >
-            ↓ HTML
+            <DownloadSimple size={12} weight="thin" /> HTML
           </button>
         )}
         <button
@@ -171,22 +178,22 @@ export function Topbar({
           title="Add artboard — new page or section on canvas"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-            border: '1px solid #ddd', background: '#fff', color: '#333',
+            border: `1px solid ${colors.border}`, background: colors.bg, color: colors.text,
+            display: 'flex', alignItems: 'center', gap: 4,
           }}
         >
-          + Artboard
+          <Plus size={12} weight="thin" /> Artboard
         </button>
         <button
           onClick={onTogglePreview}
           title="Preview — export artboard as HTML and open in new tab"
           style={{
             padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-            border: 'none',
-            background: '#f0f0f0',
-            color: '#333',
+            border: 'none', background: colors.bgSurface, color: colors.text,
+            display: 'flex', alignItems: 'center', gap: 4,
           }}
         >
-          ▶ Preview
+          <Play size={12} weight="thin" /> Preview
         </button>
       </div>
     </div>

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import type { BacklogTask } from '../../types/backlog'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { colors, priorityColors } from '../../styles/tokens'
+import { colors, priorityColors, shadows } from '../../styles/tokens'
+import { LinkSimple, Check, ChatCircle } from '@phosphor-icons/react'
 
 const TYPE_BADGE: Record<string, { bg: string; color: string }> = {
   feature: { bg: colors.bgSurface, color: colors.textSecondary },
-  bug: { bg: colors.accentRedLight, color: colors.accentRed },
+  bug: { bg: colors.bgSurface, color: colors.accentRed },
 }
 
 export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => void }) {
@@ -35,7 +36,7 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: colors.bgCard,
+        background: colors.bg,
         border: `1px solid ${hovered ? colors.borderStrong : colors.border}`,
         borderRadius: 10,
         padding: '10px 12px',
@@ -44,7 +45,7 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
         flexDirection: 'column',
         gap: 8,
         opacity: isDone ? 0.5 : 1,
-        boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+        boxShadow: hovered ? shadows.sm : 'none',
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
     >
@@ -121,13 +122,13 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
             background: 'none', border: 'none',
             cursor: 'pointer', padding: '2px 4px',
             borderRadius: 4, fontSize: 12, lineHeight: 1,
-            color: copied ? colors.accentGreen : colors.textMuted,
+            color: copied ? colors.text : colors.textMuted,
             transition: 'color 0.15s',
           }}
           onMouseEnter={e => { if (!copied) (e.currentTarget.style.color = colors.textSecondary) }}
           onMouseLeave={e => { if (!copied) (e.currentTarget.style.color = colors.textMuted) }}
         >
-          {copied ? '\u2713' : '\uD83D\uDD17'}
+          {copied ? <Check size={14} weight="thin" /> : <LinkSimple size={14} weight="thin" />}
         </button>
       </div>
 
@@ -135,17 +136,12 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
       {hasReview && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 6,
-          background: colors.accentPurpleLight,
+          background: colors.bgSurface,
           borderRadius: 6, padding: '5px 8px',
         }}>
+          <ChatCircle size={12} weight="thin" style={{ flexShrink: 0, color: colors.textSecondary }} />
           <span style={{
-            fontSize: 11, color: colors.accentPurple,
-            lineHeight: 1, flexShrink: 0, marginTop: 1,
-          }}>
-            &#x1F4AC;
-          </span>
-          <span style={{
-            fontSize: 10, color: colors.accentPurple,
+            fontSize: 10, color: colors.textSecondary,
             lineHeight: 1.3,
             overflow: 'hidden', textOverflow: 'ellipsis',
             display: '-webkit-box',

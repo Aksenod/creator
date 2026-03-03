@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useBacklogStore } from '../../store/backlogStore'
 import { SegmentedControl } from '../Properties/shared/SegmentedControl'
 import { ScreenshotUpload } from './ScreenshotUpload'
+import { colors, shadows, radius, priorityColors as globalPriorityColors } from '../../styles/tokens'
+import { X } from '@phosphor-icons/react'
 import type { TaskType, TaskPriority, TaskStatus, ReviewComment } from '../../types/backlog'
 
 const TYPE_OPTIONS = [
@@ -101,48 +103,42 @@ export function TaskModal() {
     if (existing) deleteTask(existing.id)
   }
 
-  const priorityColors: Record<string, { bg: string; text: string }> = {
-    low: { bg: '#f0fdf4', text: '#15803d' },
-    medium: { bg: '#fefce8', text: '#a16207' },
-    high: { bg: '#fef2f2', text: '#dc2626' },
-  }
-
   const statusLabel = STATUS_OPTIONS.find(o => o.value === (existing?.status ?? status))?.label ?? status
   const typeLabel = TYPE_OPTIONS.find(o => o.value === (existing?.type ?? type))?.label ?? type
   const priorityLabel = PRIORITY_OPTIONS.find(o => o.value === (existing?.priority ?? priority))?.label ?? priority
 
   // View-only mode for unauthenticated users
   if (!isUnlocked && existing) {
-    const pc = priorityColors[existing.priority] ?? priorityColors.medium
+    const priColor = globalPriorityColors[existing.priority] ?? colors.textMuted
     return (
       <div
         onClick={() => setEditingTaskId(null)}
         style={{
           position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(0,0,0,0.4)',
+          background: colors.overlay,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            background: '#fff', borderRadius: 12,
+            background: colors.bg, borderRadius: 12,
             width: '100%', maxWidth: 560, maxHeight: '90vh',
             overflow: 'auto', padding: 24,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            boxShadow: shadows.xl,
             display: 'flex', flexDirection: 'column', gap: 16,
           }}
         >
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0a0a0a', flex: 1 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: colors.text, flex: 1 }}>
               {existing.title}
             </h2>
             <button
               onClick={() => setEditingTaskId(null)}
-              style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#737373', padding: 4, flexShrink: 0 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.textSecondary, padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}
             >
-              &times;
+              <X size={20} weight="thin" />
             </button>
           </div>
 
@@ -150,26 +146,26 @@ export function TaskModal() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <span style={{
               padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-              background: '#f5f5f5', color: '#525252',
+              background: colors.bgSurface, color: colors.textSecondary,
             }}>
               {typeLabel}
             </span>
             <span style={{
               padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-              background: pc.bg, color: pc.text,
+              background: colors.bgSurface, color: priColor,
             }}>
               {priorityLabel}
             </span>
             <span style={{
               padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-              background: '#f0f4ff', color: '#1d4ed8',
+              background: colors.bgSurface, color: colors.textSecondary,
             }}>
               {statusLabel}
             </span>
             {existing.labels.map(l => (
               <span key={l} style={{
                 padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500,
-                background: '#f5f5f5', color: '#737373',
+                background: colors.bgSurface, color: colors.textSecondary,
               }}>
                 {l}
               </span>
@@ -179,7 +175,7 @@ export function TaskModal() {
           {/* Description */}
           {existing.description && (
             <div style={{
-              fontSize: 13, lineHeight: 1.6, color: '#374151',
+              fontSize: 13, lineHeight: 1.6, color: colors.text,
               whiteSpace: 'pre-wrap',
             }}>
               {existing.description}
@@ -191,8 +187,8 @@ export function TaskModal() {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {existing.screenshots.map((src, i) => (
                 <img key={i} src={src} alt="" style={{
-                  maxWidth: '100%', maxHeight: 200, borderRadius: 6,
-                  border: '1px solid #e5e5e5', objectFit: 'cover',
+                  maxWidth: '100%', maxHeight: 200, borderRadius: radius.sm,
+                  border: `1px solid ${colors.border}`, objectFit: 'cover',
                 }} />
               ))}
             </div>
@@ -201,32 +197,31 @@ export function TaskModal() {
           {/* Review Comments (read-only) */}
           {existing.reviewComments && existing.reviewComments.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Review Comments</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Review Comments</label>
               {existing.reviewComments.map((c, i) => (
                 <div key={i} style={{
-                  padding: '8px 10px', borderRadius: 6,
-                  background: c.author === 'PM' ? '#f0f4ff' : c.author === 'Designer' ? '#faf5ff' : '#f5f5f5',
-                  border: '1px solid',
-                  borderColor: c.author === 'PM' ? '#dbeafe' : c.author === 'Designer' ? '#ede9fe' : '#e5e5e5',
+                  padding: '8px 10px', borderRadius: radius.sm,
+                  background: colors.bgSurface,
+                  border: `1px solid ${colors.border}`,
                   fontSize: 12, lineHeight: 1.5,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{
                       fontWeight: 600, fontSize: 11,
-                      color: c.author === 'PM' ? '#1d4ed8' : c.author === 'Designer' ? '#7c3aed' : '#525252',
+                      color: colors.text,
                     }}>{c.author}</span>
-                    <span style={{ color: '#a3a3a3', fontSize: 10 }}>
+                    <span style={{ color: colors.textMuted, fontSize: 10 }}>
                       {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <div style={{ color: '#374151', whiteSpace: 'pre-wrap' }}>{c.text}</div>
+                  <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }}>{c.text}</div>
                 </div>
               ))}
             </div>
           )}
 
           {/* Date */}
-          <div style={{ fontSize: 11, color: '#a3a3a3' }}>
+          <div style={{ fontSize: 11, color: colors.textMuted }}>
             Created {new Date(existing.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
 
@@ -235,9 +230,9 @@ export function TaskModal() {
             <button
               onClick={() => setEditingTaskId(null)}
               style={{
-                padding: '8px 16px', fontSize: 13, border: '1px solid #e5e5e5',
-                borderRadius: 6, cursor: 'pointer', background: '#fff',
-                color: '#525252', fontWeight: 500,
+                padding: '8px 16px', fontSize: 13, border: `1px solid ${colors.border}`,
+                borderRadius: radius.sm, cursor: 'pointer', background: colors.bg,
+                color: colors.textSecondary, fontWeight: 500,
               }}
             >
               Close
@@ -253,75 +248,75 @@ export function TaskModal() {
       onClick={() => setEditingTaskId(null)}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.4)',
+        background: colors.overlay,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 12,
+          background: colors.bg, borderRadius: 12,
           width: '100%', maxWidth: 560, maxHeight: '90vh',
           overflow: 'auto', padding: 24,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+          boxShadow: shadows.xl,
           display: 'flex', flexDirection: 'column', gap: 16,
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0a0a0a' }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: colors.text }}>
             {existing ? 'Edit Task' : 'New Task'}
           </h2>
           <button
             onClick={() => setEditingTaskId(null)}
-            style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#737373', padding: 4 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.textSecondary, padding: 4, display: 'flex', alignItems: 'center' }}
           >
-            &times;
+            <X size={20} weight="thin" />
           </button>
         </div>
 
         {/* Title */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Title</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Title</label>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Task title..."
             autoFocus
             style={{
-              padding: '8px 10px', fontSize: 13, border: '1px solid #e5e5e5',
-              borderRadius: 6, outline: 'none', color: '#0a0a0a',
+              padding: '8px 10px', fontSize: 13, border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm, outline: 'none', color: colors.text,
             }}
-            onFocus={e => e.target.style.borderColor = '#0a0a0a'}
-            onBlur={e => e.target.style.borderColor = '#e5e5e5'}
+            onFocus={e => e.target.style.borderColor = colors.borderFocus}
+            onBlur={e => e.target.style.borderColor = colors.border}
           />
         </div>
 
         {/* Description */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Description</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Description</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Describe the task..."
             rows={4}
             style={{
-              padding: '8px 10px', fontSize: 13, border: '1px solid #e5e5e5',
-              borderRadius: 6, outline: 'none', resize: 'vertical', fontFamily: 'inherit',
-              color: '#0a0a0a',
+              padding: '8px 10px', fontSize: 13, border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm, outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+              color: colors.text,
             }}
-            onFocus={e => e.target.style.borderColor = '#0a0a0a'}
-            onBlur={e => e.target.style.borderColor = '#e5e5e5'}
+            onFocus={e => e.target.style.borderColor = colors.borderFocus}
+            onBlur={e => e.target.style.borderColor = colors.border}
           />
         </div>
 
         {/* Type & Priority */}
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Type</label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Type</label>
             <SegmentedControl value={type} options={TYPE_OPTIONS} onChange={v => setType(v as TaskType)} />
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Priority</label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Priority</label>
             <SegmentedControl value={priority} options={PRIORITY_OPTIONS} onChange={v => setPriority(v as TaskPriority)} />
           </div>
         </div>
@@ -329,14 +324,14 @@ export function TaskModal() {
         {/* Status (only for edit mode) */}
         {existing && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Status</label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Status</label>
             <select
               value={status}
               onChange={e => setStatus(e.target.value as TaskStatus)}
               style={{
-                padding: '8px 10px', fontSize: 13, border: '1px solid #e5e5e5',
-                borderRadius: 6, outline: 'none', color: '#0a0a0a',
-                background: '#fff', cursor: 'pointer',
+                padding: '8px 10px', fontSize: 13, border: `1px solid ${colors.border}`,
+                borderRadius: radius.sm, outline: 'none', color: colors.text,
+                background: colors.bg, cursor: 'pointer',
               }}
             >
               {STATUS_OPTIONS.map(opt => (
@@ -348,65 +343,64 @@ export function TaskModal() {
 
         {/* Labels */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Labels (comma separated)</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Labels (comma separated)</label>
           <input
             value={labels}
             onChange={e => setLabels(e.target.value)}
             placeholder="ui, performance, ..."
             style={{
-              padding: '8px 10px', fontSize: 13, border: '1px solid #e5e5e5',
-              borderRadius: 6, outline: 'none', color: '#0a0a0a',
+              padding: '8px 10px', fontSize: 13, border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm, outline: 'none', color: colors.text,
             }}
-            onFocus={e => e.target.style.borderColor = '#0a0a0a'}
-            onBlur={e => e.target.style.borderColor = '#e5e5e5'}
+            onFocus={e => e.target.style.borderColor = colors.borderFocus}
+            onBlur={e => e.target.style.borderColor = colors.border}
           />
         </div>
 
         {/* Screenshots */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Screenshots</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>Screenshots</label>
           <ScreenshotUpload screenshots={screenshots} onChange={setScreenshots} />
         </div>
 
         {/* Review Comments */}
         {existing && (status === 'design_review' || status === 'code_review' || reviewComments.length > 0) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>
               Review Comments
             </label>
             {reviewComments.map((c, i) => (
               <div key={i} style={{
-                padding: '8px 10px', borderRadius: 6,
-                background: c.author === 'PM' ? '#f0f4ff' : c.author === 'Designer' ? '#faf5ff' : '#f5f5f5',
-                border: '1px solid',
-                borderColor: c.author === 'PM' ? '#dbeafe' : c.author === 'Designer' ? '#ede9fe' : '#e5e5e5',
+                padding: '8px 10px', borderRadius: radius.sm,
+                background: colors.bgSurface,
+                border: `1px solid ${colors.border}`,
                 fontSize: 12, lineHeight: 1.5,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{
                     fontWeight: 600,
-                    color: c.author === 'PM' ? '#1d4ed8' : c.author === 'Designer' ? '#7c3aed' : '#525252',
+                    color: colors.text,
                     fontSize: 11,
                   }}>
                     {c.author}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ color: '#a3a3a3', fontSize: 10 }}>
+                    <span style={{ color: colors.textMuted, fontSize: 10 }}>
                       {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                     <button
                       onClick={() => handleDeleteComment(i)}
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: '#a3a3a3', fontSize: 12, padding: '0 2px', lineHeight: 1,
+                        color: colors.textMuted, fontSize: 12, padding: '0 2px', lineHeight: 1,
                       }}
                       title="Delete comment"
                     >
-                      &times;
+                      <X size={14} weight="thin" />
                     </button>
                   </div>
                 </div>
-                <div style={{ color: '#374151', whiteSpace: 'pre-wrap' }}>{c.text}</div>
+                <div style={{ color: colors.text, whiteSpace: 'pre-wrap' }}>{c.text}</div>
               </div>
             ))}
             <div style={{ display: 'flex', gap: 8 }}>
@@ -416,12 +410,12 @@ export function TaskModal() {
                 placeholder="Add review comment..."
                 rows={2}
                 style={{
-                  flex: 1, padding: '8px 10px', fontSize: 12, border: '1px solid #e5e5e5',
-                  borderRadius: 6, outline: 'none', resize: 'vertical', fontFamily: 'inherit',
-                  color: '#0a0a0a',
+                  flex: 1, padding: '8px 10px', fontSize: 12, border: `1px solid ${colors.border}`,
+                  borderRadius: radius.sm, outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+                  color: colors.text,
                 }}
-                onFocus={e => e.target.style.borderColor = '#0a0a0a'}
-                onBlur={e => e.target.style.borderColor = '#e5e5e5'}
+                onFocus={e => e.target.style.borderColor = colors.borderFocus}
+                onBlur={e => e.target.style.borderColor = colors.border}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault()
@@ -434,9 +428,9 @@ export function TaskModal() {
                 disabled={!newComment.trim()}
                 style={{
                   padding: '8px 12px', fontSize: 12, border: 'none',
-                  borderRadius: 6, cursor: newComment.trim() ? 'pointer' : 'default',
-                  background: newComment.trim() ? '#0a0a0a' : '#e5e5e5',
-                  color: newComment.trim() ? '#fff' : '#a3a3a3',
+                  borderRadius: radius.sm, cursor: newComment.trim() ? 'pointer' : 'default',
+                  background: newComment.trim() ? colors.accent : colors.border,
+                  color: newComment.trim() ? colors.bg : colors.textMuted,
                   fontWeight: 500, alignSelf: 'flex-end',
                 }}
               >
@@ -452,9 +446,9 @@ export function TaskModal() {
             <button
               onClick={handleDelete}
               style={{
-                padding: '8px 16px', fontSize: 13, border: '1px solid #fee2e2',
-                borderRadius: 6, cursor: 'pointer', background: '#fff',
-                color: '#dc2626', fontWeight: 500, marginRight: 'auto',
+                padding: '8px 16px', fontSize: 13, border: `1px solid ${colors.border}`,
+                borderRadius: radius.sm, cursor: 'pointer', background: colors.bg,
+                color: colors.accentRed, fontWeight: 500, marginRight: 'auto',
               }}
             >
               Delete
@@ -463,9 +457,9 @@ export function TaskModal() {
           <button
             onClick={() => setEditingTaskId(null)}
             style={{
-              padding: '8px 16px', fontSize: 13, border: '1px solid #e5e5e5',
-              borderRadius: 6, cursor: 'pointer', background: '#fff',
-              color: '#525252', fontWeight: 500,
+              padding: '8px 16px', fontSize: 13, border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm, cursor: 'pointer', background: colors.bg,
+              color: colors.textSecondary, fontWeight: 500,
             }}
           >
             Cancel
@@ -474,8 +468,8 @@ export function TaskModal() {
             onClick={handleSave}
             style={{
               padding: '8px 16px', fontSize: 13, border: 'none',
-              borderRadius: 6, cursor: 'pointer', background: '#0a0a0a',
-              color: '#fff', fontWeight: 500,
+              borderRadius: radius.sm, cursor: 'pointer', background: colors.accent,
+              color: colors.bg, fontWeight: 500,
             }}
           >
             {existing ? 'Save' : 'Create'}

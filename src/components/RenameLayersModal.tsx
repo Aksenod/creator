@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { X, ArrowRight } from '@phosphor-icons/react'
 import { useEditorStore } from '../store'
+import { colors, shadows } from '../styles/tokens'
 
 type Props = {
   artboardId: string
@@ -131,19 +133,19 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
         style={{
           position: 'fixed', inset: 0, zIndex: 10000,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.3)',
+          background: colors.overlay,
         }}
         onClick={onClose}
       >
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: '#fff', borderRadius: 8, padding: 24,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            background: colors.bg, borderRadius: 8, padding: 24,
+            boxShadow: shadows.xl,
             width: 400,
           }}
         >
-          <div style={{ fontSize: 14, color: '#888' }}>No selected elements to rename</div>
+          <div style={{ fontSize: 14, color: colors.textMuted }}>No selected elements to rename</div>
           <button onClick={onClose} style={btnStyle}>Close</button>
         </div>
       </div>,
@@ -156,22 +158,22 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
       style={{
         position: 'fixed', inset: 0, zIndex: 10000,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.3)',
+        background: colors.overlay,
       }}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 8,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          background: colors.bg, borderRadius: 8,
+          boxShadow: shadows.xl,
           width: 440, maxHeight: '80vh', display: 'flex', flexDirection: 'column',
         }}
       >
         {/* Header */}
         <div style={{
-          padding: '16px 20px 12px', borderBottom: '1px solid #eee',
-          fontSize: 14, fontWeight: 600, color: '#333',
+          padding: '16px 20px 12px', borderBottom: `1px solid ${colors.border}`,
+          fontSize: 14, fontWeight: 600, color: colors.text,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span>Rename layers ({elements.length})</span>
@@ -179,9 +181,10 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
             onClick={onClose}
             style={{
               border: 'none', background: 'none', cursor: 'pointer',
-              fontSize: 18, color: '#999', lineHeight: 1, padding: '0 2px',
+              color: colors.textMuted, lineHeight: 1, padding: '0 2px',
+              display: 'inline-flex', alignItems: 'center',
             }}
-          >×</button>
+          ><X size={16} weight="thin" /></button>
         </div>
 
         {/* Body */}
@@ -231,22 +234,22 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
           {/* Preview */}
           <label style={{ ...labelStyle, marginTop: 16 }}>Preview</label>
           <div style={{
-            border: '1px solid #e0e0e0', borderRadius: 4,
+            border: `1px solid ${colors.border}`, borderRadius: 4,
             maxHeight: 200, overflow: 'auto',
           }}>
             {previews.map((p) => (
               <div key={p.id} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '5px 10px', fontSize: 12,
-                borderBottom: '1px solid #f0f0f0',
+                borderBottom: `1px solid ${colors.bgSurface}`,
               }}>
                 <span style={{
-                  flex: 1, color: '#888', overflow: 'hidden',
+                  flex: 1, color: colors.textMuted, overflow: 'hidden',
                   textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{p.oldName}</span>
-                <span style={{ color: '#bbb', flexShrink: 0 }}>→</span>
+                <span style={{ color: colors.textDisabled, flexShrink: 0, display: 'inline-flex' }}><ArrowRight size={12} weight="thin" /></span>
                 <span style={{
-                  flex: 1, color: p.oldName !== p.newName ? '#0a0a0a' : '#333',
+                  flex: 1, color: p.oldName !== p.newName ? colors.text : colors.text,
                   fontWeight: p.oldName !== p.newName ? 500 : 400,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{p.newName}</span>
@@ -258,7 +261,7 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
         {/* Footer */}
         <div style={{
           padding: '12px 20px 16px',
-          borderTop: '1px solid #eee',
+          borderTop: `1px solid ${colors.border}`,
           display: 'flex', justifyContent: 'flex-end', gap: 8,
         }}>
           <button onClick={onClose} style={btnStyle}>Cancel</button>
@@ -267,8 +270,8 @@ export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
             disabled={!hasChanges}
             style={{
               ...btnStyle,
-              background: hasChanges ? '#0a0a0a' : '#ccc',
-              color: '#fff',
+              background: hasChanges ? colors.bgActive : colors.textDisabled,
+              color: colors.bg,
               cursor: hasChanges ? 'pointer' : 'default',
             }}
           >
@@ -286,9 +289,9 @@ function TokenBtn({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       onClick={onClick}
       style={{
-        border: '1px solid #ddd', borderRadius: 3,
-        background: '#f8f8f8', padding: '2px 8px',
-        fontSize: 11, color: '#555', cursor: 'pointer',
+        border: `1px solid ${colors.border}`, borderRadius: 3,
+        background: colors.bgSurface, padding: '2px 8px',
+        fontSize: 11, color: colors.textSecondary, cursor: 'pointer',
       }}
     >
       {label}
@@ -298,18 +301,18 @@ function TokenBtn({ label, onClick }: { label: string; onClick: () => void }) {
 
 const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: 11, fontWeight: 600,
-  color: '#888', marginBottom: 4, textTransform: 'uppercase',
+  color: colors.textMuted, marginBottom: 4, textTransform: 'uppercase',
   letterSpacing: '0.04em',
 }
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '6px 8px', fontSize: 13,
-  border: '1px solid #ddd', borderRadius: 4, outline: 'none',
+  border: `1px solid ${colors.border}`, borderRadius: 4, outline: 'none',
   fontFamily: 'inherit', boxSizing: 'border-box',
 }
 
 const btnStyle: React.CSSProperties = {
-  border: '1px solid #ddd', borderRadius: 4, padding: '6px 16px',
-  fontSize: 13, cursor: 'pointer', background: '#fff', color: '#333',
+  border: `1px solid ${colors.border}`, borderRadius: 4, padding: '6px 16px',
+  fontSize: 13, cursor: 'pointer', background: colors.bg, color: colors.text,
   fontFamily: 'inherit',
 }

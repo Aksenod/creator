@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { colors } from '../../styles/tokens'
 
 type Props = {
   onSend: (text: string) => void
@@ -35,8 +36,8 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
         display: 'flex',
         gap: 4,
         padding: '6px 8px',
-        borderTop: '1px solid #e5e5e5',
-        background: '#fff',
+        borderTop: `1px solid ${colors.border}`,
+        background: colors.bg,
       }}
     >
       <textarea
@@ -50,15 +51,15 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
         style={{
           flex: 1,
           resize: 'none',
-          border: '1px solid #e5e5e5',
+          border: `1px solid ${colors.border}`,
           borderRadius: 6,
           padding: '6px 8px',
           fontSize: 12,
           fontFamily: 'inherit',
           lineHeight: 1.4,
           outline: 'none',
-          background: disabled ? '#f5f5f5' : '#fafafa',
-          color: '#0a0a0a',
+          background: disabled ? colors.bgSurface : colors.bgHover,
+          color: colors.text,
           minHeight: 32,
           maxHeight: 100,
           overflow: 'auto',
@@ -69,12 +70,12 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           onClick={onStop}
           style={{
             padding: '0 8px',
-            border: '1px solid #e5e5e5',
+            border: `1px solid ${colors.border}`,
             borderRadius: 6,
-            background: '#fff',
+            background: colors.bg,
             cursor: 'pointer',
             fontSize: 11,
-            color: '#d00',
+            color: colors.accentRed,
             fontFamily: 'inherit',
             flexShrink: 0,
           }}
@@ -87,10 +88,10 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           disabled={!text.trim() || disabled}
           style={{
             padding: '0 8px',
-            border: '1px solid #e5e5e5',
+            border: `1px solid ${colors.border}`,
             borderRadius: 6,
-            background: text.trim() && !disabled ? '#0a0a0a' : '#e5e5e5',
-            color: text.trim() && !disabled ? '#fff' : '#999',
+            background: text.trim() && !disabled ? colors.bgActive : colors.border,
+            color: text.trim() && !disabled ? colors.bg : colors.textMuted,
             cursor: text.trim() && !disabled ? 'pointer' : 'default',
             fontSize: 11,
             fontFamily: 'inherit',

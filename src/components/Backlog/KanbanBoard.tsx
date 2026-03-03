@@ -11,6 +11,7 @@ import {
 import { useBacklogStore } from '../../store/backlogStore'
 import { KanbanColumn } from './KanbanColumn'
 import { TaskCard } from './TaskCard'
+import { shadows } from '../../styles/tokens'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
 import type { ResponsiveMode } from '../../App'
 
@@ -110,7 +111,7 @@ export function KanbanBoard({ responsiveMode, mobileFilterStatuses }: Props) {
             <div style={{
               opacity: 0.92,
               transform: 'rotate(2deg)',
-              boxShadow: '0 8px 24px -2px rgba(0,0,0,0.09)',
+              boxShadow: shadows.lg,
               borderRadius: 10,
             }}>
               <TaskCard task={activeTask} onClick={() => {}} />

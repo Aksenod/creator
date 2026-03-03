@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { teamMembers, type TeamMember } from './teamData'
+import { colors, shadows } from '../../styles/tokens'
 
 const STATUS_COLORS: Record<string, string> = {
-  active: '#16A34A',
-  busy: '#D97706',
-  offline: '#D4D4D4',
+  active: colors.text,
+  busy: colors.textSecondary,
+  offline: colors.textDisabled,
 }
 
 function TeamMemberCard({ member }: { member: TeamMember }) {
@@ -19,8 +20,8 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
   return (
     <div
       style={{
-        background: '#fff',
-        border: '1px solid #e5e5e5',
+        background: colors.bg,
+        border: `1px solid ${colors.border}`,
         borderRadius: 10,
         padding: 16,
         display: 'flex',
@@ -29,11 +30,11 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = '#D4D4D4'
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+        e.currentTarget.style.borderColor = colors.borderStrong
+        e.currentTarget.style.boxShadow = shadows.sm
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.borderColor = '#e5e5e5'
+        e.currentTarget.style.borderColor = colors.border
         e.currentTarget.style.boxShadow = 'none'
       }}
     >
@@ -50,7 +51,7 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
                 height: 40,
                 borderRadius: '50%',
                 objectFit: 'cover',
-                background: '#f5f5f5',
+                background: colors.bgSurface,
               }}
             />
           ) : (
@@ -59,8 +60,8 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
                 width: 40,
                 height: 40,
                 borderRadius: '50%',
-                background: '#f5f5f5',
-                color: '#737373',
+                background: colors.bgSurface,
+                color: colors.textSecondary,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -81,36 +82,36 @@ function TeamMemberCard({ member }: { member: TeamMember }) {
               height: 10,
               borderRadius: '50%',
               background: STATUS_COLORS[member.status],
-              border: '2px solid #fff',
+              border: `2px solid ${colors.bg}`,
             }}
           />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 500, color: '#0a0a0a', lineHeight: 1.3 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: colors.text, lineHeight: 1.3 }}>
             {member.name}
           </div>
-          <div style={{ fontSize: 11, color: '#525252', lineHeight: 1.3, marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 1.3, marginTop: 2 }}>
             {member.role}
           </div>
         </div>
       </div>
 
       {/* Info row: location · specialty */}
-      <div style={{ fontSize: 11, color: '#a3a3a3', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ fontSize: 11, color: colors.textMuted, display: 'flex', alignItems: 'center', gap: 6 }}>
         <span>{member.location}</span>
         <span>·</span>
         <span>{member.specialty}</span>
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: '#f5f5f5' }} />
+      <div style={{ height: 1, background: colors.bgSurface }} />
 
       {/* Bio */}
       <div
         style={{
           fontSize: 11,
-          color: '#a3a3a3',
+          color: colors.textMuted,
           lineHeight: 1.4,
         }}
       >
@@ -128,18 +129,18 @@ export function TeamSection() {
     <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>
       {/* Stats row */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A' }} />
-        <span style={{ fontSize: 12, color: '#525252' }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: colors.text }} />
+        <span style={{ fontSize: 12, color: colors.textSecondary }}>
           {activeCount} / {totalCount} online
         </span>
         <div style={{
-          width: 80, height: 4, borderRadius: 2, background: '#f5f5f5',
+          width: 80, height: 4, borderRadius: 2, background: colors.bgSurface,
           overflow: 'hidden',
         }}>
           <div style={{
             width: `${(activeCount / totalCount) * 100}%`,
             height: '100%',
-            background: '#16A34A',
+            background: colors.text,
             borderRadius: 2,
           }} />
         </div>

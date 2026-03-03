@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { colors } from '../../styles/tokens'
 
 type Props = {
   screenshots: string[]
@@ -40,14 +41,14 @@ export function ScreenshotUpload({ screenshots, onChange }: Props) {
             <img
               src={`/api/backlog/screenshot/${fileName}`}
               alt=""
-              style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 4, border: '1px solid #e5e5e5' }}
+              style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 4, border: `1px solid ${colors.border}` }}
             />
             <button
               onClick={() => handleRemove(i)}
               style={{
                 position: 'absolute', top: -4, right: -4,
                 width: 16, height: 16, borderRadius: 8,
-                background: '#ef4444', color: '#fff',
+                background: colors.accentRed, color: colors.bg,
                 border: 'none', fontSize: 10, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 lineHeight: 1,
@@ -62,8 +63,8 @@ export function ScreenshotUpload({ screenshots, onChange }: Props) {
         onClick={() => inputRef.current?.click()}
         style={{
           width: 64, height: 48, borderRadius: 4,
-          border: '2px dashed #d4d4d4', background: 'transparent',
-          cursor: 'pointer', fontSize: 20, color: '#a3a3a3',
+          border: `2px dashed ${colors.borderStrong}`, background: 'transparent',
+          cursor: 'pointer', fontSize: 20, color: colors.textMuted,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >

@@ -1,14 +1,24 @@
 import { useState, useRef } from 'react'
+import {
+  FrameCorners,
+  Rectangle,
+  TextT,
+  HandTap,
+  Image,
+  Textbox,
+  Plus,
+} from '@phosphor-icons/react'
 import { useEditorStore } from '../../store'
+import { colors, shadows } from '../../styles/tokens'
 import type { ElementType } from '../../types'
 
-const ELEMENTS: { type: ElementType; label: string; icon: string }[] = [
-  { type: 'div',     label: 'Div',     icon: '▣' },
-  { type: 'section', label: 'Section', icon: '⬜' },
-  { type: 'text',    label: 'Text',    icon: 'T' },
-  { type: 'image',   label: 'Image',   icon: '⬚' },
-  { type: 'button',  label: 'Button',  icon: '⊡' },
-  { type: 'input',   label: 'Input',   icon: '▤' },
+const ELEMENTS: { type: ElementType; label: string; icon: React.ReactNode }[] = [
+  { type: 'div',     label: 'Div',     icon: <FrameCorners size={14} weight="thin" /> },
+  { type: 'section', label: 'Section', icon: <Rectangle size={14} weight="thin" /> },
+  { type: 'text',    label: 'Text',    icon: <TextT size={14} weight="thin" /> },
+  { type: 'image',   label: 'Image',   icon: <Image size={14} weight="thin" /> },
+  { type: 'button',  label: 'Button',  icon: <HandTap size={14} weight="thin" /> },
+  { type: 'input',   label: 'Input',   icon: <Textbox size={14} weight="thin" /> },
 ]
 
 export function Toolbar() {
@@ -23,7 +33,6 @@ export function Toolbar() {
     if (!project || !activeArtboardId) return
     const artboard = project.artboards[activeArtboardId]
     const selectedEl = selectedElementId ? artboard.elements[selectedElementId] : null
-    // Если выбранный элемент — не-контейнер, передаём его id (addElement сам найдёт родителя)
     const parentId = selectedEl ? selectedElementId : null
     addElement(activeArtboardId, type, parentId)
   }
@@ -59,13 +68,13 @@ export function Toolbar() {
         title="Add element — creates Div, Section, Text, Image, Button or Input inside selected element (or artboard root)"
         style={{
           width: 28, height: 28, fontSize: 18, lineHeight: 1,
-          border: '1px solid #ddd', borderRadius: 4,
-          cursor: 'pointer', background: '#fff',
+          border: `1px solid ${colors.border}`, borderRadius: 4,
+          cursor: 'pointer', background: colors.bg,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 0,
         }}
       >
-        +
+        <Plus size={12} weight="thin" />
       </button>
 
       {open && (
@@ -77,8 +86,8 @@ export function Toolbar() {
             top: dropdownPos.top,
             left: dropdownPos.left,
             zIndex: 9999,
-            background: '#fff', border: '1px solid #e0e0e0',
-            borderRadius: 6, boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+            background: colors.bg, border: `1px solid ${colors.border}`,
+            borderRadius: 6, boxShadow: shadows.md,
             padding: '4px 0', minWidth: 120,
           }}
         >
@@ -92,11 +101,11 @@ export function Toolbar() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 width: '100%', padding: '7px 12px', border: 'none',
-                background: hoveredItem === type ? '#f5f5f5' : 'transparent',
+                background: hoveredItem === type ? colors.bgSurface : 'transparent',
                 cursor: 'pointer', fontSize: 12, textAlign: 'left',
               }}
             >
-              <span style={{ fontSize: 14, opacity: 0.5, minWidth: 16 }}>{icon}</span>
+              <span style={{ opacity: 0.5, minWidth: 16, display: 'inline-flex' }}>{icon}</span>
               {label}
             </button>
           ))}

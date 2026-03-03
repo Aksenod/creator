@@ -6,7 +6,7 @@
       "title": "❯ все задачи которые добавляются в беклог должны быть на верселе. Чтобы они не терялись на локалках ",
       "description": "Testing backlog API",
       "type": "feature",
-      "status": "backlog",
+      "status": "done",
       "priority": "medium",
       "screenshots": [],
       "labels": [
@@ -14,7 +14,7 @@
       ],
       "order": 0,
       "createdAt": "2026-03-03T00:00:00Z",
-      "updatedAt": 1772532130414
+      "updatedAt": 1772538192694
     },
     {
       "id": "test-2",
@@ -27,7 +27,7 @@
       "labels": [
         "urgent"
       ],
-      "order": 0,
+      "order": 1,
       "createdAt": "2026-03-03T00:00:00Z",
       "updatedAt": 1772525919322
     },
@@ -44,9 +44,9 @@
         "devtools",
         "blocker"
       ],
-      "order": 3,
+      "order": 28,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537784118
     },
     {
       "id": "elem-heading",
@@ -60,9 +60,9 @@
         "elements",
         "level-2"
       ],
-      "order": 4,
+      "order": 23,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537790302
     },
     {
       "id": "elem-link",
@@ -76,9 +76,9 @@
         "elements",
         "level-2"
       ],
-      "order": 5,
+      "order": 22,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537790921
     },
     {
       "id": "elem-list",
@@ -92,9 +92,9 @@
         "elements",
         "level-2"
       ],
-      "order": 6,
+      "order": 21,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537791685
     },
     {
       "id": "elem-video",
@@ -108,9 +108,9 @@
         "elements",
         "level-2"
       ],
-      "order": 7,
+      "order": 20,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537792468
     },
     {
       "id": "elem-form",
@@ -125,9 +125,9 @@
         "level-3",
         "forms"
       ],
-      "order": 8,
+      "order": 16,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537795586
     },
     {
       "id": "elem-textarea",
@@ -142,9 +142,9 @@
         "level-3",
         "forms"
       ],
-      "order": 9,
+      "order": 24,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537789471
     },
     {
       "id": "elem-select",
@@ -159,9 +159,9 @@
         "level-3",
         "forms"
       ],
-      "order": 10,
+      "order": 26,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537787152
     },
     {
       "id": "elem-checkbox-radio",
@@ -176,9 +176,9 @@
         "level-3",
         "forms"
       ],
-      "order": 11,
+      "order": 27,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537786384
     },
     {
       "id": "elem-nav-footer",
@@ -192,9 +192,9 @@
         "elements",
         "level-4"
       ],
-      "order": 12,
+      "order": 17,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537794552
     },
     {
       "id": "elem-icon",
@@ -208,9 +208,9 @@
         "elements",
         "level-4"
       ],
-      "order": 13,
+      "order": 29,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537783034
     },
     {
       "id": "elem-embed",
@@ -224,9 +224,9 @@
         "elements",
         "level-4"
       ],
-      "order": 14,
+      "order": 30,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537782335
     },
     {
       "id": "ui-categories",
@@ -240,7 +240,7 @@
         "ui",
         "add-panel"
       ],
-      "order": 15,
+      "order": 35,
       "createdAt": 1709424000000,
       "updatedAt": 1709424000000
     },
@@ -256,9 +256,9 @@
         "ui",
         "add-panel"
       ],
-      "order": 16,
+      "order": 15,
       "createdAt": 1709424000000,
-      "updatedAt": 1709424000000
+      "updatedAt": 1772537797284
     },
     {
       "id": "elem-input-qa",
@@ -273,7 +273,7 @@
         "testing",
         "input"
       ],
-      "order": 17,
+      "order": 37,
       "createdAt": 1709424000000,
       "updatedAt": 1709424000000
     }

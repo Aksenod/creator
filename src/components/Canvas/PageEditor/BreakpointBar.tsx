@@ -1,46 +1,6 @@
+import { Desktop, Laptop, DeviceTablet, DeviceMobile, Asterisk } from '@phosphor-icons/react'
+import { colors } from '../../../styles/tokens'
 import type { BreakpointId } from '../../../constants/breakpoints'
-
-// --- SVG icons ---
-
-function DesktopIcon({ active }: { active: boolean }) {
-  void active
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M5 14h6M8 12v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function LaptopIcon({ active }: { active: boolean }) {
-  void active
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="3" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M1 13h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function TabletIcon({ active }: { active: boolean }) {
-  void active
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="8" cy="13" r="0.8" fill="currentColor" />
-    </svg>
-  )
-}
-
-function MobileIcon({ active }: { active: boolean }) {
-  void active
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="4.5" y="1" width="7" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="8" cy="13" r="0.7" fill="currentColor" />
-    </svg>
-  )
-}
 
 // --- Types ---
 
@@ -54,6 +14,26 @@ export type Breakpoint = {
   isBase?: boolean
   cascade: 'up' | 'down' | 'both'
   tooltip: string
+}
+
+function DesktopIcon({ active }: { active: boolean }) {
+  void active
+  return <Desktop size={16} weight="thin" />
+}
+
+function LaptopIcon({ active }: { active: boolean }) {
+  void active
+  return <Laptop size={16} weight="thin" />
+}
+
+function TabletIcon({ active }: { active: boolean }) {
+  void active
+  return <DeviceTablet size={16} weight="thin" />
+}
+
+function MobileIcon({ active }: { active: boolean }) {
+  void active
+  return <DeviceMobile size={16} weight="thin" />
 }
 
 export const BREAKPOINTS: Breakpoint[] = [
@@ -109,7 +89,7 @@ type Props = {
 
 export function BreakpointBar({ activeBreakpointId, detectedWidth, onSelect }: Props) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f0f0f0', borderRadius: 8, padding: 3 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: colors.bgSurface, borderRadius: 8, padding: 3 }}>
       {BREAKPOINTS.map((bp, idx) => {
         const isActive = activeBreakpointId === bp.id
         const isDetected = bp.width === detectedWidth
@@ -121,8 +101,8 @@ export function BreakpointBar({ activeBreakpointId, detectedWidth, onSelect }: P
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               width: 30, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer',
-              background: isActive ? '#1a1a1a' : 'transparent',
-              color: isActive ? '#fff' : '#888',
+              background: isActive ? colors.bgActive : 'transparent',
+              color: isActive ? colors.bg : colors.textMuted,
               transition: 'all 0.1s',
               gap: 2, position: 'relative',
             }}
@@ -130,14 +110,14 @@ export function BreakpointBar({ activeBreakpointId, detectedWidth, onSelect }: P
             {bp.isBase ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <bp.icon active={isActive} />
-                <span style={{ fontSize: 8, lineHeight: 1, color: isActive ? '#aaa' : '#bbb', fontWeight: 700 }}>✳</span>
+                <Asterisk size={8} weight="bold" style={{ color: isActive ? colors.textMuted : colors.textDisabled }} />
               </div>
             ) : (
               <bp.icon active={isActive} />
             )}
             <span style={{
               width: 3, height: 3, borderRadius: '50%',
-              background: isDetected ? (isActive ? '#fff' : '#1a1a1a') : 'transparent',
+              background: isDetected ? (isActive ? colors.bg : colors.text) : 'transparent',
               flexShrink: 0,
             }} />
           </button>

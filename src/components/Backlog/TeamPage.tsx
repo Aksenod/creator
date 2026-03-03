@@ -1,6 +1,7 @@
 import { useEditorStore } from '../../store'
 import { TeamSection } from './TeamSection'
-import { colors } from '../../styles/tokens'
+import { colors, shadows } from '../../styles/tokens'
+import { ArrowLeft } from '@phosphor-icons/react'
 import type { ResponsiveMode } from '../../App'
 
 export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode }) {
@@ -21,7 +22,7 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
         <>
           {/* Mobile header */}
           <div style={{
-            height: 48, background: colors.bgCard,
+            height: 48, background: colors.bg,
             borderBottom: `1px solid ${colors.border}`,
             display: 'flex', alignItems: 'center',
             padding: '0 16px', flexShrink: 0,
@@ -30,16 +31,16 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span
                 onClick={() => setCurrentView('projects')}
-                style={{ cursor: 'pointer', fontSize: 18, color: colors.textSecondary, lineHeight: 1 }}
+                style={{ cursor: 'pointer', color: colors.textSecondary, display: 'flex', alignItems: 'center' }}
               >
-                &#8592;
+                <ArrowLeft size={18} weight="thin" />
               </span>
               <span style={{ fontWeight: 600, fontSize: 15, color: colors.text }}>Team</span>
             </div>
           </div>
           {/* Mobile tabs bar */}
           <div style={{
-            height: 40, background: colors.bgCard,
+            height: 40, background: colors.bg,
             borderBottom: `1px solid ${colors.border}`,
             display: 'flex', alignItems: 'center',
             padding: '0 12px', flexShrink: 0,
@@ -52,7 +53,7 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
         /* Desktop / Tablet header */
         <div style={{
           height: isTablet ? 52 : 56,
-          background: colors.bgCard,
+          background: colors.bg,
           borderBottom: `1px solid ${colors.border}`,
           display: 'flex', alignItems: 'center',
           padding: isTablet ? '0 16px' : '0 24px',
@@ -68,7 +69,7 @@ export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode })
                 cursor: 'pointer', color: colors.textSecondary, fontSize: 13,
               }}
             >
-              <span style={{ fontSize: isTablet ? 18 : 13 }}>&#8592;</span>
+              <ArrowLeft size={isTablet ? 18 : 14} weight="thin" />
               {isDesktop && <span>Projects</span>}
             </div>
             {isDesktop && <span style={{ color: colors.textMuted, fontSize: 13 }}>/</span>}
@@ -114,13 +115,13 @@ function SegmentedTabs({ active, onTabChange }: {
           key={tab}
           onClick={() => onTabChange(tab)}
           style={{
-            background: active === tab ? colors.bgCard : 'transparent',
+            background: active === tab ? colors.bg : 'transparent',
             border: 'none', borderRadius: 6,
             padding: '6px 16px', cursor: 'pointer',
             fontSize: 12,
             fontWeight: active === tab ? 600 : 400,
             color: active === tab ? colors.text : colors.textMuted,
-            boxShadow: active === tab ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+            boxShadow: active === tab ? shadows.xs : 'none',
             transition: 'all 0.15s',
           }}
         >

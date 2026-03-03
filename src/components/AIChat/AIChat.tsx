@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { Gear, X } from '@phosphor-icons/react'
 import { useAIChatStore } from '../../store/aiChatStore'
 import { useAIChat } from './useAIChat'
 import { ChatMessages } from './ChatMessages'
 import { ChatInput } from './ChatInput'
 import { ChatSettingsModal } from './ChatSettingsModal'
+import { colors } from '../../styles/tokens'
 
 export function AIChat() {
   const { messages, isStreaming, error, settings, updateSettings, clearMessages, setError } =
@@ -28,7 +30,7 @@ export function AIChat() {
           justifyContent: 'flex-end',
           gap: 4,
           padding: '4px 8px',
-          borderBottom: '1px solid #e5e5e5',
+          borderBottom: `1px solid ${colors.border}`,
           flexShrink: 0,
         }}
       >
@@ -40,7 +42,7 @@ export function AIChat() {
             background: 'none',
             cursor: 'pointer',
             fontSize: 12,
-            color: '#999',
+            color: colors.textMuted,
             padding: '2px 4px',
             fontFamily: 'inherit',
           }}
@@ -59,7 +61,7 @@ export function AIChat() {
             lineHeight: 1,
           }}
         >
-          ⚙
+          <Gear size={14} weight="thin" />
         </button>
       </div>
 
@@ -68,10 +70,10 @@ export function AIChat() {
         <div
           style={{
             padding: '6px 10px',
-            background: '#fef2f2',
-            borderBottom: '1px solid #fecaca',
+            background: colors.bgSurface,
+            borderBottom: `1px solid ${colors.border}`,
             fontSize: 11,
-            color: '#b91c1c',
+            color: colors.accentRed,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -85,12 +87,12 @@ export function AIChat() {
               background: 'none',
               cursor: 'pointer',
               fontSize: 13,
-              color: '#b91c1c',
+              color: colors.accentRed,
               padding: 0,
               lineHeight: 1,
             }}
           >
-            ×
+            <X size={12} weight="thin" />
           </button>
         </div>
       )}

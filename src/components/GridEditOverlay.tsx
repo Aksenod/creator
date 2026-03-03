@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { X, Plus } from '@phosphor-icons/react'
 import { useEditorStore } from '../store'
+import { colors } from '../styles/tokens'
 import { parseTracks, serializeTracks } from './Properties/LayoutSection'
 import type { GridTrack } from './Properties/LayoutSection'
 import { getGridLayout } from '../utils/gridUtils'
@@ -323,13 +325,13 @@ export function GridEditOverlay({ artboardId }: Props) {
             onClick={() => removeCol(i)}
             title="Удалить эту колонку из сетки"
             style={{
-              border: 'none', background: 'rgba(255,80,80,0.8)', color: '#fff',
-              borderRadius: '50%', width: 14, height: 14, fontSize: 10,
+              border: 'none', background: 'rgba(255,80,80,0.8)', color: colors.bg,
+              borderRadius: '50%', width: 14, height: 14,
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              lineHeight: 1, padding: 0,
+              padding: 0,
             }}
           >
-            ×
+            <X size={10} weight="bold" />
           </button>
         </div>
       ))}
@@ -351,13 +353,13 @@ export function GridEditOverlay({ artboardId }: Props) {
             onClick={() => removeRow(i)}
             title="Удалить эту строку из сетки"
             style={{
-              border: 'none', background: 'rgba(255,80,80,0.8)', color: '#fff',
-              borderRadius: '50%', width: 14, height: 14, fontSize: 10,
+              border: 'none', background: 'rgba(255,80,80,0.8)', color: colors.bg,
+              borderRadius: '50%', width: 14, height: 14,
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              lineHeight: 1, padding: 0, flexShrink: 0,
+              padding: 0, flexShrink: 0,
             }}
           >
-            ×
+            <X size={10} weight="bold" />
           </button>
           <div style={{
             fontSize: 10, color: '#0066ff', background: 'rgba(230,240,255,0.9)',
@@ -380,13 +382,13 @@ export function GridEditOverlay({ artboardId }: Props) {
           width: 24, height: 24,
           border: '1px solid rgba(0,102,255,0.5)',
           borderRadius: 4, background: 'rgba(230,240,255,0.9)',
-          color: '#0066ff', fontSize: 16, cursor: 'pointer',
+          color: '#0066ff', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           pointerEvents: 'auto',
-          lineHeight: 1, padding: 0,
+          padding: 0,
         }}
       >
-        +
+        <Plus size={12} weight="thin" />
       </button>
 
       {/* Add row button */}
@@ -400,13 +402,13 @@ export function GridEditOverlay({ artboardId }: Props) {
           width: 24, height: 24,
           border: '1px solid rgba(0,102,255,0.5)',
           borderRadius: 4, background: 'rgba(230,240,255,0.9)',
-          color: '#0066ff', fontSize: 16, cursor: 'pointer',
+          color: '#0066ff', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           pointerEvents: 'auto',
-          lineHeight: 1, padding: 0,
+          padding: 0,
         }}
       >
-        +
+        <Plus size={12} weight="thin" />
       </button>
 
       {/* Done button — над центром grid */}
@@ -421,7 +423,7 @@ export function GridEditOverlay({ artboardId }: Props) {
           padding: '5px 14px',
           border: '1px solid #0066ff',
           borderRadius: 5, background: '#0066ff',
-          color: '#fff', fontSize: 12, fontWeight: 600,
+          color: colors.bg, fontSize: 12, fontWeight: 600,
           cursor: 'pointer', pointerEvents: 'auto',
           whiteSpace: 'nowrap',
         }}

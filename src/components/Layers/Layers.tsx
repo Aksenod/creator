@@ -12,30 +12,30 @@ import {
   useSensors,
   pointerWithin,
 } from '@dnd-kit/core'
+import {
+  Eye,
+  EyeSlash,
+  CaretRight,
+  Image,
+  TextT,
+  Rectangle,
+  HandTap,
+  Textbox,
+  FrameCorners,
+  ArrowsInSimple,
+} from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
 import { CONTAINER_TYPES, isContainerType } from '../../store/helpers'
 import type { Artboard } from '../../types'
 import { findParentId, isDescendantOf, collectDescendantIds, getVisibleLayerIds } from '../../utils/treeUtils'
+import { colors, shadows } from '../../styles/tokens'
 
 // ─── Eye Icon ─────────────────────────────────────────────────────────────────
 
 function EyeIcon({ hidden, size = 14 }: { hidden?: boolean; size?: number }) {
-  if (hidden) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2 2L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M4.5 5.8C3.4 6.7 2.5 7.8 2.5 8C2.5 8.5 4.5 12 8 12C8.8 12 9.5 11.8 10.2 11.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M6.5 4.3C7 4.1 7.5 4 8 4C11.5 4 13.5 7.5 13.5 8C13.5 8.3 12.8 9.3 11.8 10.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    )
-  }
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2.5 8C2.5 8 4.5 4 8 4C11.5 4 13.5 8 13.5 8C13.5 8 11.5 12 8 12C4.5 12 2.5 8 2.5 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  )
+  if (hidden) return <EyeSlash size={size} weight="thin" />
+  return <Eye size={size} weight="thin" />
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ function DropLine({ depth }: { depth: number }) {
       style={{
         height: 2,
         marginLeft: 8 + depth * 16,
-        background: '#0a0a0a',
+        background: colors.text,
         borderRadius: 1,
         pointerEvents: 'none',
       }}
@@ -157,8 +157,8 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           borderRadius: 3,
           background: isDropInto
             ? 'rgba(10,10,10,0.04)'
-            : isSelected ? '#f0f0f0' : 'transparent',
-          color: isSelected ? '#0a0a0a' : el.type === 'body' ? '#555' : '#333',
+            : isSelected ? colors.bgSurface : 'transparent',
+          color: isSelected ? colors.text : el.type === 'body' ? colors.textSecondary : colors.text,
           userSelect: 'none',
           outline: isDropInto ? '1.5px solid rgba(10,10,10,0.2)' : 'none',
           outlineOffset: -1,
@@ -176,16 +176,16 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             marginRight: 2, flexShrink: 0,
             fontSize: 9,
-            color: hasChildren && !isBody ? '#999' : 'transparent',
+            color: hasChildren && !isBody ? colors.textMuted : 'transparent',
             cursor: hasChildren && !isBody ? 'pointer' : 'default',
             transform: hasChildren && isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
             transition: 'transform 0.15s',
           }}
         >
-          ▶
+          <CaretRight size={10} weight="thin" style={{ pointerEvents: 'none' }} />
         </span>
 
-        <span style={{ marginRight: 6, opacity: 0.4, fontSize: 10 }}>{getIcon(el.type)}</span>
+        <span style={{ marginRight: 6, opacity: 0.4, display: 'inline-flex' }}>{getIcon(el.type)}</span>
 
         {isRenaming ? (
           <input
@@ -213,10 +213,10 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
             style={{
               flex: 1, minWidth: 0,
               fontSize: 12, fontFamily: 'inherit',
-              border: '1px solid #0a0a0a',
+              border: `1px solid ${colors.borderFocus}`,
               borderRadius: 2, padding: '0 3px',
-              outline: 'none', background: '#fff',
-              color: '#333',
+              outline: 'none', background: colors.bg,
+              color: colors.text,
             }}
           />
         ) : (
@@ -232,7 +232,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
         )}
 
         {!isRenaming && el.className && (
-          <span style={{ fontSize: 10, color: '#bbb', marginLeft: 4, fontFamily: 'monospace' }}>
+          <span style={{ fontSize: 10, color: colors.textDisabled, marginLeft: 4, fontFamily: 'monospace' }}>
             .{el.className}
           </span>
         )}
@@ -252,7 +252,7 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
               width: 20, height: 20,
               flexShrink: 0,
               cursor: 'pointer',
-              color: isHidden ? '#999' : '#aaa',
+              color: isHidden ? colors.textMuted : colors.textMuted,
               borderRadius: 3,
               opacity: showEyeIcon ? 1 : 0,
               transition: 'opacity 0.1s',
@@ -294,26 +294,26 @@ function DragGhost({ id, artboard }: { id: string; artboard: Artboard }) {
   if (!el) return null
   return (
     <div style={{
-      padding: '4px 12px', fontSize: 12, background: '#fff',
-      border: '1px solid #0a0a0a', borderRadius: 4,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+      padding: '4px 12px', fontSize: 12, background: colors.bg,
+      border: `1px solid ${colors.borderFocus}`, borderRadius: 4,
+      boxShadow: shadows.sm,
       display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none',
     }}>
-      <span style={{ opacity: 0.5, fontSize: 10 }}>{getIcon(el.type)}</span>
+      <span style={{ opacity: 0.5, display: 'inline-flex' }}>{getIcon(el.type)}</span>
       {el.name}
     </div>
   )
 }
 
-function getIcon(type: string) {
+function getIcon(type: string): React.ReactNode {
   switch (type) {
-    case 'body': return '⊡'
-    case 'text': return 'T'
-    case 'image': return '⬜'
-    case 'section': return '▭'
-    case 'button': return '⬡'
-    case 'input': return '▤'
-    default: return '▢'
+    case 'body': return <FrameCorners size={12} weight="thin" />
+    case 'text': return <TextT size={12} weight="thin" />
+    case 'image': return <Image size={12} weight="thin" />
+    case 'section': return <Rectangle size={12} weight="thin" />
+    case 'button': return <HandTap size={12} weight="thin" />
+    case 'input': return <Textbox size={12} weight="thin" />
+    default: return <FrameCorners size={12} weight="thin" />
   }
 }
 
@@ -541,8 +541,8 @@ export function Layers({ artboard }: Props) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{
         padding: '0 8px 0 12px', height: 36, fontSize: 11, fontWeight: 600,
-        color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em',
-        borderBottom: '1px solid #e0e0e0',
+        color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em',
+        borderBottom: `1px solid ${colors.border}`,
         display: 'flex', alignItems: 'center', gap: 4,
       }}>
         <span>Layers</span>
@@ -552,10 +552,11 @@ export function Layers({ artboard }: Props) {
             title="Collapse all layers"
             style={{
               border: 'none', background: 'none', cursor: 'pointer',
-              color: '#aaa', fontSize: 10, padding: '0 2px', lineHeight: 1,
+              color: colors.textMuted, fontSize: 10, padding: '0 2px', lineHeight: 1,
+              display: 'inline-flex', alignItems: 'center',
             }}
           >
-            ⊟
+            <ArrowsInSimple size={12} weight="thin" />
           </button>
         )}
         <div style={{ marginLeft: 'auto' }}>
@@ -565,7 +566,7 @@ export function Layers({ artboard }: Props) {
 
       <div ref={layersScrollRef} style={{ flex: 1, overflow: 'auto' }}>
         {artboard.rootChildren.length === 0 ? (
-          <div style={{ padding: 16, color: '#aaa', fontSize: 12 }}>No elements</div>
+          <div style={{ padding: 16, color: colors.textMuted, fontSize: 12 }}>No elements</div>
         ) : (
           <DndContext
             sensors={sensors}

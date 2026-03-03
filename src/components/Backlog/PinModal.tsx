@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useBacklogStore } from '../../store/backlogStore'
+import { colors, shadows, radius } from '../../styles/tokens'
+import { Lock } from '@phosphor-icons/react'
 
 export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
   const unlock = useBacklogStore(s => s.unlock)
@@ -19,7 +21,7 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
     <div
       onClick={onCancel}
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+        position: 'fixed', inset: 0, background: colors.overlay,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 10000,
       }}
@@ -27,16 +29,16 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 12, padding: 32,
+          background: colors.bg, borderRadius: 12, padding: 32,
           width: 320, display: 'flex', flexDirection: 'column', gap: 16,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          boxShadow: shadows.xl,
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a1a', textAlign: 'center' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: 6 }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+        <div style={{ fontSize: 15, fontWeight: 600, color: colors.text, textAlign: 'center' }}>
+          <Lock size={16} weight="thin" style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: 6 }} />
           Введите PIN
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
+        <div style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center' }}>
           Для добавления и удаления задач
         </div>
         <input
@@ -50,13 +52,13 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
           placeholder="••••"
           style={{
             width: '100%', padding: '12px 16px', fontSize: 24, textAlign: 'center',
-            letterSpacing: 12, border: `2px solid ${error ? '#dc2626' : '#e5e5e5'}`,
-            borderRadius: 8, outline: 'none', fontFamily: 'inherit',
+            letterSpacing: 12, border: `2px solid ${error ? colors.accentRed : colors.border}`,
+            borderRadius: radius.md, outline: 'none', fontFamily: 'inherit',
             boxSizing: 'border-box',
           }}
         />
         {error && (
-          <div style={{ fontSize: 12, color: '#dc2626', textAlign: 'center' }}>
+          <div style={{ fontSize: 12, color: colors.accentRed, textAlign: 'center' }}>
             Неверный PIN
           </div>
         )}
@@ -64,9 +66,9 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
           <button
             onClick={onCancel}
             style={{
-              flex: 1, padding: '10px 16px', fontSize: 13, border: '1px solid #e5e5e5',
-              borderRadius: 6, cursor: 'pointer', background: '#fff',
-              color: '#525252', fontWeight: 500,
+              flex: 1, padding: '10px 16px', fontSize: 13, border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm, cursor: 'pointer', background: colors.bg,
+              color: colors.textSecondary, fontWeight: 500,
             }}
           >
             Отмена
@@ -76,9 +78,9 @@ export function PinModal({ onSuccess, onCancel }: { onSuccess: () => void; onCan
             disabled={pin.length < 4}
             style={{
               flex: 1, padding: '10px 16px', fontSize: 13, border: 'none',
-              borderRadius: 6, cursor: pin.length >= 4 ? 'pointer' : 'default',
-              background: pin.length >= 4 ? '#0a0a0a' : '#e5e5e5',
-              color: pin.length >= 4 ? '#fff' : '#a3a3a3',
+              borderRadius: radius.sm, cursor: pin.length >= 4 ? 'pointer' : 'default',
+              background: pin.length >= 4 ? colors.accent : colors.border,
+              color: pin.length >= 4 ? colors.bg : colors.textMuted,
               fontWeight: 500,
             }}
           >
