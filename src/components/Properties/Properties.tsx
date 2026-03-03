@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
 import { CollapsibleSection, PropertyRow, OpacityRow } from './shared'
+import { PropertySelect } from './shared/PropertySelect'
 import type { CanvasElement, ElementStyles } from '../../types'
 import { CanvasSection } from './CanvasSection'
 import { ArtboardSection } from './ArtboardSection'
@@ -194,6 +195,24 @@ export function Properties() {
                         resize: 'vertical',
                         fontFamily: element.type === 'text' ? 'inherit' : undefined,
                       }}
+                    />
+                  </PropertyRow>
+                )}
+                {element.type === 'input' && (
+                  <PropertyRow label="Тип">
+                    <PropertySelect
+                      value={element.inputType ?? 'text'}
+                      options={[
+                        { value: 'text', label: 'text' },
+                        { value: 'email', label: 'email' },
+                        { value: 'password', label: 'password' },
+                        { value: 'number', label: 'number' },
+                        { value: 'tel', label: 'tel' },
+                        { value: 'url', label: 'url' },
+                        { value: 'search', label: 'search' },
+                      ]}
+                      onChange={(v) => updateField({ inputType: v as CanvasElement['inputType'] })}
+                      placeholder=""
                     />
                   </PropertyRow>
                 )}

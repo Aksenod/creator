@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 
 type Option = { value: string; label: string }
 
@@ -12,22 +13,36 @@ export function PropertySelect({ value, options, onChange, placeholder = '—', 
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 })
+
+  const updatePos = useCallback(() => {
+    if (!btnRef.current) return
+    const rect = btnRef.current.getBoundingClientRect()
+    setPos({ top: rect.bottom + 2, left: rect.left, width: rect.width })
+  }, [])
 
   useEffect(() => {
     if (!open) return
+    updatePos()
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (ref.current?.contains(target)) return
+      if (dropdownRef.current?.contains(target)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [open])
+  }, [open, updatePos])
 
   const selectedLabel = options.find(o => o.value === value)?.label ?? placeholder
 
   return (
     <div ref={ref} style={{ position: 'relative', flex: 1, minWidth: 0, ...style }}>
       <button
-        onClick={() => setOpen(!open)}
+        ref={btnRef}
+        onClick={() => { if (!open) updatePos(); setOpen(!open) }}
         title={title}
         style={{
           width: '100%',
@@ -56,20 +71,24 @@ export function PropertySelect({ value, options, onChange, placeholder = '—', 
         </svg>
       </button>
 
-      {open && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 2px)',
-          left: 0, right: 0,
-          zIndex: 200,
-          background: '#fff',
-          border: '1px solid #e5e5e5',
-          borderRadius: 8,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
-          maxHeight: 240,
-          overflowY: 'auto',
-          padding: 3,
-        }}>
+      {open && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: pos.top,
+            left: pos.left,
+            width: pos.width,
+            zIndex: 9999,
+            background: '#fff',
+            border: '1px solid #e5e5e5',
+            borderRadius: 8,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+            maxHeight: 240,
+            overflowY: 'auto',
+            padding: 3,
+          }}
+        >
           {placeholder && (
             <button
               onClick={() => { onChange(''); setOpen(false) }}
@@ -110,7 +129,8 @@ export function PropertySelect({ value, options, onChange, placeholder = '—', 
               </button>
             )
           })}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

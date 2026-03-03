@@ -262,6 +262,11 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       boxSizing: 'border-box',
     }
 
+    // For input elements, padding should be on the <input> itself (to push text inside), not on the wrapper div
+    if (el.type === 'input') {
+      style.padding = undefined
+    }
+
     // Offsets для non-static positioning (только если не needsRelative)
     // normalizeOffset: backward compat — legacy числовые значения → "Npx"
     const normalizeOffset = (v: string | number | undefined) =>
@@ -442,6 +447,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         ) : (
           el.type === 'input' ? (
             <input
+              type={el.inputType || 'text'}
               placeholder={el.content ?? ''}
               readOnly
               style={{
@@ -451,7 +457,10 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
                 fontFamily: s.fontFamily, fontWeight: s.fontWeight,
                 pointerEvents: 'none', outline: 'none',
                 boxSizing: 'border-box',
-                padding: 'inherit',
+                paddingTop: s.paddingTop ?? 0,
+                paddingRight: s.paddingRight ?? 0,
+                paddingBottom: s.paddingBottom ?? 0,
+                paddingLeft: s.paddingLeft ?? 0,
               }}
             />
           ) : (

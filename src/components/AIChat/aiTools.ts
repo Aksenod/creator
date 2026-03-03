@@ -74,6 +74,11 @@ export const toolDefinitions = [
             type: 'string',
             description: 'Element name',
           },
+          inputType: {
+            type: 'string',
+            enum: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+            description: 'HTML input type (only for input elements). Default: text.',
+          },
         },
         required: ['type'],
       },
@@ -102,6 +107,11 @@ export const toolDefinitions = [
           name: { type: 'string', description: 'New element name' },
           src: { type: 'string', description: 'Image source URL' },
           alt: { type: 'string', description: 'Image alt text' },
+          inputType: {
+            type: 'string',
+            enum: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+            description: 'HTML input type (only for input elements)',
+          },
         },
         required: ['elementId'],
       },
@@ -294,12 +304,13 @@ export function executeTool(
       const newId = newIds[0]
       if (!newId) return JSON.stringify({ error: 'Element not created' })
 
-      // Apply extra styles/content/name/positionMode if given
+      // Apply extra styles/content/name/positionMode/inputType if given
       const patch: Partial<CanvasElement> = {}
       if (args.styles) patch.styles = { ...updatedAb.elements[newId].styles, ...(args.styles as Partial<ElementStyles>) }
       if (args.positionMode) patch.positionMode = args.positionMode as CanvasElement['positionMode']
       if (args.content) patch.content = args.content as string
       if (args.name) patch.name = args.name as string
+      if (args.inputType) patch.inputType = args.inputType as CanvasElement['inputType']
 
       if (Object.keys(patch).length > 0) {
         store.updateElement(artboardId, newId, patch)
@@ -318,6 +329,7 @@ export function executeTool(
       if (args.name !== undefined) patch.name = args.name as string
       if (args.src !== undefined) patch.src = args.src as string
       if (args.alt !== undefined) patch.alt = args.alt as string
+      if (args.inputType !== undefined) patch.inputType = args.inputType as CanvasElement['inputType']
 
       store.updateElement(artboardId, elId, patch)
       return JSON.stringify({ ok: true })

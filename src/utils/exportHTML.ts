@@ -358,8 +358,9 @@ export function exportArtboardHTML(artboard: Artboard): string {
 
     // Input → self-closing <input>
     if (el.type === 'input') {
+      const inputType = el.inputType && el.inputType !== 'text' ? ` type="${el.inputType}"` : ''
       const placeholder = el.content ? ` placeholder="${esc(el.content)}"` : ''
-      return `${indent}<input class="${cls}"${placeholder} />`
+      return `${indent}<input class="${cls}"${inputType}${placeholder} />`
     }
 
     const open = `${indent}<${tag} class="${cls}">`

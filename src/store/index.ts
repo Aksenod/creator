@@ -352,6 +352,7 @@ export const useEditorStore = create<EditorState>()(
           styles: defaults[type],
           children: [],
           content: type === 'text' ? 'Текст' : type === 'button' ? 'Кнопка' : type === 'input' ? 'Введите текст...' : undefined,
+          ...(type === 'input' ? { inputType: 'text' as const } : {}),
           ...(type === 'image' ? { src: '', alt: '' } : {}),
         }
 

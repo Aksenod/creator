@@ -43,7 +43,7 @@ ${contextLines.length > 0 ? contextLines.join('\n') : 'No artboard open.'}
 - text — text element (set content property for text)
 - image — image element (set src, alt properties)
 - button — button element (set content property)
-- input — input field (set content property for placeholder text)
+- input — input field (set content property for placeholder text, inputType for HTML type: text/email/password/number/tel/url/search)
 
 Container types (accept children): body, div, section.
 Leaf types (no children): text, image, button, input.
