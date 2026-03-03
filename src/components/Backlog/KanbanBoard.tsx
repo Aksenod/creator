@@ -13,7 +13,7 @@ import { KanbanColumn } from './KanbanColumn'
 import { TaskCard } from './TaskCard'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
 
-const COLUMNS: TaskStatus[] = ['backlog', 'in_progress', 'done']
+const COLUMNS: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'design_review', 'code_review', 'done']
 
 export function KanbanBoard() {
   const { tasks, moveTask } = useBacklogStore()

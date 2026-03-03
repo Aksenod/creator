@@ -98,6 +98,25 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
           style={{ width: '100%', height: 48, objectFit: 'cover', borderRadius: 4, background: '#f5f5f5' }}
         />
       )}
+      {task.reviewComments && task.reviewComments.length > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          fontSize: 11, color: '#6b7280',
+        }}>
+          <span style={{
+            width: 14, height: 14, borderRadius: 7,
+            background: task.status === 'design_review' ? '#ede9fe' : task.status === 'code_review' ? '#dbeafe' : '#f3f4f6',
+            color: task.status === 'design_review' ? '#7c3aed' : task.status === 'code_review' ? '#1d4ed8' : '#6b7280',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 9, fontWeight: 700, flexShrink: 0,
+          }}>
+            {task.reviewComments.length}
+          </span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {task.reviewComments[task.reviewComments.length - 1].text}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

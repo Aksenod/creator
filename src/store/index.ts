@@ -26,9 +26,9 @@ type EditorState = {
   future: Project[]
   gridEditElementId: string | null
   expandedLayers: Set<string>
-  currentView: 'projects' | 'editor' | 'backlog'
+  currentView: 'projects' | 'editor' | 'backlog' | 'team'
 
-  setCurrentView: (view: 'projects' | 'editor' | 'backlog') => void
+  setCurrentView: (view: 'projects' | 'editor' | 'backlog' | 'team') => void
   createProject: (name: string) => void
   openProject: (id: string) => void
   closeProject: () => void
@@ -116,9 +116,21 @@ export const useEditorStore = create<EditorState>()(
       future: [],
       gridEditElementId: null,
       expandedLayers: new Set<string>(),
-      currentView: 'projects' as const,
+      currentView: (() => {
+        const path = typeof window !== 'undefined' ? window.location.pathname : '/'
+        if (path === '/backlog') return 'backlog' as const
+        if (path === '/team') return 'team' as const
+        return 'projects' as const
+      })(),
 
-      setCurrentView: (view) => set({ currentView: view }),
+      setCurrentView: (view) => {
+        const urlMap: Record<string, string> = { projects: '/', backlog: '/backlog', team: '/team', editor: '/' }
+        const url = urlMap[view] || '/'
+        if (window.location.pathname !== url) {
+          window.history.pushState(null, '', url)
+        }
+        set({ currentView: view })
+      },
 
       createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)

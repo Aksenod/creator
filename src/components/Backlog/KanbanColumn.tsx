@@ -6,7 +6,10 @@ import type { BacklogTask, TaskStatus } from '../../types/backlog'
 
 const COLUMN_CONFIG: Record<TaskStatus, { label: string; dot: string }> = {
   backlog: { label: 'Backlog', dot: '#a3a3a3' },
+  todo: { label: 'Todo', dot: '#f59e0b' },
   in_progress: { label: 'In Progress', dot: '#0a0a0a' },
+  design_review: { label: 'Design Review', dot: '#8b5cf6' },
+  code_review: { label: 'Code Review', dot: '#3b82f6' },
   done: { label: 'Done', dot: '#22c55e' },
 }
 
@@ -21,7 +24,7 @@ export function KanbanColumn({ status, tasks }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
   return (
-    <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 0 }}>
+    <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', gap: 0 }}>
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,

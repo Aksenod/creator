@@ -1,6 +1,12 @@
 export type TaskType = 'feature' | 'bug'
-export type TaskStatus = 'backlog' | 'in_progress' | 'done'
+export type TaskStatus = 'backlog' | 'todo' | 'in_progress' | 'design_review' | 'code_review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
+
+export type ReviewComment = {
+  author: string
+  text: string
+  createdAt: number
+}
 
 export type BacklogTask = {
   id: string
@@ -14,6 +20,7 @@ export type BacklogTask = {
   updatedAt: number
   order: number
   labels: string[]
+  reviewComments?: ReviewComment[]
 }
 
 export type BacklogData = {
