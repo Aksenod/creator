@@ -101,6 +101,153 @@ export function TaskModal() {
     if (existing) deleteTask(existing.id)
   }
 
+  const priorityColors: Record<string, { bg: string; text: string }> = {
+    low: { bg: '#f0fdf4', text: '#15803d' },
+    medium: { bg: '#fefce8', text: '#a16207' },
+    high: { bg: '#fef2f2', text: '#dc2626' },
+  }
+
+  const statusLabel = STATUS_OPTIONS.find(o => o.value === (existing?.status ?? status))?.label ?? status
+  const typeLabel = TYPE_OPTIONS.find(o => o.value === (existing?.type ?? type))?.label ?? type
+  const priorityLabel = PRIORITY_OPTIONS.find(o => o.value === (existing?.priority ?? priority))?.label ?? priority
+
+  // View-only mode for unauthenticated users
+  if (!isUnlocked && existing) {
+    const pc = priorityColors[existing.priority] ?? priorityColors.medium
+    return (
+      <div
+        onClick={() => setEditingTaskId(null)}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: '#fff', borderRadius: 12,
+            width: '100%', maxWidth: 560, maxHeight: '90vh',
+            overflow: 'auto', padding: 24,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            display: 'flex', flexDirection: 'column', gap: 16,
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0a0a0a', flex: 1 }}>
+              {existing.title}
+            </h2>
+            <button
+              onClick={() => setEditingTaskId(null)}
+              style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#737373', padding: 4, flexShrink: 0 }}
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* Badges */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{
+              padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+              background: '#f5f5f5', color: '#525252',
+            }}>
+              {typeLabel}
+            </span>
+            <span style={{
+              padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+              background: pc.bg, color: pc.text,
+            }}>
+              {priorityLabel}
+            </span>
+            <span style={{
+              padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+              background: '#f0f4ff', color: '#1d4ed8',
+            }}>
+              {statusLabel}
+            </span>
+            {existing.labels.map(l => (
+              <span key={l} style={{
+                padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+                background: '#f5f5f5', color: '#737373',
+              }}>
+                {l}
+              </span>
+            ))}
+          </div>
+
+          {/* Description */}
+          {existing.description && (
+            <div style={{
+              fontSize: 13, lineHeight: 1.6, color: '#374151',
+              whiteSpace: 'pre-wrap',
+            }}>
+              {existing.description}
+            </div>
+          )}
+
+          {/* Screenshots */}
+          {existing.screenshots.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {existing.screenshots.map((src, i) => (
+                <img key={i} src={src} alt="" style={{
+                  maxWidth: '100%', maxHeight: 200, borderRadius: 6,
+                  border: '1px solid #e5e5e5', objectFit: 'cover',
+                }} />
+              ))}
+            </div>
+          )}
+
+          {/* Review Comments (read-only) */}
+          {existing.reviewComments && existing.reviewComments.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Review Comments</label>
+              {existing.reviewComments.map((c, i) => (
+                <div key={i} style={{
+                  padding: '8px 10px', borderRadius: 6,
+                  background: c.author === 'PM' ? '#f0f4ff' : c.author === 'Designer' ? '#faf5ff' : '#f5f5f5',
+                  border: '1px solid',
+                  borderColor: c.author === 'PM' ? '#dbeafe' : c.author === 'Designer' ? '#ede9fe' : '#e5e5e5',
+                  fontSize: 12, lineHeight: 1.5,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{
+                      fontWeight: 600, fontSize: 11,
+                      color: c.author === 'PM' ? '#1d4ed8' : c.author === 'Designer' ? '#7c3aed' : '#525252',
+                    }}>{c.author}</span>
+                    <span style={{ color: '#a3a3a3', fontSize: 10 }}>
+                      {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div style={{ color: '#374151', whiteSpace: 'pre-wrap' }}>{c.text}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Date */}
+          <div style={{ fontSize: 11, color: '#a3a3a3' }}>
+            Created {new Date(existing.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </div>
+
+          {/* Close */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => setEditingTaskId(null)}
+              style={{
+                padding: '8px 16px', fontSize: 13, border: '1px solid #e5e5e5',
+                borderRadius: 6, cursor: 'pointer', background: '#fff',
+                color: '#525252', fontWeight: 500,
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       onClick={() => setEditingTaskId(null)}
@@ -321,20 +468,18 @@ export function TaskModal() {
               color: '#525252', fontWeight: 500,
             }}
           >
-            {isUnlocked ? 'Cancel' : 'Close'}
+            Cancel
           </button>
-          {isUnlocked && (
-            <button
-              onClick={handleSave}
-              style={{
-                padding: '8px 16px', fontSize: 13, border: 'none',
-                borderRadius: 6, cursor: 'pointer', background: '#0a0a0a',
-                color: '#fff', fontWeight: 500,
-              }}
-            >
-              {existing ? 'Save' : 'Create'}
-            </button>
-          )}
+          <button
+            onClick={handleSave}
+            style={{
+              padding: '8px 16px', fontSize: 13, border: 'none',
+              borderRadius: 6, cursor: 'pointer', background: '#0a0a0a',
+              color: '#fff', fontWeight: 500,
+            }}
+          >
+            {existing ? 'Save' : 'Create'}
+          </button>
         </div>
       </div>
     </div>

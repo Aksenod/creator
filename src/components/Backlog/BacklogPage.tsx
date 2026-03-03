@@ -44,10 +44,6 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
   }, [loadTasks])
 
   const handleNewTask = () => {
-    if (!isUnlocked) {
-      setShowPin(true)
-      return
-    }
     setEditingTaskId('__new__')
   }
 
@@ -93,16 +89,22 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
         </div>
 
         <button
-          onClick={handleNewTask}
+          onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
           style={{
             marginLeft: isMobile ? 8 : 'auto',
             padding: isMobile ? '7px 12px' : '7px 16px',
-            background: '#0a0a0a', color: '#fff',
-            border: 'none', borderRadius: 6,
+            background: isUnlocked ? '#0a0a0a' : '#fff',
+            color: isUnlocked ? '#fff' : '#525252',
+            border: isUnlocked ? 'none' : '1px solid #e0e0e0',
+            borderRadius: 6,
             fontSize: 13, cursor: 'pointer', fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 6,
           }}
         >
-          {isMobile ? '+' : '+ New Task'}
+          {isUnlocked
+            ? (isMobile ? '+' : '+ New Task')
+            : (isMobile ? '🔒' : '🔒 Unlock')
+          }
         </button>
       </div>
 
@@ -121,7 +123,7 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
       {/* Pin Modal */}
       {showPin && (
         <PinModal
-          onSuccess={() => { setShowPin(false); setEditingTaskId('__new__') }}
+          onSuccess={() => setShowPin(false)}
           onCancel={() => setShowPin(false)}
         />
       )}
