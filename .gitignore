@@ -6,3 +6,5 @@ dist
 backlog/screenshots/*
 !backlog/screenshots/.gitkeep
 .env*.local
+test-results/
+memory/
