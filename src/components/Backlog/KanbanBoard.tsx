@@ -16,7 +16,7 @@ import type { BacklogTask, TaskStatus } from '../../types/backlog'
 const COLUMNS: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'design_review', 'code_review', 'done']
 
 export function KanbanBoard() {
-  const { tasks, moveTask } = useBacklogStore()
+  const { tasks, moveTask, isUnlocked } = useBacklogStore()
   const [activeTask, setActiveTask] = useState<BacklogTask | null>(null)
 
   const sensors = useSensors(
@@ -27,6 +27,7 @@ export function KanbanBoard() {
     tasks.filter(t => t.status === status).sort((a, b) => a.order - b.order)
 
   const handleDragStart = (event: DragStartEvent) => {
+    if (!isUnlocked) return
     const task = tasks.find(t => t.id === event.active.id)
     if (task) setActiveTask(task)
   }
@@ -55,7 +56,7 @@ export function KanbanBoard() {
     const overIndex = targetTasks.findIndex(t => t.id === over.id)
     const newOrder = overIndex >= 0 ? overIndex : targetTasks.length
 
-    moveTask(taskId, targetStatus, newOrder)
+    if (isUnlocked) moveTask(taskId, targetStatus, newOrder)
   }
 
   return (

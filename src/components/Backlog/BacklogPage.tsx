@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useEditorStore } from '../../store'
 import { useBacklogStore } from '../../store/backlogStore'
 import { KanbanBoard } from './KanbanBoard'
 import { TaskModal } from './TaskModal'
+import { PinModal } from './PinModal'
 
 function TabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
@@ -27,7 +28,8 @@ function TabButton({ active, label, onClick }: { active: boolean; label: string;
 
 export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
-  const { editingTaskId, setEditingTaskId, loadTasks, loaded } = useBacklogStore()
+  const { editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked } = useBacklogStore()
+  const [showPin, setShowPin] = useState(false)
 
   useEffect(() => {
     // Wait for persist rehydration, then fetch from API
@@ -42,6 +44,10 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
   }, [loadTasks])
 
   const handleNewTask = () => {
+    if (!isUnlocked) {
+      setShowPin(true)
+      return
+    }
     setEditingTaskId('__new__')
   }
 
@@ -111,6 +117,14 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
 
       {/* Modal */}
       {editingTaskId !== null && <TaskModal />}
+
+      {/* Pin Modal */}
+      {showPin && (
+        <PinModal
+          onSuccess={() => { setShowPin(false); setEditingTaskId('__new__') }}
+          onCancel={() => setShowPin(false)}
+        />
+      )}
     </div>
   )
 }

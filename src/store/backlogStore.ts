@@ -8,9 +8,11 @@ type BacklogState = {
   tasks: BacklogTask[]
   editingTaskId: string | null
   loaded: boolean
+  isUnlocked: boolean
 
   loadTasks: () => Promise<void>
   saveTasks: () => Promise<void>
+  unlock: (pin: string) => boolean
   addTask: (data: Pick<BacklogTask, 'title' | 'description' | 'type' | 'priority' | 'labels'> & { screenshots?: string[] }) => void
   updateTask: (id: string, patch: Partial<BacklogTask>) => void
   deleteTask: (id: string) => void
@@ -24,6 +26,16 @@ export const useBacklogStore = create<BacklogState>()(
       tasks: [],
       editingTaskId: null,
       loaded: false,
+      isUnlocked: sessionStorage.getItem('backlog-unlocked') === '1',
+
+      unlock: (pin) => {
+        if (pin === '8888') {
+          sessionStorage.setItem('backlog-unlocked', '1')
+          set({ isUnlocked: true })
+          return true
+        }
+        return false
+      },
 
       loadTasks: async () => {
         try {

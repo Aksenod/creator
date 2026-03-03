@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
 ]
 
 export function TaskModal() {
-  const { editingTaskId, tasks, setEditingTaskId, addTask, updateTask, deleteTask } = useBacklogStore()
+  const { editingTaskId, tasks, setEditingTaskId, addTask, updateTask, deleteTask, isUnlocked } = useBacklogStore()
   const existing = tasks.find(t => t.id === editingTaskId)
 
   const [title, setTitle] = useState('')
@@ -183,7 +183,19 @@ export function TaskModal() {
         {existing && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#525252' }}>Status</label>
-            <SegmentedControl value={status} options={STATUS_OPTIONS} onChange={v => setStatus(v as TaskStatus)} />
+            <select
+              value={status}
+              onChange={e => setStatus(e.target.value as TaskStatus)}
+              style={{
+                padding: '8px 10px', fontSize: 13, border: '1px solid #e5e5e5',
+                borderRadius: 6, outline: 'none', color: '#0a0a0a',
+                background: '#fff', cursor: 'pointer',
+              }}
+            >
+              {STATUS_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
         )}
 
@@ -289,7 +301,7 @@ export function TaskModal() {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-          {existing && (
+          {existing && isUnlocked && (
             <button
               onClick={handleDelete}
               style={{
@@ -309,18 +321,20 @@ export function TaskModal() {
               color: '#525252', fontWeight: 500,
             }}
           >
-            Cancel
+            {isUnlocked ? 'Cancel' : 'Close'}
           </button>
-          <button
-            onClick={handleSave}
-            style={{
-              padding: '8px 16px', fontSize: 13, border: 'none',
-              borderRadius: 6, cursor: 'pointer', background: '#0a0a0a',
-              color: '#fff', fontWeight: 500,
-            }}
-          >
-            {existing ? 'Save' : 'Create'}
-          </button>
+          {isUnlocked && (
+            <button
+              onClick={handleSave}
+              style={{
+                padding: '8px 16px', fontSize: 13, border: 'none',
+                borderRadius: 6, cursor: 'pointer', background: '#0a0a0a',
+                color: '#fff', fontWeight: 500,
+              }}
+            >
+              {existing ? 'Save' : 'Create'}
+            </button>
+          )}
         </div>
       </div>
     </div>
