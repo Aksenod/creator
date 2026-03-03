@@ -34,7 +34,15 @@ export function BacklogPage() {
   const [tab, setTab] = useState<BacklogTab>('board')
 
   useEffect(() => {
-    loadTasks()
+    // Wait for persist rehydration, then fetch from API
+    const unsub = useBacklogStore.persist.onFinishHydration(() => {
+      loadTasks()
+    })
+    // If already hydrated (e.g. navigating back), load immediately
+    if (useBacklogStore.persist.hasHydrated()) {
+      loadTasks()
+    }
+    return unsub
   }, [loadTasks])
 
   const handleNewTask = () => {

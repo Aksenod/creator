@@ -29,8 +29,10 @@ export const useBacklogStore = create<BacklogState>()(
         try {
           const res = await fetch('/api/backlog/tasks')
           const data: BacklogData = await res.json()
+          // API is source of truth — always overwrite localStorage cache
           set({ tasks: data.tasks, loaded: true })
         } catch {
+          // API unavailable — use whatever persist loaded
           set({ loaded: true })
         }
       },

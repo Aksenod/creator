@@ -68,7 +68,7 @@ export const toolDefinitions = [
           },
           content: {
             type: 'string',
-            description: 'Text content (for text/button elements)',
+            description: 'Text content (for text/button elements) or placeholder (for input elements)',
           },
           name: {
             type: 'string',

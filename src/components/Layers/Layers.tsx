@@ -312,6 +312,7 @@ function getIcon(type: string) {
     case 'image': return '⬜'
     case 'section': return '▭'
     case 'button': return '⬡'
+    case 'input': return '▤'
     default: return '▢'
   }
 }

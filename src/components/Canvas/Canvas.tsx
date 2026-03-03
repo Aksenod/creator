@@ -440,7 +440,23 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
             />
           )
         ) : (
-          el.content && <span>{el.content}</span>
+          el.type === 'input' ? (
+            <input
+              placeholder={el.content ?? ''}
+              readOnly
+              style={{
+                width: '100%', height: '100%',
+                border: 'none', background: 'transparent',
+                color: s.color, fontSize: s.fontSize,
+                fontFamily: s.fontFamily, fontWeight: s.fontWeight,
+                pointerEvents: 'none', outline: 'none',
+                boxSizing: 'border-box',
+                padding: 'inherit',
+              }}
+            />
+          ) : (
+            el.content && <span>{el.content}</span>
+          )
         )}
         {el.children.map(renderElement)}
 

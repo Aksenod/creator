@@ -8,6 +8,7 @@ const ELEMENTS: { type: ElementType; label: string; icon: string }[] = [
   { type: 'text',    label: 'Text',    icon: 'T' },
   { type: 'image',   label: 'Image',   icon: '⬚' },
   { type: 'button',  label: 'Button',  icon: '⊡' },
+  { type: 'input',   label: 'Input',   icon: '▤' },
 ]
 
 export function Toolbar() {
@@ -55,7 +56,7 @@ export function Toolbar() {
       <button
         ref={triggerRef}
         data-testid="add-element-trigger"
-        title="Add element — creates Div, Section, Text, Image or Button inside selected element (or artboard root)"
+        title="Add element — creates Div, Section, Text, Image, Button or Input inside selected element (or artboard root)"
         style={{
           width: 28, height: 28, fontSize: 18, lineHeight: 1,
           border: '1px solid #ddd', borderRadius: 4,

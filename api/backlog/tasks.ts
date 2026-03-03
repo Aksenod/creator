@@ -30,6 +30,7 @@ export default async function handler(req: any, res: any) {
       await put(BLOB_KEY, body, {
         access: 'public',
         addRandomSuffix: false,
+        allowOverwrite: true,
         contentType: 'application/json',
       })
       return res.json({ ok: true })

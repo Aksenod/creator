@@ -235,6 +235,7 @@ function tagForType(type: string): string {
     case 'button': return 'button'
     case 'text': return 'p'
     case 'image': return 'img'
+    case 'input': return 'input'
     default: return 'div'
   }
 }
@@ -353,6 +354,12 @@ export function exportArtboardHTML(artboard: Artboard): string {
       const srcAttr = ` src="${esc(el.src)}"`
       const altAttr = ` alt="${esc(el.alt || '')}"`
       return `${indent}<img class="${cls}"${srcAttr}${altAttr} />`
+    }
+
+    // Input → self-closing <input>
+    if (el.type === 'input') {
+      const placeholder = el.content ? ` placeholder="${esc(el.content)}"` : ''
+      return `${indent}<input class="${cls}"${placeholder} />`
     }
 
     const open = `${indent}<${tag} class="${cls}">`
