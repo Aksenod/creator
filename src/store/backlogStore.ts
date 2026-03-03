@@ -4,6 +4,19 @@ import type { BacklogTask, BacklogData, TaskStatus } from '../types/backlog'
 
 const generateId = () => Math.random().toString(36).slice(2, 10)
 
+async function saveToApi(tasks: BacklogTask[], set: (s: Partial<{ saving: boolean }>) => void) {
+  set({ saving: true })
+  const data: BacklogData = { version: 1, tasks }
+  try {
+    await fetch('/api/backlog/tasks', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  } catch { /* silently fail */ }
+  set({ saving: false })
+}
+
 type BacklogState = {
   tasks: BacklogTask[]
   editingTaskId: string | null
@@ -12,7 +25,6 @@ type BacklogState = {
   saving: boolean
 
   loadTasks: () => Promise<void>
-  saveTasks: () => Promise<void>
   unlock: (pin: string) => boolean
   addTask: (data: Pick<BacklogTask, 'title' | 'description' | 'type' | 'priority' | 'labels'> & { screenshots?: string[] }) => void
   updateTask: (id: string, patch: Partial<BacklogTask>) => void
@@ -43,30 +55,14 @@ export const useBacklogStore = create<BacklogState>()(
         try {
           const res = await fetch('/api/backlog/tasks')
           const data: BacklogData = await res.json()
-          // API is source of truth — always overwrite localStorage cache
           set({ tasks: data.tasks, loaded: true })
         } catch {
-          // API unavailable — use whatever persist loaded
           set({ loaded: true })
         }
       },
 
-      saveTasks: async () => {
-        set({ saving: true })
-        const { tasks } = get()
-        const data: BacklogData = { version: 1, tasks }
-        try {
-          await fetch('/api/backlog/tasks', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          })
-        } catch { /* silently fail */ }
-        set({ saving: false })
-      },
-
       addTask: (data) => {
-        const { tasks, saveTasks } = get()
+        const { tasks } = get()
         const maxOrder = tasks.reduce((max, t) => Math.max(max, t.order), -1)
         const now = Date.now()
         const task: BacklogTask = {
@@ -82,28 +78,29 @@ export const useBacklogStore = create<BacklogState>()(
           order: maxOrder + 1,
           labels: data.labels,
         }
-        set({ tasks: [...tasks, task] })
-        saveTasks()
+        const updated = [...tasks, task]
+        set({ tasks: updated })
+        saveToApi(updated, set)
       },
 
       updateTask: (id, patch) => {
-        const { tasks, saveTasks } = get()
-        set({
-          tasks: tasks.map(t =>
-            t.id === id ? { ...t, ...patch, updatedAt: Date.now() } : t
-          ),
-        })
-        saveTasks()
+        const { tasks } = get()
+        const updated = tasks.map(t =>
+          t.id === id ? { ...t, ...patch, updatedAt: Date.now() } : t
+        )
+        set({ tasks: updated })
+        saveToApi(updated, set)
       },
 
       deleteTask: (id) => {
-        const { tasks, saveTasks } = get()
-        set({ tasks: tasks.filter(t => t.id !== id), editingTaskId: null })
-        saveTasks()
+        const { tasks } = get()
+        const updated = tasks.filter(t => t.id !== id)
+        set({ tasks: updated, editingTaskId: null })
+        saveToApi(updated, set)
       },
 
       moveTask: (id, newStatus, newOrder) => {
-        const { tasks, saveTasks } = get()
+        const { tasks } = get()
         const updated = tasks.map(t => {
           if (t.id === id) return { ...t, status: newStatus, order: newOrder, updatedAt: Date.now() }
           if (t.status === newStatus && t.id !== id && t.order >= newOrder) {
@@ -112,7 +109,7 @@ export const useBacklogStore = create<BacklogState>()(
           return t
         })
         set({ tasks: updated })
-        saveTasks()
+        saveToApi(updated, set)
       },
 
       setEditingTaskId: (id) => set({ editingTaskId: id }),
