@@ -28,7 +28,7 @@ function TabButton({ active, label, onClick }: { active: boolean; label: string;
 
 export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
-  const { editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked } = useBacklogStore()
+  const { editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked, saving } = useBacklogStore()
   const [showPin, setShowPin] = useState(false)
 
   useEffect(() => {
@@ -87,6 +87,19 @@ export function BacklogPage({ isMobile = false }: { isMobile?: boolean }) {
           <TabButton active label="Board" onClick={() => setCurrentView('backlog')} />
           <TabButton active={false} label="Team" onClick={() => setCurrentView('team')} />
         </div>
+
+        {saving && (
+          <span style={{
+            fontSize: 11, color: '#a3a3a3', fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: 3,
+              background: '#f59e0b',
+            }} />
+            Saving...
+          </span>
+        )}
 
         <button
           onClick={isUnlocked ? handleNewTask : () => setShowPin(true)}
