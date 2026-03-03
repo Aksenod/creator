@@ -26,7 +26,9 @@ type EditorState = {
   future: Project[]
   gridEditElementId: string | null
   expandedLayers: Set<string>
+  currentView: 'projects' | 'editor' | 'backlog'
 
+  setCurrentView: (view: 'projects' | 'editor' | 'backlog') => void
   createProject: (name: string) => void
   openProject: (id: string) => void
   closeProject: () => void
@@ -114,6 +116,9 @@ export const useEditorStore = create<EditorState>()(
       future: [],
       gridEditElementId: null,
       expandedLayers: new Set<string>(),
+      currentView: 'projects' as const,
+
+      setCurrentView: (view) => set({ currentView: view }),
 
       createProject: (name) => {
         const artboard = createDefaultArtboard('Home', 100, 100)

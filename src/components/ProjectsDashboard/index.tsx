@@ -268,10 +268,22 @@ export function ProjectsDashboard() {
       }}>
         <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>Creator</span>
         <button
+          onClick={() => useEditorStore.getState().setCurrentView('backlog')}
+          style={{
+            marginLeft: 'auto',
+            padding: '7px 16px',
+            background: 'transparent', color: '#525252',
+            border: '1px solid #e5e5e5', borderRadius: 6,
+            fontSize: 13, cursor: 'pointer', fontWeight: 500,
+          }}
+        >
+          Backlog
+        </button>
+        <button
           onClick={handleCreateProject}
           title="Create a new empty project with one artboard"
           style={{
-            marginLeft: 'auto',
+            marginLeft: 8,
             padding: '7px 16px',
             background: '#0a0a0a', color: '#fff',
             border: 'none', borderRadius: 6,

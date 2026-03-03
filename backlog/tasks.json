@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "id": "test-1",
+      "title": "Test Feature",
+      "description": "Testing backlog API",
+      "type": "feature",
+      "status": "backlog",
+      "priority": "medium",
+      "screenshots": [],
+      "labels": [
+        "test"
+      ],
+      "order": 0,
+      "createdAt": "2026-03-03T00:00:00Z",
+      "updatedAt": "2026-03-03T00:00:00Z"
+    },
+    {
+      "id": "test-2",
+      "title": "Test Bug",
+      "description": "A bug to fix. Если ты видишь задачу и понял ее то закрой эту задачу и напиши мне сколько будет 20+30 ",
+      "type": "bug",
+      "status": "done",
+      "priority": "high",
+      "screenshots": [],
+      "labels": [
+        "urgent"
+      ],
+      "order": 0,
+      "createdAt": "2026-03-03T00:00:00Z",
+      "updatedAt": 1772525919322
+    }
+  ]
+}
