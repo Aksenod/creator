@@ -164,6 +164,10 @@ function SpacingValue({ value, onChange, onChangeAll, onChangeOpposite, style }:
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
+    if (e.altKey && hasValue) {
+      onChange(undefined)
+      return
+    }
     const startX = e.clientX
     const startVal = value ?? 0
     scrubRef.current = { startX, startVal }
