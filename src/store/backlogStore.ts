@@ -9,6 +9,7 @@ type BacklogState = {
   editingTaskId: string | null
   loaded: boolean
   isUnlocked: boolean
+  saving: boolean
 
   loadTasks: () => Promise<void>
   saveTasks: () => Promise<void>
@@ -27,6 +28,7 @@ export const useBacklogStore = create<BacklogState>()(
       editingTaskId: null,
       loaded: false,
       isUnlocked: sessionStorage.getItem('backlog-unlocked') === '1',
+      saving: false,
 
       unlock: (pin) => {
         if (pin === '8888') {
@@ -50,6 +52,7 @@ export const useBacklogStore = create<BacklogState>()(
       },
 
       saveTasks: async () => {
+        set({ saving: true })
         const { tasks } = get()
         const data: BacklogData = { version: 1, tasks }
         try {
@@ -59,6 +62,7 @@ export const useBacklogStore = create<BacklogState>()(
             body: JSON.stringify(data),
           })
         } catch { /* silently fail */ }
+        set({ saving: false })
       },
 
       addTask: (data) => {

@@ -94,13 +94,14 @@ npx vercel --prod    # Production deploy
   → [1. RESEARCH]        — Explore-агенты параллельно исследуют кодовую базу
   → [2. ARCHITECTURE]    — Plan mode + Layout Engineer определяет layout-подход
   ═══ ГЕЙТ 1: одобрение плана пользователем ═══
-  → [3. DESIGN]          — .pen мокап → скриншот → согласование (обязательно для UI)
+  → [3. DESIGN]          — .pen мокап → скриншот
+  ═══ ГЕЙТ 2: Design Review (kanban: design_review) ═══
   → [4. IMPLEMENTATION]  — EnterWorktree → код по плану → Layout Engineer контролирует
   → [5. CODE REVIEW]     — качество, переиспользование, паттерны, layout
   → [6. TESTING]         — tsc → Playwright → новые тесты
-  ═══ ГЕЙТ 2: все проверки зелёные ═══
+  ═══ ГЕЙТ 3: Code Review (kanban: code_review) ═══
   → [7. USER REVIEW]     — пользователь проверяет в браузере
-  ═══ ГЕЙТ 3: одобрение пользователя ═══
+  ═══ ГЕЙТ 4: одобрение пользователя ═══
   → [8. MERGE & DEPLOY]  — мерж → build → vercel --prod → обновление memory
 ```
 
@@ -127,8 +128,15 @@ npx vercel --prod    # Production deploy
 **Phase 3 — DESIGN (обязательно для UI-задач):**
 - Создать .pen мокап: `designs/<feature-name>.pen`
 - Сделать скриншот через get_screenshot
-- Согласовать с пользователем перед реализацией
 - Пропускается только для чисто логических задач (store, utils)
+- **После создания мокапа → перевести задачу в `design_review`:**
+  ```bash
+  # PM добавляет review comment и переводит в design_review
+  curl -s https://creator-one-xi.vercel.app/api/backlog/tasks | ...
+  # Обновить задачу: status → design_review, добавить reviewComment
+  # с описанием: что сделано, ссылка на .pen файл, скриншот
+  ```
+- **Ждать одобрения пользователя** перед переходом к implementation
 
 **Phase 4 — IMPLEMENTATION:**
 - EnterWorktree для изоляции
@@ -150,10 +158,17 @@ npx vercel --prod    # Production deploy
 - `npx playwright test` — все тесты проходят
 - При необходимости: написать новые тесты в tests/
 - Ошибки → проверить memory/errors.md → исправить → добавить в errors.md
+- **После прохождения тестов → перевести задачу в `code_review`:**
+  ```bash
+  # PM добавляет review comment и переводит в code_review
+  # Описание: что было реализовано, какие файлы изменены,
+  # URL dev-сервера для проверки, список тестов
+  ```
+- **Ждать одобрения пользователя** перед мержом
 
 **Phase 7 — USER REVIEW:**
-- Показать пользователю URL dev-сервера
-- Дождаться одобрения
+- Пользователь проверяет задачу в канбане (колонка Code Review)
+- Review comments содержат всю информацию: что сделано, где проверить
 - Без одобрения — не мержить
 
 **Phase 8 — MERGE & DEPLOY:**
@@ -290,10 +305,36 @@ npx playwright test       # E2E тесты проходят
 
 ### Приоритизация задачи
 PM оценивает задачу и определяет какие фазы нужны:
-- **Баг-фикс:** Research → Implementation → Testing → User Review → Merge
-- **Новая UI-фича:** Benchmark → Research → Architecture → Design → Implementation → Code Review → Testing → User Review → Merge
-- **Рефакторинг:** Research → Architecture → Implementation → Code Review → Testing → Merge
-- **Мелкая правка:** Implementation → Testing → Merge
+- **Баг-фикс:** Research → Implementation → Testing → Code Review (kanban) → User Review → Merge
+- **Новая UI-фича:** Benchmark → Research → Architecture → Design → Design Review (kanban) → Implementation → Code Review → Testing → Code Review (kanban) → User Review → Merge
+- **Рефакторинг:** Research → Architecture → Implementation → Code Review → Testing → Code Review (kanban) → Merge
+- **Мелкая правка:** Implementation → Testing → Code Review (kanban) → Merge
+
+### Kanban Review Protocol
+Когда агенты завершают работу, PM **обязан** перевести задачу в review-колонку:
+
+**Design Review** (`design_review`):
+- Когда: после Phase 3 (Design) — мокап готов
+- PM добавляет reviewComment: что было спроектировано, ссылка на .pen файл
+- Пользователь видит задачу в колонке "Design Review" и проверяет мокап
+- Одобрение → PM переводит в `in_progress` для Phase 4 (Implementation)
+
+**Code Review** (`code_review`):
+- Когда: после Phase 6 (Testing) — код написан, тесты прошли
+- PM добавляет reviewComment: что реализовано, какие файлы, URL для проверки
+- Пользователь видит задачу в колонке "Code Review" и проверяет в браузере
+- Одобрение → PM переводит в `done` и мержит
+
+**API для обновления задачи:**
+```bash
+# 1. GET текущие задачи
+tasks=$(curl -s https://creator-one-xi.vercel.app/api/backlog/tasks)
+# 2. Обновить нужную задачу: status, добавить reviewComments
+# 3. PUT обновлённый массив
+curl -X PUT https://creator-one-xi.vercel.app/api/backlog/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"version":1,"tasks":[...]}'
+```
 
 ### Worktree Lifecycle
 1. **Create:** `EnterWorktree` для каждой задачи
