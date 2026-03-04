@@ -1,5 +1,6 @@
 export { CollapsibleSection } from './CollapsibleSection'
 export { PropertyRow } from './PropertyRow'
+export type { PropertySource } from './PropertyRow'
 export { SegmentedControl } from './SegmentedControl'
 export { ColorInput } from './ColorInput'
 export { CompactInput } from './CompactInput'

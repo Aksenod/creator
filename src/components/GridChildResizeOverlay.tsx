@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditorStore } from '../store'
-import { useSelectedElementId, useProject, useActiveBreakpointId } from '../store/selectors'
+import { useSelectedElementId, useProject, useActiveBreakpointId, useCssClasses } from '../store/selectors'
 import { findParentId } from '../utils/treeUtils'
 import { resolveStyles } from '../utils/resolveStyles'
 
@@ -57,12 +57,13 @@ export function GridChildResizeOverlay({ artboardId }: Props) {
   const selectedElementId = useSelectedElementId()
   const project = useProject()
   const activeBreakpointId = useActiveBreakpointId()
-  const updateElement = useEditorStore(s => s.updateElement)
+  const cssClasses = useCssClasses()
+  const smartUpdateStyles = useEditorStore(s => s.smartUpdateStyles)
 
   const artboard = project?.artboards[artboardId]
   const parentId = artboard && selectedElementId ? findParentId(artboard, selectedElementId) : null
   const parentEl = parentId && artboard ? artboard.elements[parentId] : null
-  const parentStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId) : null
+  const parentStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId, cssClasses) : null
   const isGridChild = parentStyles?.display === 'grid'
 
   const [childRect, setChildRect] = useState<Rect | null>(null)
@@ -152,11 +153,9 @@ export function GridChildResizeOverlay({ artboardId }: Props) {
     const onUp = () => {
       if (!drag || !selectedElementId) { setDrag(null); setHlRect(null); return }
       const { colStart, colEnd, rowStart, rowEnd } = drag
-      updateElement(artboardId, selectedElementId, {
-        styles: {
-          gridColumn: `${colStart} / ${colEnd}`,
-          gridRow: `${rowStart} / ${rowEnd}`,
-        },
+      smartUpdateStyles(artboardId, selectedElementId, {
+        gridColumn: `${colStart} / ${colEnd}`,
+        gridRow: `${rowStart} / ${rowEnd}`,
       })
       setDrag(null)
       setHlRect(null)
@@ -165,7 +164,7 @@ export function GridChildResizeOverlay({ artboardId }: Props) {
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
     return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
-  }, [drag, colLines, rowLines, selectedElementId, artboardId, updateElement])
+  }, [drag, colLines, rowLines, selectedElementId, artboardId, smartUpdateStyles])
 
   // ─── Render ───────────────────────────────────────────────────────────────
 

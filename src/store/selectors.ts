@@ -10,6 +10,8 @@ export const useCurrentView = () => useEditorStore(s => s.currentView)
 export const useActiveBreakpointId = () => useEditorStore(s => s.activeBreakpointId)
 export const useGridEditElementId = () => useEditorStore(s => s.gridEditElementId)
 export const useActiveProjectId = () => useEditorStore(s => s.activeProjectId)
+export const useEditingClassId = () => useEditorStore(s => s.editingClassId)
+export const useCssClasses = () => useEditorStore(s => s.project?.cssClasses)
 
 // --- Arrays (useShallow) ---
 export const useSelectedElementIds = () => useEditorStore(useShallow(s => s.selectedElementIds))
@@ -96,5 +98,18 @@ export const useUiActions = () => useEditorStore(
     collapseLayers: s.collapseLayers,
     collapseAllLayers: s.collapseAllLayers,
     setGridEditElementId: s.setGridEditElementId,
+    setEditingClassId: s.setEditingClassId,
+  }))
+)
+
+export const useClassActions = () => useEditorStore(
+  useShallow(s => ({
+    createClass: s.createClass,
+    updateClassStyles: s.updateClassStyles,
+    deleteClass: s.deleteClass,
+    renameClass: s.renameClass,
+    applyClassToElement: s.applyClassToElement,
+    removeClassFromElement: s.removeClassFromElement,
+    createClassFromElement: s.createClassFromElement,
   }))
 )

@@ -72,6 +72,7 @@ export type UiSlice = {
   activeBreakpointId: BreakpointId
   expandedLayers: Set<string>
   gridEditElementId: string | null
+  editingClassId: string | null
 
   setCurrentView: (view: 'projects' | 'editor' | 'backlog' | 'team') => void
   setActiveBreakpoint: (bpId: BreakpointId) => void
@@ -79,6 +80,19 @@ export type UiSlice = {
   collapseLayers: (ids: string[]) => void
   collapseAllLayers: () => void
   setGridEditElementId: (id: string | null) => void
+  setEditingClassId: (id: string | null) => void
+}
+
+export type ClassSlice = {
+  createClass: (name: string, styles?: Partial<ElementStyles>) => string
+  updateClassStyles: (classId: string, stylesPatch: Partial<ElementStyles>) => void
+  deleteClass: (classId: string) => void
+  renameClass: (classId: string, name: string) => void
+  applyClassToElement: (artboardId: string, elementId: string, classId: string) => void
+  removeClassFromElement: (artboardId: string, elementId: string, classId: string) => void
+  createClassFromElement: (artboardId: string, elementId: string, name: string) => string
+  /** Routes style update: to editingClassId class if set, otherwise to element inline styles */
+  smartUpdateStyles: (artboardId: string, elementId: string, stylesPatch: Partial<ElementStyles>) => void
 }
 
 // Full store type — intersection of all slices
@@ -88,4 +102,5 @@ export type EditorState =
   SelectionSlice &
   ElementSlice &
   HistorySlice &
-  UiSlice
+  UiSlice &
+  ClassSlice

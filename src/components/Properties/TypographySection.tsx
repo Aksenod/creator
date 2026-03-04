@@ -1,6 +1,7 @@
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, ColorInput, SegmentedControl, CompactInput } from './shared'
 import { PropertySelect } from './shared/PropertySelect'
+import { usePropertySource } from '../../hooks/usePropertySource'
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 
@@ -53,12 +54,13 @@ const FONT_FAMILIES = [
 ]
 
 export function TypographySection({ styles, onUpdate }: Props) {
+  const getSource = usePropertySource()
   return (
     <CollapsibleSection label="Typography" tooltip="Typography — font, size, weight, color, alignment and decorations" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* Font */}
-        <PropertyRow label="Font" labelWidth={44} onReset={() => onUpdate({ fontFamily: undefined })}>
+        <PropertyRow label="Font" labelWidth={44} onReset={() => onUpdate({ fontFamily: undefined })} source={getSource('fontFamily')}>
           <PropertySelect
             value={styles.fontFamily ?? ''}
             options={FONT_FAMILIES.map(f => ({ value: f, label: f }))}
@@ -68,7 +70,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Weight */}
-        <PropertyRow label="Weight" labelWidth={44} onReset={() => onUpdate({ fontWeight: undefined })}>
+        <PropertyRow label="Weight" labelWidth={44} onReset={() => onUpdate({ fontWeight: undefined })} source={getSource('fontWeight')}>
           <PropertySelect
             value={styles.fontWeight ?? ''}
             options={[
@@ -88,7 +90,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Size + Line Height */}
-        <PropertyRow label="Size" labelWidth={44} onReset={() => onUpdate({ fontSize: undefined, lineHeight: undefined })}>
+        <PropertyRow label="Size" labelWidth={44} onReset={() => onUpdate({ fontSize: undefined, lineHeight: undefined })} source={getSource('fontSize')}>
           <div style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
             <div style={{ display: 'flex', border: '1px solid #e5e5e5', borderRadius: 4, overflow: 'hidden', flex: 1, minWidth: 0 }}>
               <input
@@ -123,7 +125,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Color */}
-        <PropertyRow label="Color" labelWidth={44} onReset={() => onUpdate({ color: undefined })}>
+        <PropertyRow label="Color" labelWidth={44} onReset={() => onUpdate({ color: undefined })} source={getSource('color')}>
           <ColorInput
             value={styles.color}
             onChange={v => onUpdate({ color: v })}
@@ -133,7 +135,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Align */}
-        <PropertyRow label="Align" labelWidth={44} onReset={() => onUpdate({ textAlign: undefined })}>
+        <PropertyRow label="Align" labelWidth={44} onReset={() => onUpdate({ textAlign: undefined })} source={getSource('textAlign')}>
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {([
               { value: 'left' as const, icon: <AlignLeftIcon />, tooltip: 'Align left' },
@@ -159,7 +161,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Decor */}
-        <PropertyRow label="Decor" labelWidth={44} onReset={() => onUpdate({ textDecoration: undefined })}>
+        <PropertyRow label="Decor" labelWidth={44} onReset={() => onUpdate({ textDecoration: undefined })} source={getSource('textDecoration')}>
           <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
             {([
               { value: 'none' as const, icon: <span style={{ fontSize: 12 }}>×</span>, tooltip: 'No decoration' },
@@ -185,7 +187,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Letter Spacing */}
-        <PropertyRow label="Spacing" labelWidth={44} onReset={() => onUpdate({ letterSpacing: undefined })}>
+        <PropertyRow label="Spacing" labelWidth={44} onReset={() => onUpdate({ letterSpacing: undefined })} source={getSource('letterSpacing')}>
           <CompactInput
             value={styles.letterSpacing ?? 0}
             onChange={e => onUpdate({ letterSpacing: e.target.value ? Number(e.target.value) : undefined })}
@@ -196,7 +198,7 @@ export function TypographySection({ styles, onUpdate }: Props) {
         </PropertyRow>
 
         {/* Text Transform */}
-        <PropertyRow label="Case" labelWidth={44} onReset={() => onUpdate({ textTransform: undefined })}>
+        <PropertyRow label="Case" labelWidth={44} onReset={() => onUpdate({ textTransform: undefined })} source={getSource('textTransform')}>
           <SegmentedControl
             value={styles.textTransform ?? 'none'}
             options={[

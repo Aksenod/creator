@@ -1,19 +1,44 @@
 import type { CanvasElement, ElementStyles } from '../types'
+import type { CSSClass } from '../types/cssClass'
 import { type BreakpointId, getCascadeChain } from '../constants/breakpoints'
+import { mergeClassStyles } from './resolveClassStyles'
 
 /**
  * Возвращает эффективные стили элемента для данного брейкпоинта.
- * Cascade: base (desktop) → laptop overrides → tablet overrides → mobile overrides
  *
- * Пример: element.styles = { width: '200px' }
- *         element.breakpointStyles = { tablet: { width: '100%' } }
- *         resolveStyles(el, 'tablet')  → { ...base, width: '100%' }
- *         resolveStyles(el, 'mobile') → { ...base, width: '100%' }  (наследует tablet)
- *         resolveStyles(el, 'desktop') → { ...base }
+ * Webflow model:
+ * - Element WITH classes: styles come ONLY from classes (el.styles ignored)
+ * - Element WITHOUT classes: styles from el.styles (backward compat)
+ *
+ * Without cssClasses param — поведение идентично текущему (backward compat).
  */
-export function resolveStyles(el: CanvasElement, activeBpId: BreakpointId): ElementStyles {
-  const base = el.styles
+export function resolveStyles(
+  el: CanvasElement,
+  activeBpId: BreakpointId,
+  cssClasses?: Record<string, CSSClass>,
+): ElementStyles {
+  const hasClasses = cssClasses && el.classIds && el.classIds.length > 0
+
+  let base: ElementStyles
+
+  if (hasClasses) {
+    // Webflow model: only class styles, no local overrides
+    const classes = el.classIds!
+      .map(id => cssClasses![id])
+      .filter((c): c is CSSClass => c != null)
+    base = classes.length > 0
+      ? (mergeClassStyles(classes, activeBpId) as ElementStyles)
+      : { ...el.styles }
+  } else {
+    // No classes — inline styles (legacy/backward compat)
+    base = { ...el.styles }
+  }
+
   if (activeBpId === 'desktop' || !el.breakpointStyles) return base
+
+  // Breakpoint cascade only for elements without classes
+  // (class breakpoint styles are already resolved in mergeClassStyles)
+  if (hasClasses) return base
 
   const chain = getCascadeChain(activeBpId)
   let resolved: ElementStyles = { ...base }

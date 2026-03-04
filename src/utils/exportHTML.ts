@@ -1,4 +1,5 @@
 import type { Artboard, CanvasElement, ElementStyles } from '../types'
+import type { CSSClass } from '../types/cssClass'
 import type { Fill } from '../types/fills'
 import { BREAKPOINT_ORDER, BREAKPOINT_WIDTHS, type BreakpointId } from '../constants/breakpoints'
 import { hexToRgb } from './colorUtils'
@@ -103,9 +104,10 @@ function stylesToCSS(
 ): string[] {
   const decls: string[] = []
 
-  // Position
-  if (positionMode && positionMode !== 'static') {
-    decls.push(`position: ${positionMode};`)
+  // Position (from styles.position or legacy positionMode param)
+  const pos = styles.position ?? positionMode
+  if (pos && pos !== 'static') {
+    decls.push(`position: ${pos};`)
   }
 
   // Fills (новая система) — приоритет над backgroundColor
@@ -251,8 +253,11 @@ function esc(s: string): string {
 /**
  * Генерирует standalone HTML-файл из артборда.
  */
-export function exportArtboardHTML(artboard: Artboard): string {
-  // --- Первый проход: построить маппинг elementId → уникальный CSS-класс ---
+export function exportArtboardHTML(
+  artboard: Artboard,
+  cssClasses?: Record<string, CSSClass>,
+): string {
+  // --- Первый проход: построить маппинг elementId → уникальный CSS-класс slug ---
   const classMap = new Map<string, string>()
   const usedNames = new Map<string, number>() // baseName → сколько раз встретился
 
@@ -278,8 +283,23 @@ export function exportArtboardHTML(artboard: Artboard): string {
     if (el) buildClassMap(el)
   }
 
-  function cssClass(el: CanvasElement): string {
+  function elSlug(el: CanvasElement): string {
     return classMap.get(el.id) ?? `el-${el.id}`
+  }
+
+  /** Full class attribute for HTML: css class names + element slug */
+  function htmlClassAttr(el: CanvasElement): string {
+    const parts: string[] = []
+    // CSS class names
+    if (cssClasses && el.classIds) {
+      for (const classId of el.classIds) {
+        const cls = cssClasses[classId]
+        if (cls) parts.push(cls.name)
+      }
+    }
+    // Element slug (for local overrides)
+    parts.push(elSlug(el))
+    return parts.join(' ')
   }
 
   const cssRules: string[] = []
@@ -290,32 +310,91 @@ export function exportArtboardHTML(artboard: Artboard): string {
     mobile: [],
   }
 
-  // Рекурсивная генерация CSS для каждого элемента
+  // --- Emit CSS class rules FIRST ---
+  const emittedClassIds = new Set<string>()
+  function collectUsedClasses(el: CanvasElement) {
+    if (el.hidden) return
+    if (cssClasses && el.classIds) {
+      for (const classId of el.classIds) {
+        if (!emittedClassIds.has(classId)) {
+          const cls = cssClasses[classId]
+          if (cls) {
+            emittedClassIds.add(classId)
+            // Base styles
+            const baseDecls = stylesToCSS(cls.styles)
+            if (baseDecls.length > 0) {
+              cssRules.push(`.${cls.name} { ${baseDecls.join(' ')} }`)
+            }
+            // Breakpoint overrides
+            if (cls.breakpointStyles) {
+              for (const bpId of BREAKPOINT_ORDER.slice(1)) {
+                const delta = cls.breakpointStyles[bpId]
+                if (!delta || Object.keys(delta).length === 0) continue
+                const resolved = resolveClassStylesForBp(cls, bpId)
+                const bpDecls = bpDeltaToCSS(delta, resolved)
+                if (bpDecls.length > 0) {
+                  mediaRules[bpId].push(`.${cls.name} { ${bpDecls.join(' ')} }`)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    for (const childId of el.children) {
+      const child = artboard.elements[childId]
+      if (child) collectUsedClasses(child)
+    }
+  }
+
+  /** Resolve class styles for a specific BP */
+  function resolveClassStylesForBp(cls: CSSClass, bpId: BreakpointId): ElementStyles {
+    const base = { ...cls.styles } as ElementStyles
+    if (!cls.breakpointStyles) return base
+    const idx = BREAKPOINT_ORDER.indexOf(bpId)
+    let resolved = base
+    for (let i = 1; i <= idx; i++) {
+      const override = cls.breakpointStyles[BREAKPOINT_ORDER[i]]
+      if (override) resolved = { ...resolved, ...override }
+    }
+    return resolved
+  }
+
+  // Рекурсивная генерация CSS для каждого элемента (local overrides only when classes present)
   function collectCSS(el: CanvasElement) {
     if (el.hidden) return
 
-    const cls = cssClass(el)
+    const slug = elSlug(el)
+    const hasClasses = cssClasses && el.classIds && el.classIds.length > 0
 
-    // Base (desktop) стили
     // Body needs position:relative so absolute children position correctly
     const effectivePosition = el.type === 'body' && el.positionMode === 'static'
       ? 'relative'
       : el.positionMode
-    const baseDecls = stylesToCSS(el.styles, effectivePosition)
-    if (baseDecls.length > 0) {
-      cssRules.push(`.${cls} { ${baseDecls.join(' ')} }`)
+
+    if (hasClasses) {
+      // Only local overrides (element.styles that differ from class)
+      const localDecls = stylesToCSS(el.styles, effectivePosition)
+      if (localDecls.length > 0) {
+        cssRules.push(`.${slug} { ${localDecls.join(' ')} }`)
+      }
+    } else {
+      // No classes — all styles on element (existing behavior)
+      const baseDecls = stylesToCSS(el.styles, effectivePosition)
+      if (baseDecls.length > 0) {
+        cssRules.push(`.${slug} { ${baseDecls.join(' ')} }`)
+      }
     }
 
-    // Breakpoint overrides (пропускаем desktop — он base)
+    // Breakpoint overrides (element level)
     for (const bpId of BREAKPOINT_ORDER.slice(1)) {
       const delta = el.breakpointStyles?.[bpId]
       if (!delta || Object.keys(delta).length === 0) continue
 
-      // Для padding/margin shorthand нам нужны resolved значения
       const resolved = resolveStylesForBp(el, bpId)
       const bpDecls = bpDeltaToCSS(delta, resolved)
       if (bpDecls.length > 0) {
-        mediaRules[bpId].push(`.${cls} { ${bpDecls.join(' ')} }`)
+        mediaRules[bpId].push(`.${slug} { ${bpDecls.join(' ')} }`)
       }
     }
 
@@ -346,7 +425,7 @@ export function exportArtboardHTML(artboard: Artboard): string {
     if (el.hidden) return ''
 
     const tag = tagForType(el.type)
-    const cls = cssClass(el)
+    const cls = htmlClassAttr(el)
 
     // Image с src → self-closing <img>
     if (el.type === 'image' && el.src) {
@@ -386,7 +465,13 @@ export function exportArtboardHTML(artboard: Artboard): string {
     return `${open}\n${childParts.join('\n')}\n${indent}</${tag}>`
   }
 
-  // Собираем CSS
+  // Собираем CSS class rules first
+  for (const rootId of artboard.rootChildren) {
+    const el = artboard.elements[rootId]
+    if (el) collectUsedClasses(el)
+  }
+
+  // Собираем element CSS
   for (const rootId of artboard.rootChildren) {
     const el = artboard.elements[rootId]
     if (el) collectCSS(el)

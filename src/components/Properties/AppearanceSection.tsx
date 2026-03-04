@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, CompactInput } from './shared'
+import { usePropertySource } from '../../hooks/usePropertySource'
 
 type Props = {
   styles: Partial<ElementStyles>
@@ -8,6 +9,7 @@ type Props = {
 }
 
 export function AppearanceSection({ styles, onUpdate }: Props) {
+  const getSource = usePropertySource()
   const [manualExpanded, setManualExpanded] = useState(false)
 
   const opacityPct = Math.round((styles.opacity ?? 1) * 100)
@@ -53,6 +55,7 @@ export function AppearanceSection({ styles, onUpdate }: Props) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <PropertyRow label="Opacity" labelWidth={48}
               onReset={() => onUpdate({ opacity: undefined })}
+              source={getSource('opacity')}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
                 <input
@@ -78,6 +81,7 @@ export function AppearanceSection({ styles, onUpdate }: Props) {
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <PropertyRow label="Radius" labelWidth={48}
+              source={getSource('borderRadius')}
               onReset={() => onUpdate({
                 borderRadius: undefined,
                 borderTopLeftRadius: undefined,

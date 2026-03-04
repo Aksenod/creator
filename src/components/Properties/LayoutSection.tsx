@@ -4,6 +4,7 @@ import { CollapsibleSection, PropertyRow, SegmentedControl, CompactInput } from 
 import { PropertySelect } from './shared/PropertySelect'
 import { useEditorStore } from '../../store'
 import { useGridEditElementId } from '../../store/selectors'
+import { usePropertySource } from '../../hooks/usePropertySource'
 
 type Props = {
   styles: ElementStyles
@@ -240,6 +241,7 @@ function MoreAlignOptions({ styles, onUpdate }: { styles: ElementStyles; onUpdat
 // ─── FlexControls ─────────────────────────────────────────────────────────────
 
 function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
+  const getSource = usePropertySource()
   const dir = styles.flexDirection ?? 'row'
   const wrap = styles.flexWrap ?? 'nowrap'
   const gap = styles.gap ?? 0
@@ -254,7 +256,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
   return (
     <>
       {/* Direction */}
-      <PropertyRow label="Direction" onReset={() => onUpdate({ flexDirection: undefined })}>
+      <PropertyRow label="Direction" onReset={() => onUpdate({ flexDirection: undefined })} source={getSource('flexDirection')}>
         <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
           {dirOptions.map(opt => {
             const active = dir === opt.value
@@ -274,7 +276,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       {/* Wrap */}
-      <PropertyRow label="Wrap" onReset={() => onUpdate({ flexWrap: undefined })}>
+      <PropertyRow label="Wrap" onReset={() => onUpdate({ flexWrap: undefined })} source={getSource('flexWrap')}>
         <SegmentedControl
           value={wrap}
           options={[
@@ -287,7 +289,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
       </PropertyRow>
 
       {/* Align */}
-      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })}>
+      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })} source={getSource('justifyContent')}>
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -312,7 +314,7 @@ function FlexControls({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (
         </div>
       </PropertyRow>
 
-      <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined })}>
+      <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined })} source={getSource('gap')}>
         <div title="Gap — space between child elements inside flex container" style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
           <input
             type="range" min={0} max={120} value={gap}
@@ -421,6 +423,7 @@ function TrackList({ label, tracks, onChange, onAddTrack }: {
 // ─── GridGapRow ──────────────────────────────────────────────────────────────
 
 function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p: Partial<ElementStyles>) => void }) {
+  const getSource = usePropertySource()
   const [locked, setLocked] = useState(true)
   const colGap = styles.columnGap ?? styles.gap ?? 0
   const rowGap = styles.rowGap ?? styles.gap ?? 0
@@ -430,7 +433,7 @@ function GridGapRow({ styles, onUpdate }: { styles: ElementStyles; onUpdate: (p:
   }
 
   return (
-    <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined, columnGap: undefined, rowGap: undefined })}>
+    <PropertyRow label="Gap" onReset={() => onUpdate({ gap: undefined, columnGap: undefined, rowGap: undefined })} source={getSource('gap')}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         {locked ? (
           <>
@@ -490,6 +493,7 @@ function GridControls({ styles, onUpdate, elementId }: {
   onUpdate: (p: Partial<ElementStyles>) => void
   elementId?: string | null
 }) {
+  const getSource = usePropertySource()
   const gridEditElementId = useGridEditElementId()
   const setGridEditElementId = useEditorStore(s => s.setGridEditElementId)
   const colTracks = parseTracks(styles.gridTemplateColumns)
@@ -526,7 +530,7 @@ function GridControls({ styles, onUpdate, elementId }: {
       <GridGapRow styles={styles} onUpdate={onUpdate} />
 
       {/* Auto-flow direction */}
-      <PropertyRow label="Direction" onReset={() => onUpdate({ gridAutoFlow: undefined })}>
+      <PropertyRow label="Direction" onReset={() => onUpdate({ gridAutoFlow: undefined })} source={getSource('gridAutoFlow')}>
         <div style={{ display: 'flex', background: '#f0f0f0', borderRadius: 5, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
           {[{ value: 'row', label: '→ Row', tooltip: 'By rows → items fill rows left to right, then wrap to next row' }, { value: 'column', label: '↓ Column', tooltip: 'By columns ↓ items fill columns top to bottom, then move to next column' }].map(opt => {
             const active = autoFlow === opt.value
@@ -550,7 +554,7 @@ function GridControls({ styles, onUpdate, elementId }: {
       </PropertyRow>
 
       {/* Align */}
-      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })}>
+      <PropertyRow label="Align" onReset={() => onUpdate({ justifyContent: undefined, alignItems: undefined })} source={getSource('justifyContent')}>
         <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <AlignPicker
             justifyContent={styles.justifyContent}
@@ -592,13 +596,14 @@ function GridControls({ styles, onUpdate, elementId }: {
 // ─── LayoutSection (main export) ─────────────────────────────────────────────
 
 export function LayoutSection({ styles, onUpdate, elementId }: Props & { elementId?: string | null }) {
+  const getSource = usePropertySource()
   const display = styles.display ?? 'block'
 
   return (
     <CollapsibleSection label="Layout" tooltip="Layout — how element organizes children: Block, Flex (row/column), Grid (2D). Defines the layout structure" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {/* Display */}
-        <PropertyRow label="Display" onReset={() => onUpdate({ display: undefined })}>
+        <PropertyRow label="Display" onReset={() => onUpdate({ display: undefined })} source={getSource('display')}>
           <SegmentedControl
             value={display}
             options={[

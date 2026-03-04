@@ -1,6 +1,7 @@
 export type { BreakpointId } from '../constants/breakpoints'
 import type { Fill, BlendMode } from './fills'
 export type { Fill, BlendMode } from './fills'
+export type { CSSClass } from './cssClass'
 
 export type CanvasPattern = 'none' | 'dots' | 'grid' | 'cross' | 'hearts'
 
@@ -66,6 +67,9 @@ export type ElementStyles = {
   borderRadius?: number
   overflow?: 'visible' | 'hidden' | 'scroll' | 'auto'
 
+  // Position
+  position?: PositionMode
+
   // Position offsets (top/right/bottom/left with units, for relative/absolute/fixed/sticky)
   top?: string
   right?: string
@@ -115,6 +119,7 @@ export type CanvasElement = {
   // Переопределения для конкретных брейкпоинтов (только delta, не полная копия)
   // Cascade: base → laptop → tablet → mobile
   breakpointStyles?: Partial<Record<import('../constants/breakpoints').BreakpointId, Partial<ElementStyles>>>
+  classIds?: string[] // ordered list of applied CSS class IDs
   children: string[] // id дочерних элементов
   content?: string   // для text/button
   src?: string       // для image (URL изображения)
@@ -146,5 +151,6 @@ export type Project = {
   canvasPattern?: CanvasPattern  // дефолт 'dots'
   canvasPatternSize?: number     // дефолт 20 (px)
   canvasPatternColor?: string    // дефолт — авто по фону
+  cssClasses?: Record<string, import('./cssClass').CSSClass>  // id → CSSClass
 }
 

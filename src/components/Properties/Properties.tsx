@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useEditorStore } from '../../store'
 import { useShallow } from 'zustand/react/shallow'
-import { useSelectedElementId, useSelectedElementIds, useProject, useActiveArtboardId, useActiveBreakpointId } from '../../store/selectors'
+import { useSelectedElementId, useSelectedElementIds, useProject, useActiveArtboardId, useActiveBreakpointId, useEditingClassId, useCssClasses } from '../../store/selectors'
 import { CollapsibleSection, PropertyRow } from './shared'
 import { PropertySelect } from './shared/PropertySelect'
 import { AppearanceSection } from './AppearanceSection'
@@ -20,23 +20,26 @@ import { ImageSection } from './ImageSection'
 import { PositionSection } from './PositionSection'
 import { SpacingSection } from './SpacingSection'
 import { GridChildSection } from './GridChildSection'
+import { ClassSelector } from './ClassSelector'
 import type { PositionMode } from '../../types'
 import { findParentId } from '../../utils/treeUtils'
 import { BREAKPOINTS } from '../Canvas/PageEditor/BreakpointBar'
+
 
 const getCommonStyles = (
   ids: string[],
   elements: Record<string, CanvasElement>,
   bpId: BreakpointId,
+  cssClasses?: Record<string, import('../../types/cssClass').CSSClass>,
 ): Partial<ElementStyles> => {
   if (ids.length === 0) return {}
-  const first = resolveStyles(elements[ids[0]], bpId)
+  const first = resolveStyles(elements[ids[0]], bpId, cssClasses)
   const result: Partial<ElementStyles> = {}
 
   for (const key of Object.keys(first) as (keyof ElementStyles)[]) {
     const val = first[key]
     const allSame = ids.every(id => {
-      const s = resolveStyles(elements[id], bpId)
+      const s = resolveStyles(elements[id], bpId, cssClasses)
       return Object.is(s[key], val)
     })
     if (allSame) (result as Record<string, unknown>)[key] = val
@@ -50,10 +53,14 @@ export function Properties() {
   const project = useProject()
   const activeArtboardId = useActiveArtboardId()
   const activeBreakpointId = useActiveBreakpointId()
-  const { updateElement, updateSelectedElements, clearBreakpointStyle } = useEditorStore(useShallow(s => ({
+  const editingClassId = useEditingClassId()
+  const cssClasses = useCssClasses()
+  const { updateElement, updateSelectedElements, clearBreakpointStyle, updateClassStyles, setEditingClassId } = useEditorStore(useShallow(s => ({
     updateElement: s.updateElement,
     updateSelectedElements: s.updateSelectedElements,
     clearBreakpointStyle: s.clearBreakpointStyle,
+    updateClassStyles: s.updateClassStyles,
+    setEditingClassId: s.setEditingClassId,
   })))
   const updateCanvasSettings = useEditorStore(s => s.updateCanvasSettings)
   const updateArtboard = useEditorStore(s => s.updateArtboard)
@@ -61,20 +68,41 @@ export function Properties() {
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null
 
+  // Webflow behavior: always edit through last class when classes exist
+  // No "Done" button — classes are always the editing target
+  useEffect(() => {
+    if (!element || !element.classIds || element.classIds.length === 0) {
+      if (editingClassId) setEditingClassId(null)
+      return
+    }
+    const lastClassId = element.classIds[element.classIds.length - 1]
+    if (cssClasses?.[lastClassId]) {
+      setEditingClassId(lastClassId)
+    } else {
+      setEditingClassId(null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedElementId, element?.classIds?.length])
+
   const activeBp = BREAKPOINTS.find(bp => bp.id === activeBreakpointId)
   const effectiveWidth = activeBp?.width ?? artboard?.width ?? 1440
   const breakpointLabel = activeBp?.label ?? 'Desktop'
   const isMultiSelect = selectedElementIds.length > 1
   const commonStyles = useMemo(
     () => isMultiSelect && artboard
-      ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId)
+      ? getCommonStyles(selectedElementIds, artboard.elements, activeBreakpointId, cssClasses)
       : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isMultiSelect, selectedElementIds, artboard, activeBreakpointId],
+    [isMultiSelect, selectedElementIds, artboard, activeBreakpointId, cssClasses],
   )
 
   const updateStyle = (patch: Partial<ElementStyles>) => {
     if (!activeArtboardId) return
+    // Class editing mode — update class definition, not element
+    if (editingClassId) {
+      updateClassStyles(editingClassId, patch)
+      return
+    }
     if (isMultiSelect) {
       updateSelectedElements(activeArtboardId, patch)
     } else if (selectedElementId) {
@@ -88,17 +116,22 @@ export function Properties() {
   }
 
   const updatePositionMode = (mode: PositionMode) => {
-    if (!activeArtboardId || !selectedElementId) return
-    updateElement(activeArtboardId, selectedElementId, { positionMode: mode })
+    if (!activeArtboardId) return
+    // Route through class system (position is now in ElementStyles)
+    updateStyle({ position: mode })
+    // Also update legacy positionMode field for backward compat
+    if (selectedElementId) {
+      updateElement(activeArtboardId, selectedElementId, { positionMode: mode })
+    }
   }
 
   const effectiveStyles = isMultiSelect
     ? (commonStyles ?? {})
-    : element ? resolveStyles(element, activeBreakpointId) : {}
+    : element ? resolveStyles(element, activeBreakpointId, cssClasses) : {}
 
   const parentId = artboard && selectedElementId ? findParentId(artboard, selectedElementId) : null
   const parentEl = parentId && artboard ? artboard.elements[parentId] : null
-  const parentEffectiveStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId) : null
+  const parentEffectiveStyles = parentEl ? resolveStyles(parentEl, activeBreakpointId, cssClasses) : null
   const isGridChild = parentEffectiveStyles?.display === 'grid'
 
   const hasBpOverrides = !isMultiSelect && element && activeBreakpointId !== 'desktop'
@@ -173,6 +206,25 @@ export function Properties() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
+            {editingClassId && cssClasses?.[editingClassId] && (
+              <div style={{
+                padding: '6px 12px',
+                background: '#fff8f0',
+                borderRadius: 6,
+                marginBottom: 8,
+                display: 'flex',
+                alignItems: 'center',
+                border: '1px solid #ffcc80',
+              }}>
+                <span style={{ fontSize: 11, color: '#e65100', fontWeight: 500 }}>
+                  .{cssClasses[editingClassId].name}
+                </span>
+                <span style={{ fontSize: 10, color: '#bf7600', marginLeft: 6 }}>
+                  — all changes apply to this class
+                </span>
+              </div>
+            )}
+
             <CollapsibleSection label="Layer" defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <PropertyRow label="Name">
@@ -183,15 +235,7 @@ export function Properties() {
                   />
                 </PropertyRow>
                 <PropertyRow label="Class">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
-                    <span style={{ color: '#aaa', fontSize: 11 }}>.</span>
-                    <input
-                      value={element.className ?? ''}
-                      onChange={(e) => updateField({ className: e.target.value })}
-                      placeholder="auto"
-                      style={{ ...inputStyle, fontFamily: 'monospace' }}
-                    />
-                  </div>
+                  <ClassSelector />
                 </PropertyRow>
                 {(element.type === 'text' || element.type === 'button' || element.type === 'input') && (
                   <PropertyRow label="Контент">
@@ -253,7 +297,7 @@ export function Properties() {
 
             {element.type !== 'body' && (
               <PositionSection
-                positionMode={element.positionMode}
+                positionMode={(effectiveStyles as any).position ?? element.positionMode}
                 styles={effectiveStyles}
                 onUpdateMode={updatePositionMode}
                 onUpdateStyle={updateStyle}

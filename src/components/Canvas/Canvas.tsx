@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditorStore } from '../../store'
-import { useSelectedElementId, useSelectedElementIds, useActiveArtboardId, useActiveBreakpointId } from '../../store/selectors'
+import { useSelectedElementId, useSelectedElementIds, useActiveArtboardId, useActiveBreakpointId, useCssClasses } from '../../store/selectors'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
 import { parseCssValue, composeCssValue, type CssUnit } from '../Properties/shared/FigmaInput'
@@ -90,9 +90,11 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
   const selectedElementIds = useSelectedElementIds()
   const activeArtboardId = useActiveArtboardId()
   const activeBreakpointId = useActiveBreakpointId()
+  const cssClasses = useCssClasses()
   const selectElement = useEditorStore(s => s.selectElement)
   const toggleSelectElement = useEditorStore(s => s.toggleSelectElement)
   const updateElement = useEditorStore(s => s.updateElement)
+  const smartUpdateStyles = useEditorStore(s => s.smartUpdateStyles)
   const setActiveArtboard = useEditorStore(s => s.setActiveArtboard)
 
   const resizeRef = useRef<ResizeState | null>(null)
@@ -130,18 +132,16 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
           bl: 'borderBottomLeftRadius',
         }[rState.corner]
         if (e.shiftKey) {
-          updateElement(rState.artboardId, rState.elementId, {
-            styles: {
-              borderRadius: newRadius,
-              borderTopLeftRadius: undefined,
-              borderTopRightRadius: undefined,
-              borderBottomRightRadius: undefined,
-              borderBottomLeftRadius: undefined,
-            },
+          smartUpdateStyles(rState.artboardId, rState.elementId, {
+            borderRadius: newRadius,
+            borderTopLeftRadius: undefined,
+            borderTopRightRadius: undefined,
+            borderBottomRightRadius: undefined,
+            borderBottomLeftRadius: undefined,
           })
         } else {
-          updateElement(rState.artboardId, rState.elementId, {
-            styles: { [cornerProp]: newRadius },
+          smartUpdateStyles(rState.artboardId, rState.elementId, {
+            [cornerProp]: newRadius,
           })
         }
         return
@@ -201,11 +201,9 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
       const uW = pxFallback(state.unitW) ? 'px' : state.unitW
       const uH = pxFallback(state.unitH) ? 'px' : state.unitH
 
-      updateElement(activeArtboardId, state.elementId, {
-        styles: {
-          width: composeCssValue(String(finalNumW), uW as CssUnit),
-          height: composeCssValue(String(finalNumH), uH as CssUnit),
-        },
+      smartUpdateStyles(activeArtboardId, state.elementId, {
+        width: composeCssValue(String(finalNumW), uW as CssUnit),
+        height: composeCssValue(String(finalNumH), uH as CssUnit),
       })
     }
 
@@ -246,7 +244,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
     const rect = elDom.getBoundingClientRect()
 
     const el = artboard.elements[id]
-    const resolved = el ? resolveStyles(el, activeBreakpointId) : undefined
+    const resolved = el ? resolveStyles(el, activeBreakpointId, cssClasses) : undefined
     const parsedW = parseCssValue(resolved?.width)
     const parsedH = parseCssValue(resolved?.height)
 
@@ -326,8 +324,9 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
     // Оранжевый: родительский контейнер (zone before/after) — только для flow-элементов
     const isDropParent = !previewMode && dropIndicator?.zone !== 'into' && dropIndicator?.parentId === id
 
-    const s = resolveStyles(el, activeBreakpointId)
-    const cssPosition = getCSSPosition(el.positionMode)
+    const s = resolveStyles(el, activeBreakpointId, cssClasses)
+    // Position from resolved styles (class system) → fallback to legacy el.positionMode
+    const cssPosition = s.position ?? getCSSPosition(el.positionMode)
 
     const isParentOfSelected = !previewMode && id === parentOfSelectedId
 
@@ -693,8 +692,8 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
   const bodyEl = artboard.rootChildren
     .map(id => artboard.elements[id])
     .find(el => el?.type === 'body')
-  const bodyOverflow = bodyEl ? resolveStyles(bodyEl, activeBreakpointId).overflow : undefined
-  const artboardOverflow = bodyOverflow ?? 'hidden'
+  const bodyOverflow = bodyEl ? resolveStyles(bodyEl, activeBreakpointId, cssClasses).overflow : undefined
+  const artboardOverflow = bodyOverflow ?? 'visible'
 
   const artboardOverflowApplied = (!previewMode && selectedElementId) ? 'visible' : artboardOverflow
 

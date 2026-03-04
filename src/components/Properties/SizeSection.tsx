@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react'
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, FigmaInput } from './shared'
 import { getParentPixelSize, getElementPixelSize, type ConvertRef } from '../../utils/unitConversion'
+import { usePropertySource } from '../../hooks/usePropertySource'
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ type Props = {
 }
 
 export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboardHeight }: Props) {
+  const getSource = usePropertySource()
   const parentSize = useMemo(() => {
     if (!elementId || !artboardWidth) return null
     return getParentPixelSize(elementId, artboardWidth)
@@ -100,6 +102,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
                 onReset={() => onUpdate({ width: undefined })}
                 convertRef={widthRef}
                 resolveAutoValue={resolveAutoWidth}
+                source={getSource('width')}
               />
             </div>
             <div title="Height — element height. Auto = fit content" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
@@ -113,6 +116,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
                 onReset={() => onUpdate({ height: undefined })}
                 convertRef={heightRef}
                 resolveAutoValue={resolveAutoHeight}
+                source={getSource('height')}
               />
             </div>
           </div>
@@ -129,6 +133,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
               onChange={(v) => onUpdate({ minWidth: v || undefined })}
               onReset={() => onUpdate({ minWidth: undefined })}
               convertRef={widthRef}
+              source={getSource('minWidth')}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Min height — element won't shrink below this">
@@ -140,6 +145,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
               onChange={(v) => onUpdate({ minHeight: v || undefined })}
               onReset={() => onUpdate({ minHeight: undefined })}
               convertRef={heightRef}
+              source={getSource('minHeight')}
             />
           </div>
         </div>
@@ -156,6 +162,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
               onChange={(v) => onUpdate({ maxWidth: v || undefined })}
               onReset={() => onUpdate({ maxWidth: undefined })}
               convertRef={widthRef}
+              source={getSource('maxWidth')}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Max height — element won't grow beyond this">
@@ -168,6 +175,7 @@ export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboa
               onChange={(v) => onUpdate({ maxHeight: v || undefined })}
               onReset={() => onUpdate({ maxHeight: undefined })}
               convertRef={heightRef}
+              source={getSource('maxHeight')}
             />
           </div>
         </div>

@@ -12,6 +12,7 @@ export const createUiSlice: StateCreator<EditorState, [], [], UiSlice> = (set) =
   activeBreakpointId: 'desktop' as BreakpointId,
   expandedLayers: new Set<string>(),
   gridEditElementId: null,
+  editingClassId: null,
 
   setCurrentView: (view) => {
     const urlMap: Record<string, string> = { projects: '/', backlog: '/backlog', team: '/team', editor: '/' }
@@ -39,4 +40,6 @@ export const createUiSlice: StateCreator<EditorState, [], [], UiSlice> = (set) =
   collapseAllLayers: () => set({ expandedLayers: new Set<string>() }),
 
   setGridEditElementId: (id) => set({ gridEditElementId: id }),
+
+  setEditingClassId: (id) => set({ editingClassId: id }),
 })

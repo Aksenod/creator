@@ -295,7 +295,7 @@ export function CanvasEditor() {
         showCanvasSettings={showCanvasSettings}
         onCloseProject={closeProject}
         onTogglePreview={activeArtboard ? () => {
-          const html = exportArtboardHTML(activeArtboard)
+          const html = exportArtboardHTML(activeArtboard, project?.cssClasses)
           previewHTML(html)
         } : undefined}
         onToggleSettings={() => setShowCanvasSettings(s => !s)}
@@ -309,7 +309,7 @@ export function CanvasEditor() {
         onSetShowSettings={setShowCanvasSettings}
         onAddArtboard={() => addArtboard('Artboard ' + (project.artboardOrder.length + 1))}
         onExportHTML={activeArtboard ? () => {
-          const html = exportArtboardHTML(activeArtboard)
+          const html = exportArtboardHTML(activeArtboard, project?.cssClasses)
           setHtmlLightbox({ html, filename: `${activeArtboard.name}.html` })
         } : undefined}
       />

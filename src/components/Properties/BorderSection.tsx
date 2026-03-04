@@ -1,5 +1,6 @@
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, ColorInput, CompactInput } from './shared'
+import { usePropertySource } from '../../hooks/usePropertySource'
 
 type Props = {
   styles: Partial<ElementStyles>
@@ -7,12 +8,13 @@ type Props = {
 }
 
 export function BorderSection({ styles, onUpdate }: Props) {
+  const getSource = usePropertySource()
   return (
     <CollapsibleSection label="Borders" tooltip="Borders — border style, width and color" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
 
           {/* Style */}
-          <PropertyRow label="Style" labelWidth={44} onReset={() => onUpdate({ borderStyle: undefined })}>
+          <PropertyRow label="Style" labelWidth={44} onReset={() => onUpdate({ borderStyle: undefined })} source={getSource('borderStyle')}>
             <div style={{ display: 'flex', background: '#efefef', borderRadius: 6, padding: 2, gap: 1, flex: 1, minWidth: 0 }}>
               {([
                 { value: 'none', label: '×', tooltip: 'No border' },
@@ -38,7 +40,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
           </PropertyRow>
 
           {/* Width */}
-          <PropertyRow label="Width" labelWidth={44} onReset={() => onUpdate({ borderWidth: undefined })}>
+          <PropertyRow label="Width" labelWidth={44} onReset={() => onUpdate({ borderWidth: undefined })} source={getSource('borderWidth')}>
             <CompactInput
               value={styles.borderWidth ?? 0} min={0}
               onChange={e => onUpdate({ borderWidth: Number(e.target.value) })}
@@ -48,7 +50,7 @@ export function BorderSection({ styles, onUpdate }: Props) {
           </PropertyRow>
 
           {/* Color */}
-          <PropertyRow label="Color" labelWidth={44} onReset={() => onUpdate({ borderColor: undefined })}>
+          <PropertyRow label="Color" labelWidth={44} onReset={() => onUpdate({ borderColor: undefined })} source={getSource('borderColor')}>
             <ColorInput
               value={styles.borderColor}
               onChange={v => onUpdate({ borderColor: v })}

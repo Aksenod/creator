@@ -196,7 +196,7 @@ function buildTree(
     .map((id) => {
       const el = artboard.elements[id]
       if (!el) return null
-      const styles = resolveStyles(el, bpId as never)
+      const styles = resolveStyles(el, bpId as never, useEditorStore.getState().project?.cssClasses)
       return {
         id: el.id,
         name: el.name,
@@ -261,7 +261,7 @@ export function executeTool(
     case 'get_element': {
       const el = artboard.elements[args.elementId as string]
       if (!el) return JSON.stringify({ error: 'Element not found' })
-      const styles = resolveStyles(el, bpId)
+      const styles = resolveStyles(el, bpId, store.project?.cssClasses)
       const parentId = findParentId(artboard, el.id)
       return JSON.stringify({
         id: el.id,

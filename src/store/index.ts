@@ -7,6 +7,7 @@ import { createSelectionSlice } from './slices/selectionSlice'
 import { createElementSlice } from './slices/elementSlice'
 import { createHistorySlice } from './slices/historySlice'
 import { createUiSlice } from './slices/uiSlice'
+import { createClassSlice } from './slices/classSlice'
 
 export type { EditorState } from './types'
 
@@ -19,6 +20,7 @@ export const useEditorStore = create<EditorState>()(
       ...createElementSlice(...a),
       ...createHistorySlice(...a),
       ...createUiSlice(...a),
+      ...createClassSlice(...a),
     }),
     {
       name: 'creator-project',

@@ -29,7 +29,9 @@ export function composeCssValue(num: string, unit: CssUnit | SpecialValue): stri
 
 // ─── FigmaInput ───────────────────────────────────────────────────────────────
 
-export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, onReset, testId, convertRef, resolveAutoValue }: {
+export type StyleSource = 'class' | 'local' | 'none'
+
+export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, onReset, testId, convertRef, resolveAutoValue, source }: {
   prefix: React.ReactNode
   value: string
   placeholder?: string
@@ -41,6 +43,8 @@ export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, o
   convertRef?: ConvertRef
   /** Returns current px value when element has auto/none. Called on auto→numeric switch. */
   resolveAutoValue?: () => number | null
+  /** Visual indicator: 'class' = orange, 'local' = blue */
+  source?: StyleSource
 }) {
   const [focused, setFocused] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -151,6 +155,11 @@ export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, o
         background: focused ? '#fff' : '#f0f0f0',
         borderRadius: 6,
         border: focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
+        borderLeft: source === 'class'
+          ? '3px solid #ff9800'
+          : source === 'local'
+          ? '3px solid #2196f3'
+          : focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
         padding: '0 3px 0 6px',
         gap: 4,
         boxSizing: 'border-box',

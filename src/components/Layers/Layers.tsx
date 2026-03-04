@@ -236,11 +236,26 @@ function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIn
           </span>
         )}
 
-        {!isRenaming && el.className && (
-          <span style={{ fontSize: 10, color: colors.textDisabled, marginLeft: 4, fontFamily: 'monospace' }}>
-            .{el.className}
-          </span>
-        )}
+        {!isRenaming && (() => {
+          const cssClasses = useEditorStore.getState().project?.cssClasses
+          const classNames = el.classIds
+            ?.map(id => cssClasses?.[id]?.name)
+            .filter(Boolean) ?? []
+          // Fallback to legacy className
+          if (classNames.length === 0 && el.className) {
+            return (
+              <span style={{ fontSize: 10, color: colors.textDisabled, marginLeft: 4, fontFamily: 'monospace' }}>
+                .{el.className}
+              </span>
+            )
+          }
+          if (classNames.length === 0) return null
+          return (
+            <span style={{ fontSize: 10, color: colors.textDisabled, marginLeft: 4, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {classNames.map(n => `.${n}`).join(' ')}
+            </span>
+          )
+        })()}
 
         {/* Eye toggle — видимость слоя (всегда в DOM, чтобы не дёргался layout) */}
         {!isBody && (
