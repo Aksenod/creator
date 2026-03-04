@@ -6,8 +6,28 @@ import { ErrorFallback } from './components/shared/ErrorFallback'
 import { ProjectsDashboard } from './components/ProjectsDashboard'
 import { CanvasEditor } from './components/CanvasEditor'
 
-const BacklogPage = React.lazy(() => import('./components/Backlog').then(m => ({ default: m.BacklogPage })))
-const TeamPage = React.lazy(() => import('./components/Backlog/TeamPage').then(m => ({ default: m.TeamPage })))
+function lazyRetry<T extends Record<string, unknown>>(
+  factory: () => Promise<T>,
+  pick: keyof T,
+): React.LazyExoticComponent<React.ComponentType<any>> {
+  return React.lazy(() =>
+    factory()
+      .then(m => ({ default: m[pick] as React.ComponentType<any> }))
+      .catch((err: unknown) => {
+        const key = 'lazyRetried'
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, '1')
+          window.location.reload()
+          return new Promise(() => {}) // never resolves — page reloads
+        }
+        sessionStorage.removeItem(key)
+        throw err
+      }),
+  )
+}
+
+const BacklogPage = lazyRetry(() => import('./components/Backlog'), 'BacklogPage')
+const TeamPage = lazyRetry(() => import('./components/Backlog/TeamPage'), 'TeamPage')
 
 import type { ResponsiveMode } from './types/responsive'
 export type { ResponsiveMode }
