@@ -59,7 +59,7 @@ type Props = {
   displayWidth?: number
 }
 
-export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isActive, onArtboardClick, displayWidth }: Props) {
+export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onArtboardClick, displayWidth }: Props) {
   const effectiveWidth = displayWidth ?? artboard.width
 
   const {
