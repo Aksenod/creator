@@ -22,6 +22,18 @@ type ResizeState = {
   startH: number
 }
 
+type RadiusCorner = 'tl' | 'tr' | 'br' | 'bl'
+
+type RadiusResizeState = {
+  artboardId: string
+  elementId: string
+  corner: RadiusCorner
+  startMouseX: number
+  startMouseY: number
+  startRadius: number
+  maxRadius: number
+}
+
 const HANDLE_CURSORS: Record<HandleDir, string> = {
   nw: 'nwse-resize', n: 'ns-resize', ne: 'nesw-resize',
   e: 'ew-resize', se: 'nwse-resize', s: 'ns-resize',
@@ -38,6 +50,11 @@ const HANDLES: Array<{ id: HandleDir; style: React.CSSProperties }> = [
   { id: 'sw', style: { bottom: -4, left: -4 } },
   { id: 'w',  style: { top: 'calc(50% - 4px)', left: -4 } },
 ]
+
+// Visual: how deep the handle sits inside the element per radius unit
+const RADIUS_HANDLE_K = 0.30
+// Drag sensitivity: higher = more radius change per pixel of mouse movement
+const RADIUS_DRAG_SPEED = 6
 
 // --- Canvas ---
 
@@ -68,6 +85,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
   } = useEditorStore()
 
   const resizeRef = useRef<ResizeState | null>(null)
+  const radiusRef = useRef<RadiusResizeState | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const editingInputRef = useRef<HTMLInputElement | null>(null)
@@ -82,6 +100,42 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     if (previewMode) return
 
     const onMouseMove = (e: MouseEvent) => {
+      // Radius resize
+      const rState = radiusRef.current
+      if (rState) {
+        const currentScale = cameraRef?.current?.scale ?? scale
+        const dx = (e.clientX - rState.startMouseX) / currentScale
+        const dy = (e.clientY - rState.startMouseY) / currentScale
+        // Diagonal direction depends on corner
+        const signX = rState.corner === 'tl' || rState.corner === 'bl' ? 1 : -1
+        const signY = rState.corner === 'tl' || rState.corner === 'tr' ? 1 : -1
+        const diag = (dx * signX + dy * signY) / 2
+        const newRadius = Math.round(Math.max(0, Math.min(rState.startRadius + diag * RADIUS_DRAG_SPEED, rState.maxRadius)))
+        const cornerProp = {
+          tl: 'borderTopLeftRadius',
+          tr: 'borderTopRightRadius',
+          br: 'borderBottomRightRadius',
+          bl: 'borderBottomLeftRadius',
+        }[rState.corner]
+        if (e.shiftKey) {
+          updateElement(rState.artboardId, rState.elementId, {
+            styles: {
+              borderRadius: newRadius,
+              borderTopLeftRadius: undefined,
+              borderTopRightRadius: undefined,
+              borderBottomRightRadius: undefined,
+              borderBottomLeftRadius: undefined,
+            },
+          })
+        } else {
+          updateElement(rState.artboardId, rState.elementId, {
+            styles: { [cornerProp]: newRadius },
+          })
+        }
+        return
+      }
+
+      // Size resize
       const state = resizeRef.current
       if (!state || !activeArtboardId) return
 
@@ -104,6 +158,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
 
     const onMouseUp = () => {
       resizeRef.current = null
+      radiusRef.current = null
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
@@ -148,6 +203,33 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     }
 
     document.body.style.cursor = HANDLE_CURSORS[handle]
+    document.body.style.userSelect = 'none'
+  }
+
+  const startRadiusResize = (e: React.MouseEvent, id: string, corner: RadiusCorner, cornerRadius: number) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    const elDom = document.querySelector(`[data-element-id="${id}"]`) as HTMLElement
+    if (!elDom) return
+    const rect = elDom.getBoundingClientRect()
+
+    const currentScale = cameraRef?.current?.scale ?? scale
+    const w = rect.width / currentScale
+    const h = rect.height / currentScale
+
+    radiusRef.current = {
+      artboardId: artboard.id,
+      elementId: id,
+      corner,
+      startMouseX: e.clientX,
+      startMouseY: e.clientY,
+      startRadius: cornerRadius,
+      maxRadius: Math.min(w / 2, h / 2),
+    }
+
+    const cursor = corner === 'tl' || corner === 'br' ? 'nwse-resize' : 'nesw-resize'
+    document.body.style.cursor = cursor
     document.body.style.userSelect = 'none'
   }
 
@@ -238,6 +320,10 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       letterSpacing: s.letterSpacing,
       textTransform: s.textTransform,
       borderRadius: s.borderRadius,
+      borderTopLeftRadius: s.borderTopLeftRadius,
+      borderTopRightRadius: s.borderTopRightRadius,
+      borderBottomRightRadius: s.borderBottomRightRadius,
+      borderBottomLeftRadius: s.borderBottomLeftRadius,
       borderWidth: s.borderWidth,
       borderColor: s.borderColor,
       borderStyle: s.borderStyle as React.CSSProperties['borderStyle'],
@@ -278,7 +364,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       onMouseEnter: (e: React.MouseEvent) => { e.stopPropagation(); setHoveredId(id) },
       onMouseLeave: () => setHoveredId(null),
       onMouseDown: (e: React.MouseEvent) => {
-        if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
+        if (e.button !== 0 || resizeRef.current || radiusRef.current || e.shiftKey || e.metaKey) return
         startDrag(e, id)
       },
       onClick: (e: React.MouseEvent) => {
@@ -310,6 +396,38 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         onMouseDown={(e) => startResize(e, id, h.id)}
       />
     ))
+
+    // Border-radius handles — круглые, по одному на каждый угол
+    const showRadiusHandles = isSelected && !previewMode && el.type !== 'body' && el.type !== 'text'
+    const baseRadius = typeof s.borderRadius === 'number' ? s.borderRadius : parseInt(String(s.borderRadius)) || 0
+    const cornerRadii = {
+      tl: s.borderTopLeftRadius ?? baseRadius,
+      tr: s.borderTopRightRadius ?? baseRadius,
+      br: s.borderBottomRightRadius ?? baseRadius,
+      bl: s.borderBottomLeftRadius ?? baseRadius,
+    }
+    const radiusHandles = showRadiusHandles && ([
+      { corner: 'tl' as RadiusCorner, cursor: 'nwse-resize', pos: { top: RADIUS_HANDLE_K * cornerRadii.tl + 10, left: RADIUS_HANDLE_K * cornerRadii.tl + 10 } },
+      { corner: 'tr' as RadiusCorner, cursor: 'nesw-resize', pos: { top: RADIUS_HANDLE_K * cornerRadii.tr + 10, right: RADIUS_HANDLE_K * cornerRadii.tr + 10 } },
+      { corner: 'br' as RadiusCorner, cursor: 'nwse-resize', pos: { bottom: RADIUS_HANDLE_K * cornerRadii.br + 10, right: RADIUS_HANDLE_K * cornerRadii.br + 10 } },
+      { corner: 'bl' as RadiusCorner, cursor: 'nesw-resize', pos: { bottom: RADIUS_HANDLE_K * cornerRadii.bl + 10, left: RADIUS_HANDLE_K * cornerRadii.bl + 10 } },
+    ].map(h => (
+      <div
+        key={`radius-${h.corner}`}
+        style={{
+          position: 'absolute',
+          width: 8,
+          height: 8,
+          background: '#fff',
+          border: '1px solid #0066ff',
+          borderRadius: '50%',
+          zIndex: 11,
+          cursor: h.cursor,
+          ...h.pos,
+        }}
+        onMouseDown={(e) => startRadiusResize(e, id, h.corner, cornerRadii[h.corner])}
+      />
+    )))
 
     // Image с src → рендерим <img> внутри wrapper <div>
     if (el.type === 'image' && el.src) {
@@ -345,6 +463,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
             }}
           />
           {resizeHandles}
+          {radiusHandles}
         </div>
       )
     }
@@ -358,7 +477,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         onMouseLeave={previewMode ? undefined : () => setHoveredId(null)}
         onMouseDown={previewMode ? undefined : (e) => {
           // Resize handles вызывают stopPropagation сами — сюда не попадут
-          if (e.button !== 0 || resizeRef.current || e.shiftKey || e.metaKey) return
+          if (e.button !== 0 || resizeRef.current || radiusRef.current || e.shiftKey || e.metaKey) return
           startDrag(e, id)
         }}
         onClick={previewMode ? undefined : (e) => {
@@ -478,6 +597,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
             onMouseDown={(e) => startResize(e, id, h.id)}
           />
         ))}
+        {radiusHandles}
       </div>
     )
   }

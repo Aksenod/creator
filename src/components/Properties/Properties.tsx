@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
-import { CollapsibleSection, PropertyRow, OpacityRow } from './shared'
+import { CollapsibleSection, PropertyRow } from './shared'
+import { AppearanceSection } from './AppearanceSection'
 import type { CanvasElement, ElementStyles } from '../../types'
 import { CanvasSection } from './CanvasSection'
 import { ArtboardSection } from './ArtboardSection'
@@ -139,7 +140,7 @@ export function Properties() {
             <SpacingSection styles={effectiveStyles} onUpdate={updateStyle} />
             <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} />
             <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
-            <OpacityRow value={effectiveStyles.opacity} onChange={v => updateStyle({ opacity: v })} />
+            <AppearanceSection styles={effectiveStyles} onUpdate={updateStyle} />
             <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
             <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
             <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />
@@ -227,7 +228,7 @@ export function Properties() {
               />
             )}
 
-            <OpacityRow value={effectiveStyles.opacity} onChange={v => updateStyle({ opacity: v })} />
+            <AppearanceSection styles={effectiveStyles} onUpdate={updateStyle} />
             <FillSection styles={effectiveStyles} onUpdate={updateStyle} />
             <BorderSection styles={effectiveStyles} onUpdate={updateStyle} />
             <TypographySection styles={effectiveStyles} onUpdate={updateStyle} />

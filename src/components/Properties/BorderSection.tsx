@@ -2,39 +2,14 @@ import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, ColorInput, CompactInput } from './shared'
 
 type Props = {
-  styles: ElementStyles
+  styles: Partial<ElementStyles>
   onUpdate: (patch: Partial<ElementStyles>) => void
 }
 
 export function BorderSection({ styles, onUpdate }: Props) {
-  const radius = styles.borderRadius ?? 0
-
   return (
-    <CollapsibleSection label="Borders" tooltip="Borders — border style, width, color and corner radius" defaultOpen>
+    <CollapsibleSection label="Borders" tooltip="Borders — border style, width and color" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-
-        {/* Radius */}
-        <PropertyRow label="Radius" labelWidth={44} onReset={() => onUpdate({ borderRadius: undefined })}>
-          <div title="Corner radius — higher value = rounder corners. 0 = sharp, 50+ = pill/circle" style={{ display: 'flex', gap: 4, flex: 1, minWidth: 0, alignItems: 'center' }}>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={radius}
-              onChange={e => onUpdate({ borderRadius: Number(e.target.value) })}
-              style={{ flex: 1, minWidth: 0 }}
-            />
-            <CompactInput
-              value={radius} min={0}
-              onChange={e => onUpdate({ borderRadius: Number(e.target.value) })}
-              suffix="PX" style={{ width: 52, flex: 'none' }}
-            />
-          </div>
-        </PropertyRow>
-
-        {/* Border section */}
-        <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 10, color: '#a3a3a3', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Border</span>
 
           {/* Style */}
           <PropertyRow label="Style" labelWidth={44} onReset={() => onUpdate({ borderStyle: undefined })}>
@@ -81,7 +56,6 @@ export function BorderSection({ styles, onUpdate }: Props) {
               fallback="#000000"
             />
           </PropertyRow>
-        </div>
 
       </div>
     </CollapsibleSection>

@@ -18,7 +18,7 @@ export function CompactInput({ value, onChange, suffix, min, max, step, style, t
   return (
     <div style={{
       display: 'flex', alignItems: 'center',
-      height: 26,
+      height: 26, minWidth: 0, overflow: 'hidden',
       background: focused ? '#fff' : '#f0f0f0',
       borderRadius: 6,
       border: focused ? '1.5px solid #0a0a0a' : '1.5px solid transparent',
