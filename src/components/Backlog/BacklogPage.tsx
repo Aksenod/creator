@@ -20,7 +20,8 @@ const MOBILE_FILTERS: { key: MobileFilter; label: string; dotColor: string; stat
 
 export function BacklogPage({ responsiveMode }: { responsiveMode: ResponsiveMode }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
-  const { tasks, editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked, saving } = useBacklogStore()
+  const { tasks: rawTasks, editingTaskId, setEditingTaskId, loadTasks, loaded, isUnlocked, saving } = useBacklogStore()
+  const tasks = rawTasks ?? []
   const [showPin, setShowPin] = useState(false)
   const [mobileFilter, setMobileFilter] = useState<MobileFilter>('backlog')
 

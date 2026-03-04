@@ -23,7 +23,8 @@ type Props = {
 }
 
 export function KanbanBoard({ responsiveMode, mobileFilterStatuses }: Props) {
-  const { tasks, moveTask, isUnlocked } = useBacklogStore()
+  const { tasks: rawTasks, moveTask, isUnlocked } = useBacklogStore()
+  const tasks = rawTasks ?? []
   const [activeTask, setActiveTask] = useState<BacklogTask | null>(null)
 
   const isMobile = responsiveMode === 'mobile'
