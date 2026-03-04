@@ -209,8 +209,6 @@ export function Properties() {
                         { value: 'password', label: 'password' },
                         { value: 'number', label: 'number' },
                         { value: 'tel', label: 'tel' },
-                        { value: 'url', label: 'url' },
-                        { value: 'search', label: 'search' },
                       ]}
                       onChange={(v) => updateField({ inputType: v as CanvasElement['inputType'] })}
                       placeholder=""

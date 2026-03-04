@@ -76,7 +76,7 @@ export const toolDefinitions = [
           },
           inputType: {
             type: 'string',
-            enum: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+            enum: ['text', 'email', 'password', 'number', 'tel'],
             description: 'HTML input type (only for input elements). Default: text.',
           },
         },
@@ -109,7 +109,7 @@ export const toolDefinitions = [
           alt: { type: 'string', description: 'Image alt text' },
           inputType: {
             type: 'string',
-            enum: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+            enum: ['text', 'email', 'password', 'number', 'tel'],
             description: 'HTML input type (only for input elements)',
           },
         },

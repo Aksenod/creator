@@ -120,7 +120,7 @@ export type CanvasElement = {
   src?: string       // для image (URL изображения)
   alt?: string       // для image (alt текст)
   hidden?: boolean   // скрыт ли элемент (eye toggle)
-  inputType?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  inputType?: 'text' | 'email' | 'password' | 'number' | 'tel'
 }
 
 // Артборд (страница)
