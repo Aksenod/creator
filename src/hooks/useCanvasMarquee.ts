@@ -74,19 +74,58 @@ export function useCanvasMarquee(
 
       // Find intersecting artboards
       const marqueeScreen = { left: screenLeft, top: screenTop, right: screenRight, bottom: screenBottom }
-      const foundIds: string[] = []
+      const foundArtboardIds: string[] = []
 
       const refs = artboardElRefs.current
       if (refs) {
         refs.forEach((el, artboardId) => {
           const rect = el.getBoundingClientRect()
           if (rectContainedIn(rect, marqueeScreen)) {
-            foundIds.push(artboardId)
+            foundArtboardIds.push(artboardId)
           }
         })
       }
 
-      storeRef.current.selectArtboards(foundIds)
+      if (foundArtboardIds.length > 0) {
+        storeRef.current.selectArtboards(foundArtboardIds)
+      } else {
+        // No artboards fully contained — look for elements inside artboards
+        const project = storeRef.current.project
+        if (project) {
+          const elementIds: string[] = []
+          let hitArtboardId: string | null = null
+          for (const artboardId of project.artboardOrder) {
+            const artboard = project.artboards[artboardId]
+            if (!artboard) continue
+            const walkElements = (ids: string[]) => {
+              for (const id of ids) {
+                const el = artboard.elements[id]
+                if (!el || el.hidden) continue
+                if (el.type !== 'body') {
+                  const dom = document.querySelector(`[data-element-id="${id}"]`) as HTMLElement
+                  if (dom) {
+                    const rect = dom.getBoundingClientRect()
+                    if (rectContainedIn(rect, marqueeScreen)) {
+                      elementIds.push(id)
+                      if (!hitArtboardId) hitArtboardId = artboardId
+                    }
+                  }
+                }
+                if (el.children.length > 0) walkElements(el.children)
+              }
+            }
+            walkElements(artboard.rootChildren)
+          }
+          if (elementIds.length > 0) {
+            if (hitArtboardId) storeRef.current.setActiveArtboard(hitArtboardId)
+            storeRef.current.selectElements(elementIds)
+          } else {
+            storeRef.current.selectArtboards([])
+          }
+        } else {
+          storeRef.current.selectArtboards([])
+        }
+      }
     }
 
     const onMouseUp = () => {

@@ -102,17 +102,17 @@ export function useMarqueeSelection(
       const marqueeScreen = { left: screenLeft, top: screenTop, right: screenRight, bottom: screenBottom }
       const foundIds: string[] = []
 
-      // Top-level selectable elements: body's children + non-body rootChildren
+      // All selectable elements recursively (excluding body and hidden)
       const selectableIds: string[] = []
-      for (const rootId of ab.rootChildren) {
-        const el = ab.elements[rootId]
-        if (!el) continue
-        if (el.type === 'body') {
-          selectableIds.push(...el.children)
-        } else if (!el.hidden) {
-          selectableIds.push(rootId)
+      const walk = (ids: string[]) => {
+        for (const id of ids) {
+          const el = ab.elements[id]
+          if (!el || el.hidden) continue
+          if (el.type !== 'body') selectableIds.push(id)
+          if (el.children.length > 0) walk(el.children)
         }
       }
+      walk(ab.rootChildren)
 
       for (const elId of selectableIds) {
         const el = ab.elements[elId]
