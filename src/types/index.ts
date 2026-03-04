@@ -101,7 +101,7 @@ export type ElementStyles = {
 }
 
 // Тип элемента
-export type ElementType = 'div' | 'text' | 'image' | 'section' | 'button' | 'input' | 'body'
+export type ElementType = 'div' | 'text' | 'image' | 'button' | 'input' | 'body'
 
 // Элемент на canvas
 export type CanvasElement = {

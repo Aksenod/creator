@@ -49,7 +49,7 @@ export const toolDefinitions = [
         properties: {
           type: {
             type: 'string',
-            enum: ['div', 'section', 'text', 'image', 'button', 'input'],
+            enum: ['div', 'text', 'image', 'button', 'input'],
             description: 'Element type',
           },
           parentId: {

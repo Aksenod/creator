@@ -6,7 +6,7 @@ export const generateId = () => Math.random().toString(36).slice(2, 10)
 const HISTORY_MAX_SIZE = 50
 
 // Типы-контейнеры, которые принимают дочерние элементы
-export const CONTAINER_TYPES = ['div', 'section', 'body'] as const
+export const CONTAINER_TYPES = ['div', 'body'] as const
 
 // Проверка: может ли элемент данного типа содержать дочерние элементы
 export const isContainerType = (type: ElementType): boolean =>

@@ -231,7 +231,6 @@ function bpDeltaToCSS(
 /** HTML-тег по типу элемента */
 function tagForType(type: string): string {
   switch (type) {
-    case 'section': return 'section'
     case 'button': return 'button'
     case 'text': return 'p'
     case 'image': return 'img'

@@ -18,7 +18,6 @@ import {
   CaretRight,
   Image,
   TextT,
-  Rectangle,
   HandTap,
   Textbox,
   FrameCorners,
@@ -310,7 +309,6 @@ function getIcon(type: string): React.ReactNode {
     case 'body': return <FrameCorners size={12} weight="thin" />
     case 'text': return <TextT size={12} weight="thin" />
     case 'image': return <Image size={12} weight="thin" />
-    case 'section': return <Rectangle size={12} weight="thin" />
     case 'button': return <HandTap size={12} weight="thin" />
     case 'input': return <Textbox size={12} weight="thin" />
     default: return <FrameCorners size={12} weight="thin" />

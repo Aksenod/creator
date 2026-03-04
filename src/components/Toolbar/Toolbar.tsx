@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import {
   FrameCorners,
-  Rectangle,
   TextT,
   HandTap,
   Image,
@@ -13,8 +12,7 @@ import { colors, shadows } from '../../styles/tokens'
 import type { ElementType } from '../../types'
 
 const ELEMENTS: { type: ElementType; label: string; icon: React.ReactNode }[] = [
-  { type: 'div',     label: 'Div',     icon: <FrameCorners size={14} weight="thin" /> },
-  { type: 'section', label: 'Section', icon: <Rectangle size={14} weight="thin" /> },
+  { type: 'div',     label: 'Frame',   icon: <FrameCorners size={14} weight="thin" /> },
   { type: 'text',    label: 'Text',    icon: <TextT size={14} weight="thin" /> },
   { type: 'image',   label: 'Image',   icon: <Image size={14} weight="thin" /> },
   { type: 'button',  label: 'Button',  icon: <HandTap size={14} weight="thin" /> },

@@ -333,7 +333,6 @@ export const useEditorStore = create<EditorState>()(
         const id = generateId()
         const defaults: Record<ElementType, Partial<ElementStyles>> = {
           div:     { width: '100%',  height: '100px', display: 'flex', backgroundColor: '#f9f9f9' },
-          section: { width: '100%',  height: '200px', display: 'flex', backgroundColor: '#ffffff' },
           text:    { width: 'auto',  height: 'auto',  fontSize: 16,    color: '#1a1a1a' },
           image:   { width: '200px', height: '150px', backgroundColor: '#e0e0e0', objectFit: 'cover', overflow: 'hidden' },
           button:  { width: 'auto',  height: 'auto',  backgroundColor: '#0066ff' },
@@ -342,7 +341,8 @@ export const useEditorStore = create<EditorState>()(
         }
 
         const nonBodyCount = Object.values(ab.elements).filter(e => e.type !== 'body').length
-        const name = `${type} ${nonBodyCount + 1}`
+        const displayType = type === 'div' ? 'Frame' : type
+        const name = `${displayType} ${nonBodyCount + 1}`
         const newElement: CanvasElement = {
           id,
           name,
@@ -839,7 +839,7 @@ export const useEditorStore = create<EditorState>()(
 
         // Считаем сколько div-ов уже есть для нумерации
         const divCount = Object.values(ab.elements).filter(e => e.type === 'div').length
-        const newDivName = `Div ${divCount + 1}`
+        const newDivName = `Frame ${divCount + 1}`
         const newDivId = generateId()
 
         // Создаём новый div
