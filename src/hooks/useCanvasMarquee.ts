@@ -10,11 +10,11 @@ export type CanvasMarqueeRect = {
 
 const DEAD_ZONE = 3
 
-function rectsIntersect(
+function rectContainedIn(
   a: DOMRect,
   b: { left: number; top: number; right: number; bottom: number },
 ) {
-  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom)
+  return a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom
 }
 
 export function useCanvasMarquee(
@@ -80,7 +80,7 @@ export function useCanvasMarquee(
       if (refs) {
         refs.forEach((el, artboardId) => {
           const rect = el.getBoundingClientRect()
-          if (rectsIntersect(rect, marqueeScreen)) {
+          if (rectContainedIn(rect, marqueeScreen)) {
             foundIds.push(artboardId)
           }
         })
