@@ -163,6 +163,29 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
       if (['se', 'sw', 's'].includes(state.handle)) newH = Math.max(20, state.startH + dy)
       if (['ne', 'nw', 'n'].includes(state.handle)) newH = Math.max(20, state.startH - dy)
 
+      // Shift — сохранить пропорции
+      if (e.shiftKey && state.startW > 0 && state.startH > 0) {
+        const aspect = state.startW / state.startH
+        const isCorner = ['se', 'ne', 'sw', 'nw'].includes(state.handle)
+        const isHorizontal = ['e', 'w'].includes(state.handle)
+        const isVertical = ['n', 's'].includes(state.handle)
+
+        if (isCorner) {
+          // Диагональный handle — подгоняем по большему изменению
+          const scaleX = newW / state.startW
+          const scaleY = newH / state.startH
+          if (Math.abs(scaleX - 1) > Math.abs(scaleY - 1)) {
+            newH = Math.max(20, newW / aspect)
+          } else {
+            newW = Math.max(20, newH * aspect)
+          }
+        } else if (isHorizontal) {
+          newH = Math.max(20, newW / aspect)
+        } else if (isVertical) {
+          newW = Math.max(20, newH * aspect)
+        }
+      }
+
       const ratioW = state.startW > 0 ? newW / state.startW : 1
       const ratioH = state.startH > 0 ? newH / state.startH : 1
 
