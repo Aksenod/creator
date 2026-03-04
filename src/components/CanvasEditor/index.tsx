@@ -315,37 +315,14 @@ export function CanvasEditor() {
       />
 
       {/* Основная область */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-
-        {/* Панель слоёв */}
-        {!isPreview && (
-          <div style={{
-            width: panelsHidden ? 0 : 240,
-            minWidth: 0,
-            flexShrink: 0,
-            overflow: 'hidden',
-            transition: 'width 160ms ease',
-          }}>
-            <div style={{ width: 240, height: '100%', borderRight: '1px solid #e0e0e0' }}>
-              {activeArtboard ? (
-                <Layers artboard={activeArtboard} />
-              ) : (
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  height: '100%', color: '#aaa', fontSize: 12, padding: 16, textAlign: 'center',
-                }}>
-                  Click an artboard to edit
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+      <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
 
         {/* Бесконечный холст */}
         <div
           ref={containerRef}
           style={{
-            flex: 1,
+            width: '100%',
+            height: '100%',
             overflow: 'hidden',
             background: project?.canvasBackground ?? '#e8e8e8',
             backgroundImage: getPatternImage(project?.canvasPattern ?? 'dots', project?.canvasBackground ?? '#e8e8e8', project?.canvasPatternColor),
@@ -485,16 +462,46 @@ export function CanvasEditor() {
           )}
         </div>
 
-        {/* Правая панель (Properties / AI Chat) */}
+        {/* Панель слоёв — absolute overlay */}
         {!isPreview && (
           <div style={{
-            width: panelsHidden ? 0 : 240,
-            minWidth: 0,
-            flexShrink: 0,
-            overflow: 'hidden',
-            transition: 'width 160ms ease',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: 240,
+            zIndex: 10,
+            transform: panelsHidden ? 'translateX(-240px)' : 'translateX(0)',
+            transition: 'transform 160ms ease',
           }}>
-            <div style={{ width: 240, height: '100%', borderLeft: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: 240, height: '100%', borderRight: '1px solid #e0e0e0', background: '#fff' }}>
+              {activeArtboard ? (
+                <Layers artboard={activeArtboard} />
+              ) : (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  height: '100%', color: '#aaa', fontSize: 12, padding: 16, textAlign: 'center',
+                }}>
+                  Click an artboard to edit
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Правая панель (Properties / AI Chat) — absolute overlay */}
+        {!isPreview && (
+          <div style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            height: '100%',
+            width: 240,
+            zIndex: 10,
+            transform: panelsHidden ? 'translateX(240px)' : 'translateX(0)',
+            transition: 'transform 160ms ease',
+          }}>
+            <div style={{ width: 240, height: '100%', borderLeft: '1px solid #e0e0e0', background: '#fff', display: 'flex', flexDirection: 'column' }}>
               {/* Табы */}
               <div style={{
                 display: 'flex',
