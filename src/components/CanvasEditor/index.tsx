@@ -16,6 +16,7 @@ import { findParentId, getSiblingInfo, getCommonParentId } from '../../utils/tre
 import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
 import type { CanvasPattern } from '../../types'
 import { useCanvasMarquee } from '../../hooks/useCanvasMarquee'
+import { getArtboardOutline, getArtboardLabelColor, getArtboardLabelWeight } from '../../utils/artboardStyles'
 
 // ─── Snap logic ─────────────────────────────────────────────────────────────
 
@@ -590,7 +591,7 @@ export function CanvasEditor() {
                     left: artboard.x,
                     top: artboard.y,
                     cursor: !isActive && !isPreview ? 'grab' : undefined,
-                    outline: isActive ? '1px solid #0a0a0a' : selectedArtboardIds.includes(id) ? '2px solid #0066ff' : undefined,
+                    outline: getArtboardOutline(isActive, selectedArtboardIds.includes(id)),
                     outlineOffset: 0,
                   }}
                   onMouseDown={!isActive && !isPreview ? (e) => {
@@ -614,8 +615,8 @@ export function CanvasEditor() {
                         top: -24,
                         left: 0,
                         fontSize: 12,
-                        color: isActive ? '#0a0a0a' : '#555',
-                        fontWeight: isActive ? 600 : 400,
+                        color: getArtboardLabelColor(isActive),
+                        fontWeight: getArtboardLabelWeight(isActive),
                         userSelect: 'none',
                         whiteSpace: 'nowrap',
                         lineHeight: '20px',

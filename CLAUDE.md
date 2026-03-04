@@ -6,7 +6,7 @@
 - **State:** Zustand 5 с persist middleware + undo/redo через pushHistory
 - **DnD:** @dnd-kit/core
 - **AI:** OpenRouter API (AIChat с 8 инструментами, streaming)
-- **Tests:** Playwright 1.58
+- **Tests:** Vitest (unit) + Playwright 1.58 (E2E)
 - **Deploy:** Vercel
 
 ## Commands
@@ -15,6 +15,7 @@
 npm run dev          # Dev server (Vite)
 npm run build        # tsc && vite build
 npx tsc --noEmit     # Type check only
+npm run test:unit    # Vitest unit tests
 npx playwright test  # E2E tests
 npx vercel --prod    # Production deploy
 ```
@@ -124,6 +125,12 @@ npx vercel --prod    # Production deploy
 - Architect создаёт план реализации в EnterPlanMode
 - Layout Engineer добавляет: какой layout pattern (grid/flex/container), глубину вложенности, responsive стратегию
 - Структура реализации: каркас (layout) → контент → стили
+- **Edge Case Checklist (обязательно):** Architect перечисляет все edge cases в плане:
+  - Граничные значения: 0, отрицательные, undefined, NaN, пустая строка
+  - Переходы состояний: auto→%, %→px, px→vw и т.д.
+  - Null safety: optional chaining, default values
+  - Деление на ноль, переполнение, крайние индексы массивов
+  - Responsive: как ведёт себя на каждом брейкпоинте
 
 **Phase 3 — DESIGN (обязательно для UI-задач):**
 - Создать .pen мокап: `designs/<feature-name>.pen`
@@ -278,13 +285,15 @@ npx vercel --prod    # Production deploy
 ### Pre-merge Checklist
 ```bash
 npx tsc --noEmit          # Типы
+npm run test:unit         # Vitest unit тесты (утилиты, хелперы)
 npm run dev               # Dev server стартует
 npx playwright test       # E2E тесты проходят
 ```
 
 ### Новые тесты
+- **Unit (Vitest):** для чистых утилит, хелперов, парсеров — `src/**/*.test.ts`
+- **E2E (Playwright):** для UI-сценариев, интеграции — `tests/<feature>.spec.ts`
 - Написать если: новый UI компонент, новая store-логика, баг без покрытия
-- Паттерн: tests/<feature>.spec.ts
 - Helpers: createProject, enterPageEditor, addElement, getStoredProject
 
 ### Error Lookup Protocol

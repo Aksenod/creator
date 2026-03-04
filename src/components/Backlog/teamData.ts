@@ -92,11 +92,11 @@ export const teamMembers: TeamMember[] = [
     id: 'tester',
     name: 'Якуб Ковальский',
     role: 'Tester',
-    specialty: 'TypeScript, Playwright, E2E',
+    specialty: 'TypeScript, Vitest, Playwright, E2E',
     location: 'PL Варшава',
     flag: '🇵🇱',
     avatarUrl: 'https://i.pravatar.cc/150?img=54',
     status: 'active',
-    bio: 'Финальная проверка перед деплоем. Запускает tsc, dev server и Playwright тесты. Пишет новые E2E-тесты при необходимости. Применяет error lookup protocol, передаёт результаты PM.',
+    bio: 'Финальная проверка перед деплоем. Запускает tsc, Vitest unit-тесты для утилит и Playwright E2E-тесты. Пишет новые тесты при необходимости. Применяет error lookup protocol, передаёт результаты PM.',
   },
 ]
