@@ -673,6 +673,8 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
   const bodyOverflow = bodyEl ? resolveStyles(bodyEl, activeBreakpointId).overflow : undefined
   const artboardOverflow = bodyOverflow ?? 'hidden'
 
+  const artboardOverflowApplied = (!previewMode && selectedElementId) ? 'visible' : artboardOverflow
+
   const artboardBox = (
     <div
       data-testid="artboard-frame"
@@ -683,7 +685,8 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
         outline: 'none',
-        overflow: (!previewMode && selectedElementId) ? 'visible' : artboardOverflow,
+        overflow: artboardOverflowApplied,
+        display: artboardOverflowApplied === 'visible' ? 'flow-root' : undefined,
         position: 'relative',
       }}
       onMouseDown={plain ? onArtboardMouseDown : undefined}
