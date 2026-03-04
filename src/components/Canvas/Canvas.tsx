@@ -677,7 +677,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
         outline: 'none',
-        overflow: artboardOverflow,
+        overflow: (!previewMode && selectedElementId) ? 'visible' : artboardOverflow,
         position: 'relative',
       }}
       onClick={plain ? (e) => {
