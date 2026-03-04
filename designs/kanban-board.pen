@@ -1,0 +1,5607 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Ve1ec",
+      "x": 0,
+      "y": 942,
+      "name": "Card States — Light",
+      "width": 1440,
+      "fill": "$bg-surface",
+      "stroke": {
+        "align": "inside",
+        "thickness": {
+          "top": 1
+        },
+        "fill": "$border"
+      },
+      "gap": 40,
+      "padding": [
+        32,
+        24
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "ULoio",
+          "name": "Default",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "nCvUo",
+              "name": "lab1",
+              "fill": "$text-muted",
+              "content": "DEFAULT",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "Hvwd2",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "name": "card1",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Default card state"
+                },
+                "hzp82": {
+                  "content": "Normal resting state of a task card"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qQ7wP",
+          "name": "Hover",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "FIP8j",
+              "name": "lab2",
+              "fill": "$text-muted",
+              "content": "HOVER",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "FcuA1",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border-strong"
+              },
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000A",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "name": "card2",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Hovered card state"
+                },
+                "hzp82": {
+                  "content": "Stronger border + subtle shadow on hover"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ExWXC",
+          "name": "Drag Overlay",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "7jChG",
+              "name": "lab3",
+              "fill": "$text-muted",
+              "content": "DRAG OVERLAY",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "dOWFF",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "rotation": 2,
+              "opacity": 0.92,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000018",
+                "offset": {
+                  "x": 0,
+                  "y": 8
+                },
+                "blur": 24,
+                "spread": -2
+              },
+              "name": "card3",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Card being dragged"
+                },
+                "hzp82": {
+                  "content": "Rotate 2deg + elevated shadow"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "7as9K",
+          "name": "Selected",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "EuQGd",
+              "name": "lab4",
+              "fill": "$text-muted",
+              "content": "SELECTED / EDITING",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "FNV8z",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "stroke": {
+                "align": "inside",
+                "thickness": 2,
+                "fill": "$accent-red"
+              },
+              "name": "card4",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Selected card title"
+                },
+                "hzp82": {
+                  "content": "Red border when selected for editing"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "NX7qD",
+          "name": "Drop Placeholder",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "jEK5T",
+              "name": "lab5",
+              "fill": "$text-muted",
+              "content": "DROP PLACEHOLDER",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "type": "frame",
+              "id": "twKTI",
+              "name": "drop",
+              "width": 220,
+              "height": 80,
+              "fill": "#D7192108",
+              "cornerRadius": 10,
+              "stroke": {
+                "align": "inside",
+                "thickness": 2,
+                "fill": "$accent-red"
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "G3hbH",
+          "name": "Bug Variant",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "CibNF",
+              "name": "lab6",
+              "fill": "$text-muted",
+              "content": "BUG VARIANT",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "d5k3k",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "name": "card6",
+              "descendants": {
+                "zq9WK": {
+                  "fill": "$accent-red-light"
+                },
+                "XQOnj": {
+                  "content": "bug"
+                },
+                "aH2mR": {
+                  "content": "Critical bug report"
+                },
+                "hzp82": {
+                  "content": "Bug card with red badge variant"
+                },
+                "LSn9G": {
+                  "content": "critical"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "R0GHv",
+          "name": "With Review",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "gwzlV",
+              "name": "lab7",
+              "fill": "$text-muted",
+              "content": "REVIEW COMMENT",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "id": "Nh9YQ",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": 220,
+              "name": "card7",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Card with review"
+                },
+                "hzp82": {
+                  "content": "Shows review comment from PM"
+                },
+                "MwGmy": {
+                  "enabled": true
+                },
+                "z66DG": {
+                  "content": "PM: Мокап готов, жду ревью"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "c2STf",
+      "x": 0,
+      "y": 2178,
+      "name": "UX Notes",
+      "width": 1440,
+      "fill": "#FFFBEB",
+      "cornerRadius": 12,
+      "stroke": {
+        "align": "inside",
+        "thickness": 2,
+        "fill": "#F59E0B"
+      },
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [
+        32,
+        24
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "tQnD5",
+          "name": "noteTitle",
+          "fill": "#0A0A0A",
+          "content": "UX / Implementation Notes",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "wR6xV",
+          "name": "note1",
+          "width": "fill_container",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "0W9iZ",
+              "name": "n1dot",
+              "fill": "#D97706",
+              "content": "1.",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "1UQBJ",
+              "name": "n1text",
+              "fill": "#0A0A0A",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "SCROLL: Вертикальный скролл ТОЛЬКО внутри каждой колонки (overflow-y: auto). Header и board-контейнер фиксированы. Страница НЕ скроллится целиком.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZebKU",
+          "name": "note2",
+          "width": "fill_container",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "FoVuh",
+              "name": "n2dot",
+              "fill": "#D97706",
+              "content": "2.",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "fINbU",
+              "name": "n2text",
+              "fill": "#0A0A0A",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "DnD: Drag overlay — rotate(2deg) + shadow. Drop placeholder — dashed border. Card при drag становится ghost (opacity).",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ni2yf",
+          "name": "note3",
+          "width": "fill_container",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "O74dO",
+              "name": "n3dot",
+              "fill": "#D97706",
+              "content": "3.",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "3jQqb",
+              "name": "n3text",
+              "fill": "#0A0A0A",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "LAYOUT: Header height=56px fixed. Board = calc(100vh - 56px). Колонки = flex:1, min-width:0. Cards area = flex:1, overflow-y:auto, scrollbar тонкий или скрытый.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pLagG",
+          "name": "note4",
+          "width": "fill_container",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "KXGTU",
+              "name": "n4dot",
+              "fill": "#D97706",
+              "content": "4.",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "CSYf3",
+              "name": "n4text",
+              "fill": "#0A0A0A",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "THEME: Утверждён светлый вариант (Nothing Phone style). Тёмный — как backup/future.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kJmIb",
+      "x": 0,
+      "y": 0,
+      "name": "Kanban Board",
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "N6wT6",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "9GgO4",
+              "name": "Left",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NXi8V",
+                  "name": "backBtn",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "npl5v",
+                      "name": "backIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "2cCGG",
+                      "name": "backText",
+                      "fill": "$text-secondary",
+                      "content": "Projects",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "JtdgL",
+                  "name": "sep",
+                  "fill": "$text-muted",
+                  "content": "/",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "e8YM4",
+                  "name": "title",
+                  "fill": "$text-primary",
+                  "content": "Backlog",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CJyXC",
+              "name": "Tabs",
+              "fill": "$bg-surface",
+              "cornerRadius": 8,
+              "padding": 3,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DNubu",
+                  "name": "tabBoard",
+                  "fill": "$bg-card",
+                  "cornerRadius": 6,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 2
+                  },
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iX24n",
+                      "name": "tabBoardText",
+                      "fill": "$text-primary",
+                      "content": "Board",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NwxF7",
+                  "name": "tabTeam",
+                  "cornerRadius": 6,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "i6MCx",
+                      "name": "tabTeamText",
+                      "fill": "$text-muted",
+                      "content": "Team",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "2tO2K",
+              "name": "Right",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "taj3w",
+                  "name": "savedDot",
+                  "fill": "$accent-green",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "kSRNw",
+                  "name": "savedText",
+                  "fill": "$text-muted",
+                  "content": "Saved",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "fTOwo",
+                  "name": "spacer",
+                  "width": 8,
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "jqeDN",
+                  "name": "unlockBtn",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "PAhGd",
+                      "name": "lockIcon",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "lock",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FydGh",
+                      "name": "lockText",
+                      "fill": "$text-secondary",
+                      "content": "Unlock",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qEHDC",
+                  "name": "newBtn",
+                  "fill": "$text-primary",
+                  "cornerRadius": 6,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "X1F9T",
+                      "name": "plusIcon",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "plus",
+                      "iconFontFamily": "lucide",
+                      "fill": "$bg-card"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sBwqE",
+                      "name": "plusText",
+                      "fill": "$bg-card",
+                      "content": "New Task",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "98TEb",
+          "name": "Board",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 8,
+          "padding": [
+            16,
+            12
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "ldsJR",
+              "name": "Col Backlog",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "2dPIV",
+                  "name": "c1h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "NfwZD",
+                      "name": "c1dot",
+                      "fill": "$status-backlog",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "T3NYt",
+                      "name": "c1t",
+                      "fill": "$text-secondary",
+                      "content": "Backlog",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "w8QiH",
+                      "name": "c1n",
+                      "fill": "$text-muted",
+                      "content": "5",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yLDh5",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "PB1Di",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b1",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "H1-H6 heading element"
+                        },
+                        "hzp82": {
+                          "content": "Элемент заголовка с выбором уровня"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "vQidL",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b2",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "Link container element"
+                        },
+                        "hzp82": {
+                          "content": "Контейнер-ссылка с href и target"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "0jBxr",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b3",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "UL/OL list elements"
+                        },
+                        "hzp82": {
+                          "content": "Маркированные и нумерованные списки"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "7djyj",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b4",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Video embed element"
+                        },
+                        "hzp82": {
+                          "content": "Встроенное видео YouTube, Vimeo"
+                        },
+                        "LSn9G": {
+                          "content": "media"
+                        }
+                      }
+                    },
+                    {
+                      "id": "CJZf9",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b5",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Form container"
+                        },
+                        "hzp82": {
+                          "content": "Контейнер формы с action и method"
+                        },
+                        "LSn9G": {
+                          "content": "forms"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Ek1FB",
+              "name": "Col Todo",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UJYON",
+                  "name": "c2h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "aiWBi",
+                      "name": "c2dot",
+                      "fill": "$status-todo",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "RU03A",
+                      "name": "c2t",
+                      "fill": "$text-secondary",
+                      "content": "Todo",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rY5wV",
+                      "name": "c2n",
+                      "fill": "$text-muted",
+                      "content": "3",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RZA4p",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "gj0V7",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "t1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Add element categories"
+                        },
+                        "hzp82": {
+                          "content": "Группировка элементов по категориям"
+                        },
+                        "LSn9G": {
+                          "content": "ux"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Q2GnP",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "t2",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Quick Add search"
+                        },
+                        "hzp82": {
+                          "content": "Быстрый поиск элементов через /"
+                        },
+                        "LSn9G": {
+                          "content": "ux"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Q5Ib9",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "t3",
+                      "descendants": {
+                        "zq9WK": {
+                          "fill": "$accent-red-light"
+                        },
+                        "XQOnj": {
+                          "content": "bug"
+                        },
+                        "aH2mR": {
+                          "content": "Input element QA"
+                        },
+                        "hzp82": {
+                          "content": "Тестирование и фикс багов Input"
+                        },
+                        "LSn9G": {
+                          "content": "testing"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TztjQ",
+              "name": "Col InProgress",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "prxHl",
+                  "name": "c3h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "ozENM",
+                      "name": "c3dot",
+                      "fill": "$status-inprogress",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "8y1u5",
+                      "name": "c3t",
+                      "fill": "$text-secondary",
+                      "content": "In Progress",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "o6SWp",
+                      "name": "c3n",
+                      "fill": "$text-muted",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AI2bw",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "fv6Wj",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "ip1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Textarea field element"
+                        },
+                        "hzp82": {
+                          "content": "Многострочное текстовое поле с resize"
+                        },
+                        "LSn9G": {
+                          "content": "forms"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JRe7e",
+              "name": "Col DesignReview",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Pw6s9",
+                  "name": "c4h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "zFDPU",
+                      "name": "c4dot",
+                      "fill": "$status-design",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "pLPFl",
+                      "name": "c4t",
+                      "fill": "$text-secondary",
+                      "content": "Design Review",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "iyqE3",
+                      "name": "c4n",
+                      "fill": "$text-muted",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DMf2D",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "lxUkr",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "dr1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Kanban board redesign"
+                        },
+                        "hzp82": {
+                          "content": "Nothing-стиль, светлая и тёмная темы"
+                        },
+                        "LSn9G": {
+                          "content": "design"
+                        },
+                        "MwGmy": {
+                          "enabled": true
+                        },
+                        "z66DG": {
+                          "content": "PM: Мокап готов, жду ревью"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TeQwW",
+              "name": "Col CodeReview",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yEpkA",
+                  "name": "c5h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "TOyk2",
+                      "name": "c5dot",
+                      "fill": "$status-code",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "8G8P5",
+                      "name": "c5t",
+                      "fill": "$text-secondary",
+                      "content": "Code Review",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "5LsYO",
+                      "name": "c5n",
+                      "fill": "$text-muted",
+                      "content": "0",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DaIN7",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "08Q10",
+              "name": "Col Done",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "27qS7",
+                  "name": "c6h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "XIxT6",
+                      "name": "c6dot",
+                      "fill": "$status-done",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "BaXl5",
+                      "name": "c6t",
+                      "fill": "$text-secondary",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eiekZ",
+                      "name": "c6n",
+                      "fill": "$text-muted",
+                      "content": "2",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LvdgX",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "Qnat4",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "opacity": 0.5,
+                      "name": "d1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$text-muted"
+                        },
+                        "aH2mR": {
+                          "content": "Test task #1"
+                        },
+                        "hzp82": {
+                          "content": "Тестовая задача для проверки"
+                        },
+                        "LSn9G": {
+                          "content": "test"
+                        }
+                      }
+                    },
+                    {
+                      "id": "meect",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "opacity": 0.5,
+                      "name": "d2",
+                      "descendants": {
+                        "zq9WK": {
+                          "fill": "$accent-red-light"
+                        },
+                        "XQOnj": {
+                          "content": "bug"
+                        },
+                        "aH2mR": {
+                          "content": "Stale worktree fix"
+                        },
+                        "hzp82": {
+                          "content": "Systemic issue с worktree cleanup"
+                        },
+                        "LSn9G": {
+                          "content": "infra"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "DLRRb",
+      "x": 1540,
+      "y": 0,
+      "name": "Component/TaskCard",
+      "reusable": true,
+      "width": 200,
+      "fill": "$bg-card",
+      "cornerRadius": 10,
+      "stroke": {
+        "align": "inside",
+        "thickness": 1,
+        "fill": "$border"
+      },
+      "layout": "vertical",
+      "gap": 8,
+      "padding": [
+        10,
+        12
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "3uRrb",
+          "name": "topRow",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zq9WK",
+              "name": "badge",
+              "fill": "$bg-surface",
+              "cornerRadius": 4,
+              "padding": [
+                2,
+                7
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XQOnj",
+                  "name": "badgeText",
+                  "fill": "$text-secondary",
+                  "content": "feature",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "ellipse",
+              "id": "X2fQZ",
+              "name": "priDot",
+              "fill": "$accent-red",
+              "width": 6,
+              "height": 6
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "aH2mR",
+          "name": "cardTitle",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Task title here",
+          "lineHeight": 1.35,
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "hzp82",
+          "name": "cardDesc",
+          "fill": "$text-muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Short description of the task",
+          "lineHeight": 1.4,
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "KhUcj",
+          "name": "footer",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Dq4cj",
+              "name": "labelWrap",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NWTbo",
+                  "name": "label1",
+                  "cornerRadius": 3,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    1,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LSn9G",
+                      "name": "labelText",
+                      "fill": "$text-muted",
+                      "content": "ui",
+                      "fontFamily": "Inter",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "icon_font",
+              "id": "hSmXI",
+              "name": "linkBtn",
+              "width": 12,
+              "height": 12,
+              "iconFontName": "link",
+              "iconFontFamily": "lucide",
+              "fill": "$text-muted"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MwGmy",
+          "name": "Review",
+          "enabled": false,
+          "width": "fill_container",
+          "fill": "$accent-purple-light",
+          "cornerRadius": 6,
+          "gap": 6,
+          "padding": [
+            5,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "xA27b",
+              "name": "reviewIcon",
+              "width": 11,
+              "height": 11,
+              "iconFontName": "message-circle",
+              "iconFontFamily": "lucide",
+              "fill": "$accent-purple"
+            },
+            {
+              "type": "text",
+              "id": "z66DG",
+              "name": "reviewText",
+              "fill": "$accent-purple",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Review comment",
+              "lineHeight": 1.3,
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "3fKrF",
+      "x": 0,
+      "y": 1215,
+      "name": "Kanban Board — Dark",
+      "width": 1440,
+      "height": 900,
+      "fill": "#0A0A0A",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "2f4Ey",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "#141414",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#262626"
+          },
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "9UGOk",
+              "name": "dHL",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Al7OG",
+                  "name": "dBackBtn",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "0FlNz",
+                      "name": "dBackIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "#737373"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xtbTU",
+                      "name": "dBackText",
+                      "fill": "#737373",
+                      "content": "Projects",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "CtYKX",
+                  "name": "dSep",
+                  "fill": "#525252",
+                  "content": "/",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "YUvNV",
+                  "name": "dTitle",
+                  "fill": "#FAFAFA",
+                  "content": "Backlog",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "P0NHL",
+              "name": "dHC",
+              "fill": "#1A1A1A",
+              "cornerRadius": 8,
+              "padding": 3,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sSNDY",
+                  "name": "dTabB",
+                  "fill": "#262626",
+                  "cornerRadius": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Q1sVR",
+                      "name": "dTabBT",
+                      "fill": "#FAFAFA",
+                      "content": "Board",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nCgNc",
+                  "name": "dTabT",
+                  "cornerRadius": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "g1tBg",
+                      "name": "dTabTT",
+                      "fill": "#525252",
+                      "content": "Team",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "6d0nI",
+              "name": "dHR",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "UWIcA",
+                  "name": "dSaved",
+                  "fill": "#16A34A",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "BzzYO",
+                  "name": "dSavedT",
+                  "fill": "#525252",
+                  "content": "Saved",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "rDwbT",
+                  "name": "dSpacer",
+                  "width": 8,
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "D2gPO",
+                  "name": "dUnlock",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#262626"
+                  },
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "Y8WEt",
+                      "name": "dLockI",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "lock",
+                      "iconFontFamily": "lucide",
+                      "fill": "#737373"
+                    },
+                    {
+                      "type": "text",
+                      "id": "17VLs",
+                      "name": "dLockT",
+                      "fill": "#737373",
+                      "content": "Unlock",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "5M61H",
+                  "name": "dNewBtn",
+                  "fill": "#FAFAFA",
+                  "cornerRadius": 6,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "aW1Ar",
+                      "name": "dPlusI",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "plus",
+                      "iconFontFamily": "lucide",
+                      "fill": "#0A0A0A"
+                    },
+                    {
+                      "type": "text",
+                      "id": "J2eck",
+                      "name": "dPlusT",
+                      "fill": "#0A0A0A",
+                      "content": "New Task",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nVwYl",
+          "name": "Board",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 8,
+          "padding": [
+            16,
+            12
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "soSRT",
+              "name": "Col Backlog",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "8BgsB",
+                  "name": "dc1h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "FUlnm",
+                      "name": "dc1d",
+                      "fill": "#737373",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "NKcKW",
+                      "name": "dc1t",
+                      "fill": "#737373",
+                      "content": "Backlog",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xpJcP",
+                      "name": "dc1n",
+                      "fill": "#525252",
+                      "content": "5",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ULTuz",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "7F9HV",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "b1",
+                      "descendants": {
+                        "8n3um": {
+                          "content": "H1-H6 heading element"
+                        },
+                        "S9BR2": {
+                          "content": "Элемент заголовка с выбором уровня"
+                        },
+                        "Fdhaz": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "dtaVE",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "b2",
+                      "descendants": {
+                        "8n3um": {
+                          "content": "Link container element"
+                        },
+                        "S9BR2": {
+                          "content": "Контейнер-ссылка с href и target"
+                        },
+                        "Fdhaz": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "5FuzW",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "b3",
+                      "descendants": {
+                        "8n3um": {
+                          "content": "UL/OL list elements"
+                        },
+                        "S9BR2": {
+                          "content": "Маркированные и нумерованные списки"
+                        },
+                        "Fdhaz": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "TPoXg",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "b4",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Video embed element"
+                        },
+                        "S9BR2": {
+                          "content": "Встроенное видео YouTube, Vimeo"
+                        },
+                        "Fdhaz": {
+                          "content": "media"
+                        }
+                      }
+                    },
+                    {
+                      "id": "a4AxG",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "b5",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Form container"
+                        },
+                        "S9BR2": {
+                          "content": "Контейнер формы с action и method"
+                        },
+                        "Fdhaz": {
+                          "content": "forms"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "useah",
+              "name": "Col Todo",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "7OtYT",
+                  "name": "dc2h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "0VnbU",
+                      "name": "dc2d",
+                      "fill": "#FAFAFA",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "mWuqm",
+                      "name": "dc2t",
+                      "fill": "#737373",
+                      "content": "Todo",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZZj28",
+                      "name": "dc2n",
+                      "fill": "#525252",
+                      "content": "3",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8jpxm",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "ckdma",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "t1",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Add element categories"
+                        },
+                        "S9BR2": {
+                          "content": "Группировка элементов по категориям"
+                        },
+                        "Fdhaz": {
+                          "content": "ux"
+                        }
+                      }
+                    },
+                    {
+                      "id": "xuWHv",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "t2",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Quick Add search"
+                        },
+                        "S9BR2": {
+                          "content": "Быстрый поиск элементов через /"
+                        },
+                        "Fdhaz": {
+                          "content": "ux"
+                        }
+                      }
+                    },
+                    {
+                      "id": "zNkpC",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "t3",
+                      "descendants": {
+                        "oOVHx": {
+                          "fill": "#2A1515"
+                        },
+                        "76ys4": {
+                          "content": "bug"
+                        },
+                        "8n3um": {
+                          "content": "Input element QA"
+                        },
+                        "S9BR2": {
+                          "content": "Тестирование и фикс багов Input"
+                        },
+                        "Fdhaz": {
+                          "content": "testing"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "DPy0x",
+              "name": "Col InProgress",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NbOzJ",
+                  "name": "dc3h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "wbzRp",
+                      "name": "dc3d",
+                      "fill": "#D71921",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "OxBlt",
+                      "name": "dc3t",
+                      "fill": "#737373",
+                      "content": "In Progress",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "RZFQA",
+                      "name": "dc3n",
+                      "fill": "#525252",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LM8sk",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "ffU9n",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "ip1",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Textarea field element"
+                        },
+                        "S9BR2": {
+                          "content": "Многострочное текстовое поле с resize"
+                        },
+                        "Fdhaz": {
+                          "content": "forms"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "U19XA",
+              "name": "Col DesignReview",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Ikn05",
+                  "name": "dc4h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "AbwJA",
+                      "name": "dc4d",
+                      "fill": "#7C3AED",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "yfS2j",
+                      "name": "dc4t",
+                      "fill": "#737373",
+                      "content": "Design Review",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EO079",
+                      "name": "dc4n",
+                      "fill": "#525252",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k7jsb",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "x1Zoh",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "name": "dr1",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#D97706"
+                        },
+                        "8n3um": {
+                          "content": "Kanban board redesign"
+                        },
+                        "S9BR2": {
+                          "content": "Nothing-стиль, светлая и тёмная темы"
+                        },
+                        "Fdhaz": {
+                          "content": "design"
+                        },
+                        "TrXSc": {
+                          "enabled": true
+                        },
+                        "IienW": {
+                          "content": "PM: Мокап готов, жду ревью"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dtFkp",
+              "name": "Col CodeReview",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EGrkS",
+                  "name": "dc5h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "rEkvl",
+                      "name": "dc5d",
+                      "fill": "#2563EB",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "MAe4K",
+                      "name": "dc5t",
+                      "fill": "#737373",
+                      "content": "Code Review",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sRiZ5",
+                      "name": "dc5n",
+                      "fill": "#525252",
+                      "content": "0",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Jo8x9",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0EEjP",
+              "name": "Col Done",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U013A",
+                  "name": "dc6h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "yYkYk",
+                      "name": "dc6d",
+                      "fill": "#16A34A",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "SheIB",
+                      "name": "dc6t",
+                      "fill": "#737373",
+                      "content": "Done",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cB39f",
+                      "name": "dc6n",
+                      "fill": "#525252",
+                      "content": "2",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "0PeUu",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "efkRW",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "opacity": 0.5,
+                      "name": "d1",
+                      "descendants": {
+                        "o8PWN": {
+                          "fill": "#525252"
+                        },
+                        "8n3um": {
+                          "content": "Test task #1"
+                        },
+                        "S9BR2": {
+                          "content": "Тестовая задача для проверки"
+                        },
+                        "Fdhaz": {
+                          "content": "test"
+                        }
+                      }
+                    },
+                    {
+                      "id": "4eZEk",
+                      "type": "ref",
+                      "ref": "fkFgg",
+                      "width": "fill_container",
+                      "opacity": 0.5,
+                      "name": "d2",
+                      "descendants": {
+                        "oOVHx": {
+                          "fill": "#2A1515"
+                        },
+                        "76ys4": {
+                          "content": "bug"
+                        },
+                        "8n3um": {
+                          "content": "Stale worktree fix"
+                        },
+                        "S9BR2": {
+                          "content": "Systemic issue с worktree cleanup"
+                        },
+                        "Fdhaz": {
+                          "content": "infra"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "fkFgg",
+      "x": 1540,
+      "y": 300,
+      "name": "Component/TaskCard-Dark",
+      "reusable": true,
+      "width": 200,
+      "fill": "#141414",
+      "cornerRadius": 10,
+      "stroke": {
+        "align": "inside",
+        "thickness": 1,
+        "fill": "#262626"
+      },
+      "layout": "vertical",
+      "gap": 8,
+      "padding": [
+        10,
+        12
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "OCWNJ",
+          "name": "dTopRow",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "oOVHx",
+              "name": "dBadge",
+              "fill": "#1A1A1A",
+              "cornerRadius": 4,
+              "padding": [
+                2,
+                7
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "76ys4",
+                  "name": "dBadgeT",
+                  "fill": "#737373",
+                  "content": "feature",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "ellipse",
+              "id": "o8PWN",
+              "name": "dPriDot",
+              "fill": "#D71921",
+              "width": 6,
+              "height": 6
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "8n3um",
+          "name": "dCardTitle",
+          "fill": "#E5E5E5",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Task title here",
+          "lineHeight": 1.35,
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "S9BR2",
+          "name": "dCardDesc",
+          "fill": "#525252",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Short description of the task",
+          "lineHeight": 1.4,
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "FDStt",
+          "name": "dFooter",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "3SfmC",
+              "name": "dLabelW",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SdHNK",
+                  "name": "dLabel1",
+                  "cornerRadius": 3,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#262626"
+                  },
+                  "padding": [
+                    1,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Fdhaz",
+                      "name": "dLabelT",
+                      "fill": "#525252",
+                      "content": "ui",
+                      "fontFamily": "Inter",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "icon_font",
+              "id": "bvA4h",
+              "name": "dLinkBtn",
+              "width": 12,
+              "height": 12,
+              "iconFontName": "link",
+              "iconFontFamily": "lucide",
+              "fill": "#525252"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TrXSc",
+          "name": "Review",
+          "enabled": false,
+          "width": "fill_container",
+          "fill": "#1A1028",
+          "cornerRadius": 6,
+          "gap": 6,
+          "padding": [
+            5,
+            8
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "VT7Au",
+              "name": "dRevIcon",
+              "width": 11,
+              "height": 11,
+              "iconFontName": "message-circle",
+              "iconFontFamily": "lucide",
+              "fill": "#7C3AED"
+            },
+            {
+              "type": "text",
+              "id": "IienW",
+              "name": "dRevText",
+              "fill": "#7C3AED",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Review comment",
+              "lineHeight": 1.3,
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "4eK4k",
+      "x": 1820,
+      "y": 0,
+      "name": "Kanban Board — Tablet (768)",
+      "clip": true,
+      "width": 768,
+      "height": 1024,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "hUnpO",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 52,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "cMtPW",
+              "name": "tHL",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "prNVo",
+                  "name": "tBackIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "AkoBg",
+                  "name": "tTitle",
+                  "fill": "$text-primary",
+                  "content": "Backlog",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "5gp4Z",
+              "name": "tHC",
+              "fill": "$bg-surface",
+              "cornerRadius": 8,
+              "padding": 3,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S3Ptl",
+                  "name": "tTabB",
+                  "fill": "$bg-card",
+                  "cornerRadius": 6,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 2
+                  },
+                  "padding": [
+                    5,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qDvNK",
+                      "name": "tTabBT",
+                      "fill": "$text-primary",
+                      "content": "Board",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "50dLx",
+                  "name": "tTabT",
+                  "cornerRadius": 6,
+                  "padding": [
+                    5,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Uj9qN",
+                      "name": "tTabTT",
+                      "fill": "$text-muted",
+                      "content": "Team",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bOqVj",
+              "name": "tHR",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "2VM6i",
+                  "name": "tUnlock",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "gap": 4,
+                  "padding": [
+                    5,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "1AFJI",
+                      "name": "tLockI",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "lock",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Gf4XE",
+                  "name": "tNewBtn",
+                  "fill": "$text-primary",
+                  "cornerRadius": 6,
+                  "gap": 4,
+                  "padding": [
+                    5,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "gJOaX",
+                      "name": "tPlusI",
+                      "width": 13,
+                      "height": 13,
+                      "iconFontName": "plus",
+                      "iconFontFamily": "lucide",
+                      "fill": "$bg-card"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KagJn",
+                      "name": "tPlusT",
+                      "fill": "$bg-card",
+                      "content": "New",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pUE19",
+          "name": "Board",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 8,
+          "padding": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "wgzMj",
+              "name": "Col Backlog",
+              "width": 240,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fAg4N",
+                  "name": "tc1h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "LV5Dr",
+                      "name": "tc1d",
+                      "fill": "$status-backlog",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "rWWHG",
+                      "name": "tc1t",
+                      "fill": "$text-secondary",
+                      "content": "Backlog",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "op0XZ",
+                      "name": "tc1n",
+                      "fill": "$text-muted",
+                      "content": "5",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "u4U6w",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "iY7jD",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b1",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "H1-H6 heading element"
+                        },
+                        "hzp82": {
+                          "content": "Элемент заголовка с выбором уровня"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Pa9r0",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b2",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "Link container element"
+                        },
+                        "hzp82": {
+                          "content": "Контейнер-ссылка с href и target"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "00zKv",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b3",
+                      "descendants": {
+                        "aH2mR": {
+                          "content": "UL/OL list elements"
+                        },
+                        "hzp82": {
+                          "content": "Маркированные и нумерованные списки"
+                        },
+                        "LSn9G": {
+                          "content": "elements"
+                        }
+                      }
+                    },
+                    {
+                      "id": "23rnx",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "b4",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Video embed"
+                        },
+                        "hzp82": {
+                          "content": "YouTube, Vimeo embed"
+                        },
+                        "LSn9G": {
+                          "content": "media"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pGPWv",
+              "name": "Col Todo",
+              "width": 240,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "FXgM7",
+                  "name": "tc2h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "BAYwv",
+                      "name": "tc2d",
+                      "fill": "$status-todo",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "kLO5V",
+                      "name": "tc2t",
+                      "fill": "$text-secondary",
+                      "content": "Todo",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bOO0f",
+                      "name": "tc2n",
+                      "fill": "$text-muted",
+                      "content": "3",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XsAa1",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "mdPwc",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "t1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Add element categories"
+                        },
+                        "hzp82": {
+                          "content": "Группировка в Add Panel"
+                        },
+                        "LSn9G": {
+                          "content": "ux"
+                        }
+                      }
+                    },
+                    {
+                      "id": "T87sW",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "t2",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Quick Add search"
+                        },
+                        "hzp82": {
+                          "content": "Поиск через /"
+                        },
+                        "LSn9G": {
+                          "content": "ux"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z6x5p",
+              "name": "Col InProgress",
+              "width": 240,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iMunY",
+                  "name": "tc3h",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "48xbG",
+                      "name": "tc3d",
+                      "fill": "$status-inprogress",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "lQ7a5",
+                      "name": "tc3t",
+                      "fill": "$text-secondary",
+                      "content": "In Progress",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LWwbE",
+                      "name": "tc3n",
+                      "fill": "$text-muted",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NnTg4",
+                  "name": "Cards",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "id": "9v9Jc",
+                      "type": "ref",
+                      "ref": "DLRRb",
+                      "width": "fill_container",
+                      "name": "ip1",
+                      "descendants": {
+                        "X2fQZ": {
+                          "fill": "$accent-amber"
+                        },
+                        "aH2mR": {
+                          "content": "Textarea field"
+                        },
+                        "hzp82": {
+                          "content": "Многострочное поле с resize"
+                        },
+                        "LSn9G": {
+                          "content": "forms"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "WORqY",
+      "x": 2668,
+      "y": 0,
+      "name": "Kanban Board — Mobile (390)",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "uBcBX",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 48,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "eDwAj",
+              "name": "mHL",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "yXdRr",
+                  "name": "mBackIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "5hKYX",
+                  "name": "mTitle",
+                  "fill": "$text-primary",
+                  "content": "Backlog",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ANDqQ",
+              "name": "mHR",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "ZHcPq",
+                  "name": "mLockI",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "lock",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "frame",
+                  "id": "Q4ojP",
+                  "name": "mPlusBtn",
+                  "fill": "$text-primary",
+                  "cornerRadius": 6,
+                  "gap": 4,
+                  "padding": [
+                    4,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "ZBqwf",
+                      "name": "mPlusI",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "plus",
+                      "iconFontFamily": "lucide",
+                      "fill": "$bg-card"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "lSHm5",
+          "name": "Tabs Bar",
+          "width": "fill_container",
+          "height": 40,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            12
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "xqK7Y",
+              "name": "mTabB",
+              "height": "fill_container",
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 2
+                },
+                "fill": "$text-primary"
+              },
+              "padding": [
+                0,
+                14
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XOZE9",
+                  "name": "mTabBT",
+                  "fill": "$text-primary",
+                  "content": "Board",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eiveY",
+              "name": "mTabT",
+              "height": "fill_container",
+              "padding": [
+                0,
+                14
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3HcK1",
+                  "name": "mTabTT",
+                  "fill": "$text-muted",
+                  "content": "Team",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "d96By",
+          "name": "Status Filter",
+          "width": "fill_container",
+          "fill": "$bg-card",
+          "gap": 6,
+          "padding": [
+            8,
+            12
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "PtLsK",
+              "name": "mF1",
+              "fill": "$text-primary",
+              "cornerRadius": 16,
+              "gap": 4,
+              "padding": [
+                4,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "JXgcr",
+                  "name": "mF1d",
+                  "fill": "$bg-card",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "nbWDC",
+                  "name": "mF1t",
+                  "fill": "$bg-card",
+                  "content": "Backlog",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "ydli6",
+                  "name": "mF1n",
+                  "fill": "#A3A3A3",
+                  "content": "5",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IEaiU",
+              "name": "mF2",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "gap": 4,
+              "padding": [
+                4,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "p92jZ",
+                  "name": "mF2d",
+                  "fill": "$status-todo",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "dtaTM",
+                  "name": "mF2t",
+                  "fill": "$text-muted",
+                  "content": "Todo",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ktE2C",
+                  "name": "mF2n",
+                  "fill": "$text-muted",
+                  "content": "3",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CQJSo",
+              "name": "mF3",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "gap": 4,
+              "padding": [
+                4,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "G0ni7",
+                  "name": "mF3d",
+                  "fill": "$status-inprogress",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "smmNx",
+                  "name": "mF3t",
+                  "fill": "$text-muted",
+                  "content": "Active",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "880jP",
+                  "name": "mF3n",
+                  "fill": "$text-muted",
+                  "content": "1",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vJ8QM",
+              "name": "mF4",
+              "cornerRadius": 16,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "gap": 4,
+              "padding": [
+                4,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "jJnYg",
+                  "name": "mF4d",
+                  "fill": "$status-done",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "P7FdQ",
+                  "name": "mF4t",
+                  "fill": "$text-muted",
+                  "content": "Done",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "nBeGC",
+                  "name": "mF4n",
+                  "fill": "$text-muted",
+                  "content": "2",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GRN9e",
+          "name": "Cards List",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 12,
+          "children": [
+            {
+              "id": "Q6rSb",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": "fill_container",
+              "name": "mc1",
+              "descendants": {
+                "aH2mR": {
+                  "content": "H1-H6 heading element"
+                },
+                "hzp82": {
+                  "content": "Элемент заголовка с выбором уровня H1-H6"
+                },
+                "LSn9G": {
+                  "content": "elements"
+                }
+              }
+            },
+            {
+              "id": "eLdq7",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": "fill_container",
+              "name": "mc2",
+              "descendants": {
+                "aH2mR": {
+                  "content": "Link container element"
+                },
+                "hzp82": {
+                  "content": "Контейнер-ссылка с href и target"
+                },
+                "LSn9G": {
+                  "content": "elements"
+                }
+              }
+            },
+            {
+              "id": "tXbRd",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": "fill_container",
+              "name": "mc3",
+              "descendants": {
+                "aH2mR": {
+                  "content": "UL/OL list elements"
+                },
+                "hzp82": {
+                  "content": "Маркированные и нумерованные списки"
+                },
+                "LSn9G": {
+                  "content": "elements"
+                }
+              }
+            },
+            {
+              "id": "JhNJo",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": "fill_container",
+              "name": "mc4",
+              "descendants": {
+                "X2fQZ": {
+                  "fill": "$accent-amber"
+                },
+                "aH2mR": {
+                  "content": "Video embed element"
+                },
+                "hzp82": {
+                  "content": "Встроенное видео YouTube, Vimeo"
+                },
+                "LSn9G": {
+                  "content": "media"
+                }
+              }
+            },
+            {
+              "id": "4ZM2x",
+              "type": "ref",
+              "ref": "DLRRb",
+              "width": "fill_container",
+              "name": "mc5",
+              "descendants": {
+                "X2fQZ": {
+                  "fill": "$accent-amber"
+                },
+                "aH2mR": {
+                  "content": "Form container"
+                },
+                "hzp82": {
+                  "content": "Контейнер формы с action и method"
+                },
+                "LSn9G": {
+                  "content": "forms"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Kd2GT",
+      "x": 1540,
+      "y": 2202,
+      "name": "Component/TeamMemberCard",
+      "reusable": true,
+      "width": 300,
+      "fill": "$bg-card",
+      "cornerRadius": 10,
+      "stroke": {
+        "align": "inside",
+        "thickness": 1,
+        "fill": "$border"
+      },
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 16,
+      "children": [
+        {
+          "type": "frame",
+          "id": "n37d6",
+          "name": "topRow",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "GbPlC",
+              "name": "avatarWrap",
+              "width": 40,
+              "height": 40,
+              "cornerRadius": 20,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "YnxhG",
+                  "x": 0,
+                  "y": 0,
+                  "name": "avatarBg",
+                  "fill": "$bg-surface",
+                  "width": 40,
+                  "height": 40
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Ebq6p",
+                  "x": 30,
+                  "y": 0,
+                  "name": "statusDot",
+                  "fill": "$accent-green",
+                  "width": 10,
+                  "height": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 2,
+                    "fill": "$bg-card"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "T1u3p",
+              "name": "textBlock",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "sNEFj",
+                  "name": "memberName",
+                  "fill": "$text-primary",
+                  "content": "Александр Волков",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "GcJ4S",
+                  "name": "memberRole",
+                  "fill": "$text-secondary",
+                  "content": "Project Manager",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kmBSk",
+          "name": "infoRow",
+          "width": "fill_container",
+          "gap": 6,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "C7sbR",
+              "name": "memberLoc",
+              "fill": "$text-muted",
+              "content": "RU Москва",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "chfBF",
+              "name": "pipe",
+              "fill": "$text-muted",
+              "content": "·",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "NeKFz",
+              "name": "memberSpec",
+              "fill": "$text-muted",
+              "content": "Координация, оркестрация",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MotHk",
+          "name": "divider",
+          "width": "fill_container",
+          "height": 1,
+          "fill": "$bg-surface"
+        },
+        {
+          "type": "text",
+          "id": "PN8aA",
+          "name": "memberBio",
+          "fill": "$text-muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Единственная точка контакта с клиентом. Принимает запросы, оценивает сложность и решает какие фазы запускать. Делегирует задачи Researcher и Architect, контролирует quality gates, управляет deploy.",
+          "lineHeight": 1.4,
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "KKG1x",
+      "x": 1940,
+      "y": 2175,
+      "name": "Team Card States",
+      "width": 1285,
+      "fill": "$bg-surface",
+      "stroke": {
+        "align": "inside",
+        "thickness": {
+          "top": 1
+        },
+        "fill": "$border"
+      },
+      "gap": 40,
+      "padding": [
+        32,
+        24
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "9izAz",
+          "name": "statesTitle",
+          "fill": "$text-primary",
+          "content": "Team Member Card — States",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "JAyle",
+          "name": "statesRow",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "nmEcC",
+              "name": "defaultCol",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "7PZee",
+                  "name": "defLabel",
+                  "fill": "$text-secondary",
+                  "content": "Default",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "sgIDC",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": 300,
+                  "name": "defCard",
+                  "descendants": {
+                    "GbPlC": {
+                      "width": 40,
+                      "height": 40,
+                      "layout": "none"
+                    },
+                    "YnxhG": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "Ebq6p": {
+                      "x": 30,
+                      "y": 0
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ZgbIB",
+              "name": "hoverCol",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "5g1Ov",
+                  "name": "hovLabel",
+                  "fill": "$text-secondary",
+                  "content": "Hover",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "UmkMt",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": 300,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border-strong"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000F",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 8
+                  },
+                  "name": "hovCard",
+                  "descendants": {
+                    "GbPlC": {
+                      "width": 40,
+                      "height": 40,
+                      "layout": "none"
+                    },
+                    "Ebq6p": {
+                      "x": 30,
+                      "y": 0
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xauYt",
+          "name": "statusRow",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "rj8Ej",
+              "name": "statusLabel",
+              "fill": "$text-secondary",
+              "content": "Status Dots:",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "DSa8l",
+              "name": "activeGroup",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "QiM1r",
+                  "name": "activeDot",
+                  "fill": "$accent-green",
+                  "width": 10,
+                  "height": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 2,
+                    "fill": "$bg-card"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "93ZhL",
+                  "name": "activeText",
+                  "fill": "$text-muted",
+                  "content": "Active",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Iy7Ki",
+              "name": "busyGroup",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "YkYzC",
+                  "name": "busyDot",
+                  "fill": "$accent-amber",
+                  "width": 10,
+                  "height": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 2,
+                    "fill": "$bg-card"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "xmBnL",
+                  "name": "busyText",
+                  "fill": "$text-muted",
+                  "content": "Busy",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "twQnQ",
+              "name": "offGroup",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "CDIGO",
+                  "name": "offDot",
+                  "fill": "$border-strong",
+                  "width": 10,
+                  "height": 10,
+                  "stroke": {
+                    "align": "outside",
+                    "thickness": 2,
+                    "fill": "$bg-card"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "hNpn5",
+                  "name": "offText",
+                  "fill": "$text-muted",
+                  "content": "Offline",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "C3Q83",
+      "x": 0,
+      "y": 2500,
+      "name": "Team Page — Desktop (1440)",
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "kKtSs",
+          "name": "header",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "GD67X",
+              "name": "Left",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qPjAO",
+                  "name": "backBtn",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "fHQDf",
+                      "name": "backIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "arrow-left",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DhkGp",
+                      "name": "backText",
+                      "fill": "$text-secondary",
+                      "content": "Projects",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "9KjbO",
+                  "name": "sep",
+                  "fill": "$text-muted",
+                  "content": "/",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "UBQdk",
+                  "name": "title",
+                  "fill": "$text-primary",
+                  "content": "Team",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gPGpC",
+              "name": "Tabs",
+              "fill": "$bg-surface",
+              "cornerRadius": 8,
+              "padding": 3,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "2tHUV",
+                  "name": "tabBoard",
+                  "cornerRadius": 6,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "R6fDs",
+                      "name": "tabBoardText",
+                      "fill": "$text-muted",
+                      "content": "Board",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KJ9MF",
+                  "name": "tabTeam",
+                  "fill": "$bg-card",
+                  "cornerRadius": 6,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 2
+                  },
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "USFRi",
+                      "name": "tabTeamText",
+                      "fill": "$text-primary",
+                      "content": "Team",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vaRlU",
+              "name": "Right",
+              "width": 120,
+              "height": 20,
+              "gap": 8,
+              "alignItems": "center"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "V9Fcj",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "SqpkN",
+              "name": "StatsRow",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "h2Ycu",
+                  "name": "onlineDot",
+                  "fill": "$accent-green",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "5RqjX",
+                  "name": "onlineText",
+                  "fill": "$text-secondary",
+                  "content": "6 / 8 online",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "DfSKw",
+                  "name": "progressBg",
+                  "width": 80,
+                  "height": 4,
+                  "fill": "$bg-surface",
+                  "cornerRadius": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "lvYvh",
+                      "name": "progressFill",
+                      "width": 50,
+                      "height": 4,
+                      "fill": "$accent-green",
+                      "cornerRadius": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KlAQn",
+              "name": "Grid",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PbQ3I",
+                  "name": "Row1",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "ZhzJ3",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c1",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Александр Волков"
+                        },
+                        "GcJ4S": {
+                          "content": "Project Manager"
+                        },
+                        "C7sbR": {
+                          "content": "RU Москва"
+                        },
+                        "NeKFz": {
+                          "content": "Координация, оркестрация"
+                        },
+                        "PN8aA": {
+                          "content": "Единственная точка контакта с клиентом. Принимает запросы, оценивает сложность и решает какие фазы запускать. Делегирует задачи Researcher и Architect, контролирует quality gates, управляет deploy."
+                        }
+                      }
+                    },
+                    {
+                      "id": "ZxqKT",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c2",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Мария Ковалёва"
+                        },
+                        "GcJ4S": {
+                          "content": "Researcher"
+                        },
+                        "C7sbR": {
+                          "content": "RU Санкт-Петербург"
+                        },
+                        "NeKFz": {
+                          "content": "Анализ кодовой базы, паттерны"
+                        },
+                        "PN8aA": {
+                          "content": "Запускается первой в начале каждой задачи. Исследует кодовую базу, находит переиспользуемые компоненты и паттерны. Передаёт карту зависимостей Architect и список паттернов Code Reviewer для валидации."
+                        }
+                      }
+                    },
+                    {
+                      "id": "Ygz1q",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c3",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-amber"
+                        },
+                        "sNEFj": {
+                          "content": "Дмитрий Шульц"
+                        },
+                        "GcJ4S": {
+                          "content": "Competitor Analyst"
+                        },
+                        "C7sbR": {
+                          "content": "DE Берлин"
+                        },
+                        "NeKFz": {
+                          "content": "Figma, Webflow, Framer"
+                        },
+                        "PN8aA": {
+                          "content": "Исследует как фичи реализованы у Figma, Webflow и Framer. Анализирует документацию, форумы и UI через Figma MCP. Собирает best practices и UX-паттерны, передаёт инсайты Architect и Designer."
+                        }
+                      }
+                    },
+                    {
+                      "id": "iylmS",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c4",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Андрей Сергеев"
+                        },
+                        "GcJ4S": {
+                          "content": "Architect"
+                        },
+                        "C7sbR": {
+                          "content": "RU Новосибирск"
+                        },
+                        "NeKFz": {
+                          "content": "Проектирование, архитектура"
+                        },
+                        "PN8aA": {
+                          "content": "Получает результаты от Researcher и Analyst. Проектирует пошаговый план реализации, определяет затрагиваемые файлы и выбирает подход. Согласует layout-стратегию с Layout Engineer, передаёт план PM."
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "6lBpt",
+                  "name": "Row2",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "1qasg",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c5",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Нино Мерабишвили"
+                        },
+                        "GcJ4S": {
+                          "content": "Designer"
+                        },
+                        "C7sbR": {
+                          "content": "GE Тбилиси"
+                        },
+                        "NeKFz": {
+                          "content": "UI/UX, мокапы, визуал"
+                        },
+                        "PN8aA": {
+                          "content": "Создаёт .pen мокапы по плану Architect. Визуально валидирует каждый экран через скриншоты. Передаёт макеты Layout Engineer для контроля качества и PM для design review."
+                        }
+                      }
+                    },
+                    {
+                      "id": "Xt7S0",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c6",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Рустам Хакимов"
+                        },
+                        "GcJ4S": {
+                          "content": "Layout Engineer"
+                        },
+                        "C7sbR": {
+                          "content": "RU Казань"
+                        },
+                        "NeKFz": {
+                          "content": "Grid, Flex, responsive"
+                        },
+                        "PN8aA": {
+                          "content": "Контролирует layout-first подход на всех этапах. Определяет Grid vs Flex стратегию в плане Architect, проверяет вложенность и responsive при реализации, подтверждает quality на code review."
+                        }
+                      }
+                    },
+                    {
+                      "id": "pfJYx",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c7",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$border-strong"
+                        },
+                        "sNEFj": {
+                          "content": "Ольга Новак"
+                        },
+                        "GcJ4S": {
+                          "content": "Code Reviewer"
+                        },
+                        "C7sbR": {
+                          "content": "BY Минск"
+                        },
+                        "NeKFz": {
+                          "content": "Качество, паттерны, DRY"
+                        },
+                        "PN8aA": {
+                          "content": "Запускается после реализации. Проверяет дублирование кода, переиспользование компонентов и соответствие паттернам из memory. Валидирует null safety, edge cases, сверяет с рекомендациями Researcher."
+                        }
+                      }
+                    },
+                    {
+                      "id": "SUBPu",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "c8",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Якуб Ковальский"
+                        },
+                        "GcJ4S": {
+                          "content": "Tester"
+                        },
+                        "C7sbR": {
+                          "content": "PL Варшава"
+                        },
+                        "NeKFz": {
+                          "content": "TypeScript, Playwright, E2E"
+                        },
+                        "PN8aA": {
+                          "content": "Финальная проверка перед деплоем. Запускает tsc, dev server и Playwright тесты. Пишет новые E2E-тесты при необходимости. Применяет error lookup protocol, передаёт результаты PM."
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "D9ek9",
+      "x": 1540,
+      "y": 2500,
+      "name": "Team Page — Tablet (768)",
+      "clip": true,
+      "width": 768,
+      "height": 1024,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "7o3u2",
+          "name": "tHeader",
+          "width": "fill_container",
+          "height": 52,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "OTxrz",
+              "name": "tHL",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "vcwOv",
+                  "name": "tBackIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "NDYAt",
+                  "name": "tTitle",
+                  "fill": "$text-primary",
+                  "content": "Team",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vRNRQ",
+              "name": "tHC",
+              "fill": "$bg-surface",
+              "cornerRadius": 8,
+              "padding": 3,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ea81K",
+                  "name": "tTabB",
+                  "cornerRadius": 6,
+                  "padding": [
+                    5,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "6pREN",
+                      "name": "tTabBT",
+                      "fill": "$text-muted",
+                      "content": "Board",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MamMQ",
+                  "name": "tTabT",
+                  "fill": "$bg-card",
+                  "cornerRadius": 6,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 2
+                  },
+                  "padding": [
+                    5,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vctPM",
+                      "name": "tTabTT",
+                      "fill": "$text-primary",
+                      "content": "Team",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u1ROx",
+              "name": "tHR",
+              "width": 80,
+              "height": 20,
+              "gap": 8,
+              "alignItems": "center"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dvdeL",
+          "name": "tContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "yZ65p",
+              "name": "tStatsRow",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "y8Nyc",
+                  "name": "tsDot",
+                  "fill": "$accent-green",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "41rud",
+                  "name": "tsText",
+                  "fill": "$text-secondary",
+                  "content": "6 / 8 online",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "gE2g4",
+                  "name": "tsProg",
+                  "width": 80,
+                  "height": 4,
+                  "fill": "$bg-surface",
+                  "cornerRadius": 2,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ReOpO",
+                      "name": "tsBar",
+                      "width": 50,
+                      "height": 4,
+                      "fill": "$accent-green",
+                      "cornerRadius": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cvs8z",
+              "name": "tGrid",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BgpK4",
+                  "name": "tRow1",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "HQHTu",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc1",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Александр Волков"
+                        },
+                        "GcJ4S": {
+                          "content": "Project Manager"
+                        },
+                        "C7sbR": {
+                          "content": "RU Москва"
+                        },
+                        "NeKFz": {
+                          "content": "Координация, оркестрация"
+                        },
+                        "PN8aA": {
+                          "content": "Единственная точка контакта с клиентом. Принимает запросы, оценивает сложность и решает какие фазы запускать. Делегирует задачи Researcher и Architect, контролирует quality gates, управляет deploy."
+                        }
+                      }
+                    },
+                    {
+                      "id": "SmQJD",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc2",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Мария Ковалёва"
+                        },
+                        "GcJ4S": {
+                          "content": "Researcher"
+                        },
+                        "C7sbR": {
+                          "content": "RU Санкт-Петербург"
+                        },
+                        "NeKFz": {
+                          "content": "Анализ кодовой базы, паттерны"
+                        },
+                        "PN8aA": {
+                          "content": "Запускается первой в начале каждой задачи. Исследует кодовую базу, находит переиспользуемые компоненты и паттерны. Передаёт карту зависимостей Architect и список паттернов Code Reviewer."
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Xpb43",
+                  "name": "tRow2",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "L5jCO",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc3",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-amber"
+                        },
+                        "sNEFj": {
+                          "content": "Дмитрий Шульц"
+                        },
+                        "GcJ4S": {
+                          "content": "Competitor Analyst"
+                        },
+                        "C7sbR": {
+                          "content": "DE Берлин"
+                        },
+                        "NeKFz": {
+                          "content": "Figma, Webflow, Framer"
+                        },
+                        "PN8aA": {
+                          "content": "Исследует как фичи реализованы у Figma, Webflow и Framer. Анализирует документацию, форумы и UI через Figma MCP. Собирает best practices, передаёт инсайты Architect и Designer."
+                        }
+                      }
+                    },
+                    {
+                      "id": "cXVW8",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc4",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Андрей Сергеев"
+                        },
+                        "GcJ4S": {
+                          "content": "Architect"
+                        },
+                        "C7sbR": {
+                          "content": "RU Новосибирск"
+                        },
+                        "NeKFz": {
+                          "content": "Проектирование, архитектура"
+                        },
+                        "PN8aA": {
+                          "content": "Получает результаты от Researcher и Analyst. Проектирует пошаговый план реализации, определяет файлы и подход. Согласует layout-стратегию с Layout Engineer, передаёт план PM."
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LRC1G",
+                  "name": "tRow3",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "48yhM",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc5",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Нино Мерабишвили"
+                        },
+                        "GcJ4S": {
+                          "content": "Designer"
+                        },
+                        "C7sbR": {
+                          "content": "GE Тбилиси"
+                        },
+                        "NeKFz": {
+                          "content": "UI/UX, мокапы, визуал"
+                        },
+                        "PN8aA": {
+                          "content": "Создаёт .pen мокапы по плану Architect. Визуально валидирует экраны через скриншоты. Передаёт макеты Layout Engineer и PM для design review."
+                        }
+                      }
+                    },
+                    {
+                      "id": "mvTM4",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc6",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Рустам Хакимов"
+                        },
+                        "GcJ4S": {
+                          "content": "Layout Engineer"
+                        },
+                        "C7sbR": {
+                          "content": "RU Казань"
+                        },
+                        "NeKFz": {
+                          "content": "Grid, Flex, responsive"
+                        },
+                        "PN8aA": {
+                          "content": "Контролирует layout-first подход на всех этапах. Grid vs Flex стратегия, вложенность и responsive при реализации, подтверждает quality на code review."
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bkP1s",
+                  "name": "tRow4",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "IhKEj",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc7",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$border-strong"
+                        },
+                        "sNEFj": {
+                          "content": "Ольга Новак"
+                        },
+                        "GcJ4S": {
+                          "content": "Code Reviewer"
+                        },
+                        "C7sbR": {
+                          "content": "BY Минск"
+                        },
+                        "NeKFz": {
+                          "content": "Качество, паттерны, DRY"
+                        },
+                        "PN8aA": {
+                          "content": "Запускается после реализации. Проверяет дублирование, переиспользование компонентов, соответствие паттернам. Валидирует null safety, сверяет с рекомендациями Researcher."
+                        }
+                      }
+                    },
+                    {
+                      "id": "yd1Rx",
+                      "type": "ref",
+                      "ref": "Kd2GT",
+                      "width": "fill_container",
+                      "name": "tc8",
+                      "descendants": {
+                        "Ebq6p": {
+                          "fill": "$accent-green"
+                        },
+                        "sNEFj": {
+                          "content": "Якуб Ковальский"
+                        },
+                        "GcJ4S": {
+                          "content": "Tester"
+                        },
+                        "C7sbR": {
+                          "content": "PL Варшава"
+                        },
+                        "NeKFz": {
+                          "content": "TypeScript, Playwright, E2E"
+                        },
+                        "PN8aA": {
+                          "content": "Финальная проверка перед деплоем. tsc, dev server, Playwright тесты. Пишет E2E-тесты при необходимости. Error lookup protocol, результаты передаёт PM."
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "GU98Q",
+      "x": 2388,
+      "y": 2500,
+      "name": "Team Page — Mobile (390)",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "$bg-surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "T3DvV",
+          "name": "mHeader",
+          "width": "fill_container",
+          "height": 48,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "D843y",
+              "name": "mHL",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "jRMCc",
+                  "name": "mBackIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow-left",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "Vuxwt",
+                  "name": "mTitle",
+                  "fill": "$text-primary",
+                  "content": "Team",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "h5S7k",
+              "name": "mHR",
+              "width": 20,
+              "height": 20,
+              "gap": 8,
+              "alignItems": "center"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "yjita",
+          "name": "mTabs",
+          "width": "fill_container",
+          "height": 40,
+          "fill": "$bg-card",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "$border"
+          },
+          "padding": [
+            0,
+            12
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "4VcLi",
+              "name": "mTabB",
+              "height": "fill_container",
+              "padding": [
+                0,
+                14
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1Psru",
+                  "name": "mTabBT",
+                  "fill": "$text-muted",
+                  "content": "Board",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "E24Tu",
+              "name": "mTabT",
+              "height": "fill_container",
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 2
+                },
+                "fill": "$text-primary"
+              },
+              "padding": [
+                0,
+                14
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Bz99o",
+                  "name": "mTabTT",
+                  "fill": "$text-primary",
+                  "content": "Team",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "q5FUY",
+          "name": "mContent",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "mQBEJ",
+              "name": "mStatsRow",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "BTWvK",
+                  "name": "msDot",
+                  "fill": "$accent-green",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "text",
+                  "id": "YWTrY",
+                  "name": "msText",
+                  "fill": "$text-secondary",
+                  "content": "6 / 8 online",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cSH36",
+              "name": "mCardsList",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "id": "fYj0w",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc1",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Александр Волков"
+                    },
+                    "GcJ4S": {
+                      "content": "Project Manager"
+                    },
+                    "C7sbR": {
+                      "content": "RU Москва"
+                    },
+                    "NeKFz": {
+                      "content": "Координация, оркестрация"
+                    },
+                    "PN8aA": {
+                      "content": "Единственная точка контакта с клиентом. Принимает запросы, оценивает сложность и решает какие фазы запускать. Делегирует задачи Researcher и Architect, контролирует quality gates, управляет deploy."
+                    }
+                  }
+                },
+                {
+                  "id": "QIebu",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc2",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Мария Ковалёва"
+                    },
+                    "GcJ4S": {
+                      "content": "Researcher"
+                    },
+                    "C7sbR": {
+                      "content": "RU СПб"
+                    },
+                    "NeKFz": {
+                      "content": "Анализ кодовой базы"
+                    },
+                    "PN8aA": {
+                      "content": "Запускается первой в начале каждой задачи. Исследует кодовую базу, находит переиспользуемые компоненты и паттерны. Передаёт карту зависимостей Architect и паттерны Code Reviewer."
+                    }
+                  }
+                },
+                {
+                  "id": "f6l4j",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc3",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-amber"
+                    },
+                    "sNEFj": {
+                      "content": "Дмитрий Шульц"
+                    },
+                    "GcJ4S": {
+                      "content": "Competitor Analyst"
+                    },
+                    "C7sbR": {
+                      "content": "DE Берлин"
+                    },
+                    "NeKFz": {
+                      "content": "Figma, Webflow, Framer"
+                    },
+                    "PN8aA": {
+                      "content": "Исследует как фичи реализованы у Figma, Webflow и Framer. Анализирует документацию, форумы и UI. Собирает best practices, передаёт инсайты Architect и Designer."
+                    }
+                  }
+                },
+                {
+                  "id": "dR4sM",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc4",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Андрей Сергеев"
+                    },
+                    "GcJ4S": {
+                      "content": "Architect"
+                    },
+                    "C7sbR": {
+                      "content": "RU Новосибирск"
+                    },
+                    "NeKFz": {
+                      "content": "Проектирование, архитектура"
+                    },
+                    "PN8aA": {
+                      "content": "Получает результаты от Researcher и Analyst. Проектирует пошаговый план, определяет файлы и подход. Согласует layout с Layout Engineer, передаёт план PM."
+                    }
+                  }
+                },
+                {
+                  "id": "cD0hd",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc5",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Нино Мерабишвили"
+                    },
+                    "GcJ4S": {
+                      "content": "Designer"
+                    },
+                    "C7sbR": {
+                      "content": "GE Тбилиси"
+                    },
+                    "NeKFz": {
+                      "content": "UI/UX, мокапы"
+                    },
+                    "PN8aA": {
+                      "content": "Создаёт .pen мокапы по плану Architect. Валидирует экраны через скриншоты. Передаёт макеты Layout Engineer и PM для design review."
+                    }
+                  }
+                },
+                {
+                  "id": "8mnE8",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc6",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Рустам Хакимов"
+                    },
+                    "GcJ4S": {
+                      "content": "Layout Engineer"
+                    },
+                    "C7sbR": {
+                      "content": "RU Казань"
+                    },
+                    "NeKFz": {
+                      "content": "Grid, Flex, responsive"
+                    },
+                    "PN8aA": {
+                      "content": "Контролирует layout-first подход. Grid vs Flex, вложенность, responsive. Подтверждает quality на code review."
+                    }
+                  }
+                },
+                {
+                  "id": "frRJC",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc7",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$border-strong"
+                    },
+                    "sNEFj": {
+                      "content": "Ольга Новак"
+                    },
+                    "GcJ4S": {
+                      "content": "Code Reviewer"
+                    },
+                    "C7sbR": {
+                      "content": "BY Минск"
+                    },
+                    "NeKFz": {
+                      "content": "Качество, паттерны, DRY"
+                    },
+                    "PN8aA": {
+                      "content": "Проверяет дублирование, переиспользование компонентов, соответствие паттернам. Null safety, edge cases, рекомендации Researcher."
+                    }
+                  }
+                },
+                {
+                  "id": "d0bNL",
+                  "type": "ref",
+                  "ref": "Kd2GT",
+                  "width": "fill_container",
+                  "name": "mc8",
+                  "descendants": {
+                    "Ebq6p": {
+                      "fill": "$accent-green"
+                    },
+                    "sNEFj": {
+                      "content": "Якуб Ковальский"
+                    },
+                    "GcJ4S": {
+                      "content": "Tester"
+                    },
+                    "C7sbR": {
+                      "content": "PL Варшава"
+                    },
+                    "NeKFz": {
+                      "content": "TypeScript, Playwright, E2E"
+                    },
+                    "PN8aA": {
+                      "content": "Финальная проверка перед деплоем. tsc, Playwright тесты, E2E. Error lookup protocol, результаты передаёт PM."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "accent-amber": {
+      "type": "color",
+      "value": "#D97706"
+    },
+    "accent-amber-light": {
+      "type": "color",
+      "value": "#FFFBEB"
+    },
+    "accent-blue": {
+      "type": "color",
+      "value": "#2563EB"
+    },
+    "accent-blue-light": {
+      "type": "color",
+      "value": "#EFF6FF"
+    },
+    "accent-green": {
+      "type": "color",
+      "value": "#16A34A"
+    },
+    "accent-green-light": {
+      "type": "color",
+      "value": "#F0FDF4"
+    },
+    "accent-purple": {
+      "type": "color",
+      "value": "#7C3AED"
+    },
+    "accent-purple-light": {
+      "type": "color",
+      "value": "#F5F3FF"
+    },
+    "accent-red": {
+      "type": "color",
+      "value": "#D71921"
+    },
+    "accent-red-light": {
+      "type": "color",
+      "value": "#FEF2F2"
+    },
+    "bg-card": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "bg-hover": {
+      "type": "color",
+      "value": "#FAFAFA"
+    },
+    "bg-page": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "bg-surface": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E5E5E5"
+    },
+    "border-strong": {
+      "type": "color",
+      "value": "#D4D4D4"
+    },
+    "status-backlog": {
+      "type": "color",
+      "value": "#A3A3A3"
+    },
+    "status-code": {
+      "type": "color",
+      "value": "#2563EB"
+    },
+    "status-design": {
+      "type": "color",
+      "value": "#7C3AED"
+    },
+    "status-done": {
+      "type": "color",
+      "value": "#16A34A"
+    },
+    "status-inprogress": {
+      "type": "color",
+      "value": "#D71921"
+    },
+    "status-todo": {
+      "type": "color",
+      "value": "#0A0A0A"
+    },
+    "text-muted": {
+      "type": "color",
+      "value": "#A3A3A3"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#0A0A0A"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#737373"
+    }
+  }
+}
