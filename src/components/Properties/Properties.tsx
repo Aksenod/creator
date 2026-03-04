@@ -234,7 +234,13 @@ export function Properties() {
             )}
 
             <LayoutSection styles={effectiveStyles} onUpdate={updateStyle} elementId={selectedElementId} />
-            <SizeSection styles={effectiveStyles} onUpdate={updateStyle} />
+            <SizeSection
+              styles={effectiveStyles}
+              onUpdate={updateStyle}
+              elementId={selectedElementId ?? undefined}
+              artboardWidth={effectiveWidth}
+              artboardHeight={artboard?.height}
+            />
 
             {element.type !== 'body' && (
               <PositionSection
@@ -242,6 +248,9 @@ export function Properties() {
                 styles={effectiveStyles}
                 onUpdateMode={updatePositionMode}
                 onUpdateStyle={updateStyle}
+                elementId={selectedElementId ?? undefined}
+                artboardWidth={effectiveWidth}
+                artboardHeight={artboard?.height}
               />
             )}
 

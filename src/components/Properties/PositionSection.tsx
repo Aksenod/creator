@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { ElementStyles, PositionMode } from '../../types'
 import { parseCssValue, composeCssValue, CSS_UNITS, type CssUnit, type SpecialValue, UnitDropdown } from './shared'
 import { useAltKey } from './shared/useAltKey'
+import { convertCssUnit, getParentPixelSize, type ConvertRef } from '../../utils/unitConversion'
 
 // Нормализуем legacy значения 'flow'/'pinned' в новые
 export function normalizePositionMode(mode: string): PositionMode {
@@ -82,15 +83,31 @@ type Props = {
   styles: Partial<ElementStyles>
   onUpdateMode: (mode: PositionMode) => void
   onUpdateStyle: (patch: Partial<ElementStyles>) => void
+  elementId?: string
+  artboardWidth?: number
+  artboardHeight?: number
 }
 
 // ─── PositionSection ─────────────────────────────────────────────────────────
 
-export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateStyle }: Props) {
+export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateStyle, elementId, artboardWidth, artboardHeight }: Props) {
   const normalizedMode = normalizePositionMode(positionMode)
   const isOffsetable = normalizedMode !== 'static'
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const parentSize = useMemo(() => {
+    if (!elementId || !artboardWidth) return null
+    return getParentPixelSize(elementId, artboardWidth)
+  }, [elementId, artboardWidth])
+
+  const horizontalRef: ConvertRef | undefined = parentSize && artboardWidth && artboardHeight
+    ? { percentBase: parentSize.width, vwBase: artboardWidth, vhBase: artboardHeight }
+    : undefined
+
+  const verticalRef: ConvertRef | undefined = parentSize && artboardWidth && artboardHeight
+    ? { percentBase: parentSize.height, vwBase: artboardWidth, vhBase: artboardHeight }
+    : undefined
 
   const currentOption = POS_OPTIONS.find(o => o.value === normalizedMode) ?? POS_OPTIONS[0]
 
@@ -221,6 +238,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               onChangeAll={(v) => onUpdateStyle({ top: v, right: v, bottom: v, left: v })}
               onChangeOpposite={(v) => onUpdateStyle({ bottom: v })}
               style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)' }}
+              convertRef={verticalRef}
             />
             {/* Right */}
             <OffsetValue
@@ -229,6 +247,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               onChangeAll={(v) => onUpdateStyle({ top: v, right: v, bottom: v, left: v })}
               onChangeOpposite={(v) => onUpdateStyle({ left: v })}
               style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)' }}
+              convertRef={horizontalRef}
             />
             {/* Bottom */}
             <OffsetValue
@@ -237,6 +256,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               onChangeAll={(v) => onUpdateStyle({ top: v, right: v, bottom: v, left: v })}
               onChangeOpposite={(v) => onUpdateStyle({ top: v })}
               style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)' }}
+              convertRef={verticalRef}
             />
             {/* Left */}
             <OffsetValue
@@ -245,6 +265,7 @@ export function PositionSection({ positionMode, styles, onUpdateMode, onUpdateSt
               onChangeAll={(v) => onUpdateStyle({ top: v, right: v, bottom: v, left: v })}
               onChangeOpposite={(v) => onUpdateStyle({ right: v })}
               style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)' }}
+              convertRef={horizontalRef}
             />
 
             {/* Центральный прямоугольник — element */}
@@ -294,9 +315,10 @@ type OffsetValueProps = {
   onChangeAll?: (v: string | undefined) => void
   onChangeOpposite?: (v: string | undefined) => void
   style?: React.CSSProperties
+  convertRef?: ConvertRef
 }
 
-function OffsetValue({ value, onChange, onChangeAll, onChangeOpposite, style }: OffsetValueProps) {
+function OffsetValue({ value, onChange, onChangeAll, onChangeOpposite, style, convertRef }: OffsetValueProps) {
   const [open, setOpen] = useState(false)
   const [hover, setHover] = useState(false)
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 })
@@ -400,6 +422,7 @@ function OffsetValue({ value, onChange, onChangeAll, onChangeOpposite, style }: 
           onChangeAll={onChangeAll}
           onChangeOpposite={onChangeOpposite}
           onClose={() => setOpen(false)}
+          convertRef={convertRef}
         />
       )}
     </div>
@@ -417,9 +440,10 @@ type OffsetPopoverProps = {
   onChangeAll?: (v: string | undefined) => void
   onChangeOpposite?: (v: string | undefined) => void
   onClose: () => void
+  convertRef?: ConvertRef
 }
 
-function OffsetPopover({ value, anchorPos, onChange, onChangeAll, onChangeOpposite, onClose }: OffsetPopoverProps) {
+function OffsetPopover({ value, anchorPos, onChange, onChangeAll, onChangeOpposite, onClose, convertRef }: OffsetPopoverProps) {
   const parsed = parseCssValue(value)
   const [inputVal, setInputVal] = useState(parsed.num)
   const [unit, setUnit] = useState<CssUnit | SpecialValue>(parsed.unit === 'auto' || parsed.unit === 'none' ? 'px' : parsed.unit)
@@ -470,8 +494,18 @@ function OffsetPopover({ value, anchorPos, onChange, onChangeAll, onChangeOpposi
   }
 
   const handleUnitChange = (newUnit: CssUnit | SpecialValue) => {
-    setUnit(newUnit as CssUnit)
-    if (inputVal) onChange(composeCssValue(inputVal, newUnit))
+    const oldUnit = unit
+    const num = parseFloat(inputVal)
+    if (convertRef && !isNaN(num) && oldUnit !== 'auto' && oldUnit !== 'none' && newUnit !== 'auto' && newUnit !== 'none') {
+      const converted = convertCssUnit(num, oldUnit as CssUnit, newUnit as CssUnit, convertRef)
+      const convertedStr = String(converted)
+      setUnit(newUnit as CssUnit)
+      setInputVal(convertedStr)
+      onChange(composeCssValue(convertedStr, newUnit))
+    } else {
+      setUnit(newUnit as CssUnit)
+      if (inputVal) onChange(composeCssValue(inputVal, newUnit))
+    }
   }
 
   const applyPreset = (preset: string, e: React.MouseEvent) => {

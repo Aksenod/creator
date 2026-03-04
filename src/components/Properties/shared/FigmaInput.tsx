@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useAltKey } from './useAltKey'
+import { convertCssUnit, type ConvertRef } from '../../../utils/unitConversion'
 
 // ─── CSS Unit utilities ──────────────────────────────────────────────────────
 
@@ -28,7 +29,7 @@ export function composeCssValue(num: string, unit: CssUnit | SpecialValue): stri
 
 // ─── FigmaInput ───────────────────────────────────────────────────────────────
 
-export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, onReset, testId }: {
+export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, onChange, onReset, testId, convertRef, resolveAutoValue }: {
   prefix: React.ReactNode
   value: string
   placeholder?: string
@@ -37,6 +38,9 @@ export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, o
   onChange: (v: string) => void
   onReset?: () => void
   testId?: string
+  convertRef?: ConvertRef
+  /** Returns current px value when element has auto/none. Called on auto→numeric switch. */
+  resolveAutoValue?: () => number | null
 }) {
   const [focused, setFocused] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -74,9 +78,30 @@ export function FigmaInput({ prefix, value, placeholder, allowAuto, allowNone, o
   }
 
   const handleUnitChange = (newUnit: CssUnit | SpecialValue) => {
-    if (newUnit === 'auto') onChange('auto')
-    else if (newUnit === 'none') onChange('none')
-    else onChange(composeCssValue(parsed.num || localNum || '0', newUnit))
+    if (newUnit === 'auto') { onChange('auto'); return }
+    if (newUnit === 'none') { onChange('none'); return }
+    const oldUnit = parsed.unit
+    // When switching from auto/none → numeric unit, resolve actual px value first
+    if ((oldUnit === 'auto' || oldUnit === 'none') && resolveAutoValue) {
+      const pxValue = resolveAutoValue()
+      if (pxValue !== null && convertRef) {
+        const converted = convertCssUnit(pxValue, 'px', newUnit, convertRef)
+        onChange(composeCssValue(String(converted), newUnit))
+        return
+      } else if (pxValue !== null) {
+        onChange(composeCssValue(String(newUnit === 'px' ? Math.round(pxValue) : pxValue), newUnit))
+        return
+      }
+    }
+    const numStr = parsed.num || localNum || '0'
+    const num = parseFloat(numStr)
+    // Convert value if convertRef is available and both units are numeric
+    if (convertRef && !isNaN(num) && oldUnit !== 'auto' && oldUnit !== 'none') {
+      const converted = convertCssUnit(num, oldUnit as CssUnit, newUnit, convertRef)
+      onChange(composeCssValue(String(converted), newUnit))
+    } else {
+      onChange(composeCssValue(numStr, newUnit))
+    }
   }
 
   const units: (CssUnit | SpecialValue)[] = [...CSS_UNITS]

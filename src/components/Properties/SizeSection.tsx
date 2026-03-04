@@ -1,5 +1,7 @@
+import { useMemo, useCallback } from 'react'
 import type { ElementStyles } from '../../types'
 import { CollapsibleSection, FigmaInput } from './shared'
+import { getParentPixelSize, getElementPixelSize, type ConvertRef } from '../../utils/unitConversion'
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -50,9 +52,35 @@ const MaxHeightIcon = () => (
 type Props = {
   styles: ElementStyles
   onUpdate: (patch: Partial<ElementStyles>) => void
+  elementId?: string
+  artboardWidth?: number
+  artboardHeight?: number
 }
 
-export function SizeSection({ styles, onUpdate }: Props) {
+export function SizeSection({ styles, onUpdate, elementId, artboardWidth, artboardHeight }: Props) {
+  const parentSize = useMemo(() => {
+    if (!elementId || !artboardWidth) return null
+    return getParentPixelSize(elementId, artboardWidth)
+  }, [elementId, artboardWidth])
+
+  const widthRef: ConvertRef | undefined = parentSize && artboardWidth && artboardHeight
+    ? { percentBase: parentSize.width, vwBase: artboardWidth, vhBase: artboardHeight }
+    : undefined
+
+  const heightRef: ConvertRef | undefined = parentSize && artboardWidth && artboardHeight
+    ? { percentBase: parentSize.height, vwBase: artboardWidth, vhBase: artboardHeight }
+    : undefined
+
+  const resolveAutoWidth = useCallback(() => {
+    if (!elementId || !artboardWidth) return null
+    return getElementPixelSize(elementId, artboardWidth)?.width ?? null
+  }, [elementId, artboardWidth])
+
+  const resolveAutoHeight = useCallback(() => {
+    if (!elementId || !artboardWidth) return null
+    return getElementPixelSize(elementId, artboardWidth)?.height ?? null
+  }, [elementId, artboardWidth])
+
   return (
     <CollapsibleSection label="Size" tooltip="Size — width, height, min/max constraints and overflow" defaultOpen>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -70,6 +98,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
                 testId="size-width"
                 onChange={(v) => onUpdate({ width: v || undefined })}
                 onReset={() => onUpdate({ width: undefined })}
+                convertRef={widthRef}
+                resolveAutoValue={resolveAutoWidth}
               />
             </div>
             <div title="Height — element height. Auto = fit content" style={{ flex: 1, minWidth: 0, display: 'flex' }}>
@@ -81,6 +111,8 @@ export function SizeSection({ styles, onUpdate }: Props) {
                 testId="size-height"
                 onChange={(v) => onUpdate({ height: v || undefined })}
                 onReset={() => onUpdate({ height: undefined })}
+                convertRef={heightRef}
+                resolveAutoValue={resolveAutoHeight}
               />
             </div>
           </div>
@@ -96,6 +128,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               placeholder="Min W"
               onChange={(v) => onUpdate({ minWidth: v || undefined })}
               onReset={() => onUpdate({ minWidth: undefined })}
+              convertRef={widthRef}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Min height — element won't shrink below this">
@@ -106,6 +139,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               placeholder="Min H"
               onChange={(v) => onUpdate({ minHeight: v || undefined })}
               onReset={() => onUpdate({ minHeight: undefined })}
+              convertRef={heightRef}
             />
           </div>
         </div>
@@ -121,6 +155,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               allowNone
               onChange={(v) => onUpdate({ maxWidth: v || undefined })}
               onReset={() => onUpdate({ maxWidth: undefined })}
+              convertRef={widthRef}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }} title="Max height — element won't grow beyond this">
@@ -132,6 +167,7 @@ export function SizeSection({ styles, onUpdate }: Props) {
               allowNone
               onChange={(v) => onUpdate({ maxHeight: v || undefined })}
               onReset={() => onUpdate({ maxHeight: undefined })}
+              convertRef={heightRef}
             />
           </div>
         </div>
