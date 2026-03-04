@@ -82,12 +82,24 @@ npx vercel --prod    # Production deploy
 #### 7. Tester
 - **Реализация:** Agent(subagent_type: "general-purpose")
 - **Когда:** PM запускает после code review
-- **Что делает:** tsc → dev server → Playwright → написание новых тестов
+- **Что делает:** tsc → Vitest → dev server → Playwright → написание новых тестов
 - **Выход:** Все проверки зелёные → PM докладывает пользователю
+
+#### 8. Unit Test Engineer
+- **Реализация:** Agent(subagent_type: "general-purpose")
+- **Когда:** PM запускает после Implementation для UI-фич, которые затрагивают утилиты/логику
+- **Что делает:**
+  1. Анализирует изменённые файлы — находит inline-логику в JSX (тернарники, условия стилей)
+  2. Извлекает логику в чистые функции (src/utils/) если она ещё inline
+  3. Пишет unit-тесты (Vitest) покрывая edge cases: граничные значения, undefined, 0, negative
+  4. Запускает `npm run test:unit` — все тесты должны пройти
+- **Триггер:** Любая фича, которая добавляет/меняет: утилиты, конверсии, стили, парсинг, условную логику
+- **Пропустить:** Чисто визуальные изменения (только CSS/layout без логики)
+- **Выход:** Новые .test.ts файлы + рефакторинг inline-логики в чистые функции
 
 ---
 
-## 9-Phase Workflow Pipeline
+## 10-Phase Workflow Pipeline
 
 ```
 Запрос пользователя
@@ -98,12 +110,13 @@ npx vercel --prod    # Production deploy
   → [3. DESIGN]          — .pen мокап → скриншот
   ═══ ГЕЙТ 2: Design Review (kanban: design_review) ═══
   → [4. IMPLEMENTATION]  — EnterWorktree → код по плану → Layout Engineer контролирует
-  → [5. CODE REVIEW]     — качество, переиспользование, паттерны, layout
-  → [6. TESTING]         — tsc → Playwright → новые тесты
+  → [5. UNIT TESTS]      — Unit Test Engineer: извлечь логику, написать vitest тесты
+  → [6. CODE REVIEW]     — качество, переиспользование, паттерны, layout
+  → [7. TESTING]         — tsc → vitest → Playwright → новые тесты
   ═══ ГЕЙТ 3: Code Review (kanban: code_review) ═══
-  → [7. USER REVIEW]     — пользователь проверяет в браузере
+  → [8. USER REVIEW]     — пользователь проверяет в браузере
   ═══ ГЕЙТ 4: одобрение пользователя ═══
-  → [8. MERGE & DEPLOY]  — мерж → build → vercel --prod → обновление memory
+  → [9. MERGE & DEPLOY]  — мерж → build → vercel --prod → обновление memory
 ```
 
 ### Phase Details
@@ -150,7 +163,14 @@ npx vercel --prod    # Production deploy
 - Код строго по плану, layout-first подход
 - Сначала контейнеры и структура, потом наполнение
 
-**Phase 5 — CODE REVIEW:**
+**Phase 5 — UNIT TESTS (для UI-фич с логикой):**
+- Unit Test Engineer анализирует изменённые файлы
+- Извлекает inline-логику (тернарники, условия стилей) в чистые функции → `src/utils/`
+- Пишет unit-тесты (Vitest) с edge cases: 0, undefined, negative, деление на 0
+- Запускает `npm run test:unit` — все тесты должны пройти
+- Пропускается для чисто визуальных изменений (только CSS без логики)
+
+**Phase 6 — CODE REVIEW:**
 - Agent(general-purpose) проверяет:
   - Дублирование кода
   - Переиспользование существующих компонентов (см. memory/components.md)
@@ -159,7 +179,7 @@ npx vercel --prod    # Production deploy
   - Layout Engineer подтверждает layout-качество
 - Если найдены проблемы → исправить → повторный ревью
 
-**Phase 6 — TESTING:**
+**Phase 7 — TESTING:**
 - `npx tsc --noEmit` — нет ошибок типов
 - `npm run dev` — сервер стартует без ошибок
 - `npx playwright test` — все тесты проходят
@@ -173,12 +193,12 @@ npx vercel --prod    # Production deploy
   ```
 - **Ждать одобрения пользователя** перед мержом
 
-**Phase 7 — USER REVIEW:**
+**Phase 8 — USER REVIEW:**
 - Пользователь проверяет задачу в канбане (колонка Code Review)
 - Review comments содержат всю информацию: что сделано, где проверить
 - Без одобрения — не мержить
 
-**Phase 8 — MERGE & DEPLOY:**
+**Phase 9 — MERGE & DEPLOY:**
 - `git checkout main && git merge <worktree-branch>`
 - `npm run build` — проверка production build
 - `npx vercel --prod` — deploy
@@ -314,10 +334,10 @@ npx playwright test       # E2E тесты проходят
 
 ### Приоритизация задачи
 PM оценивает задачу и определяет какие фазы нужны:
-- **Баг-фикс:** Research → Implementation → Testing → Code Review (kanban) → User Review → Merge
-- **Новая UI-фича:** Benchmark → Research → Architecture → Design → Design Review (kanban) → Implementation → Code Review → Testing → Code Review (kanban) → User Review → Merge
-- **Рефакторинг:** Research → Architecture → Implementation → Code Review → Testing → Code Review (kanban) → Merge
-- **Мелкая правка:** Implementation → Testing → Code Review (kanban) → Merge
+- **Баг-фикс:** Research → Implementation → Unit Tests → Testing → Code Review (kanban) → User Review → Merge
+- **Новая UI-фича:** Benchmark → Research → Architecture → Design → Design Review (kanban) → Implementation → Unit Tests → Code Review → Testing → Code Review (kanban) → User Review → Merge
+- **Рефакторинг:** Research → Architecture → Implementation → Unit Tests → Code Review → Testing → Code Review (kanban) → Merge
+- **Мелкая правка:** Implementation → Unit Tests → Testing → Code Review (kanban) → Merge
 
 ### Kanban Review Protocol
 Когда агенты завершают работу, PM **обязан** перевести задачу в review-колонку:
