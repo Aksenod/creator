@@ -7,6 +7,7 @@ import { parseCssValue, composeCssValue } from '../Properties/shared/FigmaInput'
 import { getCSSPosition } from '../../utils/cssUtils'
 import { migrateFills, fillsToCSS } from '../../utils/fillUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
+import { useMarqueeSelection } from '../../hooks/useMarqueeSelection'
 import { getGridCellsById } from '../../utils/gridUtils'
 import { findParentId } from '../../utils/treeUtils'
 import type { Camera } from '../../hooks/useCanvasTransform'
@@ -98,6 +99,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
   const editingTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const { startDrag, dropIndicator, draggingId, cellDropTarget, cellDragParentId } = useCanvasDnD(previewMode ? null : artboard)
+  const { onArtboardMouseDown, marqueeRect, wasMarqueeRef } = useMarqueeSelection(artboard, previewMode, cameraRef, scale, plain && activeArtboardId === artboard.id)
 
   const gridCells = cellDragParentId ? getGridCellsById(cellDragParentId) : []
 
@@ -680,8 +682,13 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
         overflow: artboardOverflow,
         position: 'relative',
       }}
+      onMouseDown={plain ? onArtboardMouseDown : undefined}
       onClick={plain ? (e) => {
         e.stopPropagation()
+        if (wasMarqueeRef.current) {
+          wasMarqueeRef.current = false
+          return
+        }
         setActiveArtboard(artboard.id)
         selectElement(null)
         onArtboardClick?.()
@@ -696,6 +703,21 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
         </div>
       ) : (
         artboard.rootChildren.map(renderElement)
+      )}
+      {marqueeRect && (
+        <div
+          style={{
+            position: 'absolute',
+            left: marqueeRect.left,
+            top: marqueeRect.top,
+            width: marqueeRect.width,
+            height: marqueeRect.height,
+            background: 'rgba(0, 102, 255, 0.08)',
+            border: '1px solid #0066ff',
+            pointerEvents: 'none',
+            zIndex: 9998,
+          }}
+        />
       )}
     </div>
   )

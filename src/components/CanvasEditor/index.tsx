@@ -15,6 +15,7 @@ import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo, getCommonParentId } from '../../utils/treeUtils'
 import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
 import type { CanvasPattern } from '../../types'
+import { useCanvasMarquee } from '../../hooks/useCanvasMarquee'
 
 // ─── Snap logic ─────────────────────────────────────────────────────────────
 
@@ -140,6 +141,7 @@ export function CanvasEditor() {
     selectedElementId, activeBreakpointId, setActiveBreakpoint,
     deleteElement, undo, redo, copyElement, pasteElement, duplicateElement,
     gridEditElementId, toggleElementVisibility, wrapElementsInDiv,
+    selectedArtboardIds,
   } = useEditorStore()
 
   const [isPreview, setIsPreview] = useState(false)
@@ -163,6 +165,7 @@ export function CanvasEditor() {
     active: boolean
   } | null>(null)
   const artboardElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const { onCanvasMouseDown, marqueeRect: canvasMarqueeRect, wasCanvasMarqueeRef } = useCanvasMarquee(artboardElRefs, isPreview)
   const patternSizeRef = useRef<number>(project?.canvasPatternSize ?? 20)
   const { cameraRef, fitToScreen, scalePercent, applyTransform } = useCanvasTransform(
     containerRef as React.RefObject<HTMLElement>,
@@ -355,7 +358,10 @@ export function CanvasEditor() {
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
-        if (selectedElementId && activeArtboardId) {
+        const s = useEditorStore.getState()
+        if (s.selectedArtboardIds.length > 0) {
+          s.selectedArtboardIds.forEach(id => deleteArtboard(id))
+        } else if (selectedElementId && activeArtboardId) {
           deleteElement(activeArtboardId, selectedElementId)
         } else if (!selectedElementId && activeArtboardId) {
           deleteArtboard(activeArtboardId)
@@ -545,7 +551,12 @@ export function CanvasEditor() {
             outline: 'none',
           }}
           tabIndex={0}
+          onMouseDown={onCanvasMouseDown}
           onClick={(e) => {
+            if (wasCanvasMarqueeRef.current) {
+              wasCanvasMarqueeRef.current = false
+              return
+            }
             if (e.target === e.currentTarget) {
               setActiveArtboard(null)
               selectElement(null)
@@ -579,6 +590,8 @@ export function CanvasEditor() {
                     left: artboard.x,
                     top: artboard.y,
                     cursor: !isActive && !isPreview ? 'grab' : undefined,
+                    outline: selectedArtboardIds.includes(id) ? '2px solid #0066ff' : undefined,
+                    outlineOffset: 0,
                   }}
                   onMouseDown={!isActive && !isPreview ? (e) => {
                     e.stopPropagation()
@@ -663,6 +676,23 @@ export function CanvasEditor() {
             }}>
               {scalePercent}%
             </div>
+          )}
+
+          {/* Canvas-level marquee overlay */}
+          {canvasMarqueeRect && (
+            <div
+              style={{
+                position: 'absolute',
+                left: canvasMarqueeRect.left,
+                top: canvasMarqueeRect.top,
+                width: canvasMarqueeRect.width,
+                height: canvasMarqueeRect.height,
+                background: 'rgba(0, 102, 255, 0.08)',
+                border: '1px solid #0066ff',
+                pointerEvents: 'none',
+                zIndex: 9998,
+              }}
+            />
           )}
         </div>
 
