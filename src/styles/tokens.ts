@@ -41,7 +41,7 @@ export const statusColors: Record<string, string> = {
 // Monochrome priority palette (per design system)
 export const priorityColors: Record<string, string> = {
   critical: '#D71921',
-  high: '#0A0A0A',
+  high: '#D71921',
   medium: '#737373',
   low: '#A3A3A3',
 }
