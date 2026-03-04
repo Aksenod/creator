@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import type { BacklogTask } from '../../types/backlog'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -10,7 +10,7 @@ const TYPE_BADGE: Record<string, { bg: string; color: string }> = {
   bug: { bg: colors.bgSurface, color: colors.accentRed },
 }
 
-export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => void }) {
+export const TaskCard = React.memo(function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => void }) {
   const badge = TYPE_BADGE[task.type] ?? TYPE_BADGE.feature
   const thumb = task.screenshots[0]
   const [copied, setCopied] = useState(false)
@@ -153,7 +153,7 @@ export function TaskCard({ task, onClick }: { task: BacklogTask; onClick: () => 
       )}
     </div>
   )
-}
+})
 
 export function SortableTaskCard({ task, onClick }: { task: BacklogTask; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })

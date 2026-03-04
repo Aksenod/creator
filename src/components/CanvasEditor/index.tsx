@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorFallback } from '../shared/ErrorFallback'
 import { useEditorStore } from '../../store'
+import { useActiveProjectId, useProject, useActiveArtboardId, useSelectedElementId, useActiveBreakpointId, useGridEditElementId, useSelectedArtboardIds } from '../../store/selectors'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 import { Layers } from '../Layers/Layers'
 import { Properties } from '../Properties/Properties'
@@ -17,133 +20,39 @@ import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/expor
 import type { CanvasPattern } from '../../types'
 import { useCanvasMarquee } from '../../hooks/useCanvasMarquee'
 import { getArtboardOutline, getArtboardLabelColor, getArtboardLabelWeight } from '../../utils/artboardStyles'
-
-// ─── Snap logic ─────────────────────────────────────────────────────────────
-
-type SnapLine =
-  | { axis: 'x'; x: number; y1: number; y2: number }
-  | { axis: 'y'; y: number; x1: number; x2: number }
-
-const SNAP_THRESHOLD_PX = 8
-
-function computeSnap(
-  dragId: string,
-  rawX: number,
-  rawY: number,
-  artboards: Record<string, { x: number; y: number; width: number; height: number }>,
-  artboardOrder: string[],
-  scale: number,
-): { x: number; y: number; lines: SnapLine[] } {
-  const dragging = artboards[dragId]
-  if (!dragging) return { x: rawX, y: rawY, lines: [] }
-  const threshold = SNAP_THRESHOLD_PX / scale
-  const dragW = dragging.width
-  const dragH = dragging.height
-
-  interface XCand { delta: number; targetVal: number; otherT: number; otherB: number }
-  interface YCand { delta: number; targetVal: number; otherL: number; otherR: number }
-  let bestX: XCand | null = null
-  let bestY: YCand | null = null
-
-  for (const otherId of artboardOrder) {
-    if (otherId === dragId) continue
-    const other = artboards[otherId]
-    if (!other) continue
-    const oL = other.x, oR = other.x + other.width
-    const oT = other.y, oB = other.y + other.height
-    const oCX = (oL + oR) / 2, oCY = (oT + oB) / 2
-    const dL = rawX, dR = rawX + dragW, dCX = rawX + dragW / 2
-    const dT = rawY, dB = rawY + dragH, dCY = rawY + dragH / 2
-
-    for (const [drag, target] of [
-      [dL, oL], [dL, oR], [dR, oL], [dR, oR], [dCX, oCX],
-    ] as [number, number][]) {
-      const delta = target - drag
-      if (Math.abs(delta) <= threshold && (!bestX || Math.abs(delta) < Math.abs(bestX.delta)))
-        bestX = { delta, targetVal: target, otherT: oT, otherB: oB }
-    }
-    for (const [drag, target] of [
-      [dT, oT], [dT, oB], [dB, oT], [dB, oB], [dCY, oCY],
-    ] as [number, number][]) {
-      const delta = target - drag
-      if (Math.abs(delta) <= threshold && (!bestY || Math.abs(delta) < Math.abs(bestY.delta)))
-        bestY = { delta, targetVal: target, otherL: oL, otherR: oR }
-    }
-  }
-
-  const finalX = rawX + (bestX?.delta ?? 0)
-  const finalY = rawY + (bestY?.delta ?? 0)
-  const lines: SnapLine[] = []
-  if (bestX) lines.push({ axis: 'x', x: bestX.targetVal, y1: Math.min(finalY, bestX.otherT) - 8, y2: Math.max(finalY + dragH, bestX.otherB) + 8 })
-  if (bestY) lines.push({ axis: 'y', y: bestY.targetVal, x1: Math.min(finalX, bestY.otherL) - 8, x2: Math.max(finalX + dragW, bestY.otherR) + 8 })
-  return { x: finalX, y: finalY, lines }
-}
-
-// ─── Image drop/paste helpers ────────────────────────────────────────────────
-
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
-function getImageDimensions(src: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
-    img.onerror = () => resolve({ width: 200, height: 150 })
-    img.src = src
-  })
-}
-
-function constrainDimensions(w: number, h: number, maxSize = 800): { width: number; height: number } {
-  if (w <= maxSize && h <= maxSize) return { width: w, height: h }
-  const ratio = Math.min(maxSize / w, maxSize / h)
-  return { width: Math.round(w * ratio), height: Math.round(h * ratio) }
-}
-
-async function addImageFromFile(file: File) {
-  console.log('[Image drop] file:', file.name, file.type)
-  const state = useEditorStore.getState()
-  let abId = state.activeArtboardId
-  // Если нет активного артборда — активируем первый
-  if (!abId && state.project) {
-    abId = state.project.artboardOrder[0] ?? null
-    if (abId) state.setActiveArtboard(abId)
-  }
-  if (!abId) { console.warn('[Image drop] no artboard'); return }
-  const src = await readFileAsDataURL(file)
-  const dims = await getImageDimensions(src)
-  const { width, height } = constrainDimensions(dims.width, dims.height)
-  console.log('[Image drop] dims:', width, 'x', height)
-  // Добавляем image через стандартный addElement, затем обновляем src и размеры
-  state.addElement(abId, 'image', state.selectedElementId)
-  const s2 = useEditorStore.getState()
-  const newId = s2.selectedElementId
-  if (newId && s2.activeArtboardId) {
-    s2.updateElement(s2.activeArtboardId, newId, {
-      src,
-      alt: '',
-      styles: { width: `${width}px`, height: `${height}px`, objectFit: 'cover', overflow: 'hidden' },
-    })
-    console.log('[Image drop] created element:', newId)
-  }
-}
+import { useArtboardDrag } from '../../hooks/useArtboardDrag'
+import { useImageDrop } from '../../hooks/useImageDrop'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function CanvasEditor() {
+  const activeProjectId = useActiveProjectId()
+  const project = useProject()
+  const activeArtboardId = useActiveArtboardId()
+  const selectedElementId = useSelectedElementId()
+  const activeBreakpointId = useActiveBreakpointId()
+  const gridEditElementId = useGridEditElementId()
+  const selectedArtboardIds = useSelectedArtboardIds()
   const {
-    activeProjectId, project, activeArtboardId,
     closeProject, addArtboard, deleteArtboard, setActiveArtboard, selectElement,
-    selectedElementId, activeBreakpointId, setActiveBreakpoint,
-    deleteElement, undo, redo, copyElement, pasteElement, duplicateElement,
-    gridEditElementId, toggleElementVisibility, wrapElementsInDiv,
-    selectedArtboardIds,
-  } = useEditorStore()
+    setActiveBreakpoint, deleteElement, undo, redo, copyElement, pasteElement,
+    duplicateElement, toggleElementVisibility, wrapElementsInDiv,
+  } = useEditorStore(s => ({
+    closeProject: s.closeProject,
+    addArtboard: s.addArtboard,
+    deleteArtboard: s.deleteArtboard,
+    setActiveArtboard: s.setActiveArtboard,
+    selectElement: s.selectElement,
+    setActiveBreakpoint: s.setActiveBreakpoint,
+    deleteElement: s.deleteElement,
+    undo: s.undo,
+    redo: s.redo,
+    copyElement: s.copyElement,
+    pasteElement: s.pasteElement,
+    duplicateElement: s.duplicateElement,
+    toggleElementVisibility: s.toggleElementVisibility,
+    wrapElementsInDiv: s.wrapElementsInDiv,
+  }))
 
   const [isPreview, setIsPreview] = useState(false)
   const [panelsHidden, setPanelsHidden] = useState(false)
@@ -151,20 +60,11 @@ export function CanvasEditor() {
   const [customWidth, setCustomWidth] = useState<string>('')
   const [showCanvasSettings, setShowCanvasSettings] = useState(false)
   const [showRenameModal, setShowRenameModal] = useState(false)
-  const [snapLines, setSnapLines] = useState<SnapLine[]>([])
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [rightTab, setRightTab] = useState<'properties' | 'ai'>('properties')
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
-  const artboardDragRef = useRef<{
-    artboardId: string
-    startMouseX: number
-    startMouseY: number
-    startArtX: number
-    startArtY: number
-    active: boolean
-  } | null>(null)
   const artboardElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const { onCanvasMouseDown, marqueeRect: canvasMarqueeRect, wasCanvasMarqueeRef } = useCanvasMarquee(artboardElRefs, isPreview)
   const patternSizeRef = useRef<number>(project?.canvasPatternSize ?? 20)
@@ -173,6 +73,9 @@ export function CanvasEditor() {
     worldRef as React.RefObject<HTMLElement>,
     patternSizeRef,
   )
+
+  const { snapLines, startArtboardDrag } = useArtboardDrag(cameraRef, artboardElRefs)
+  useImageDrop()
 
   // Sync patternSizeRef and re-apply when size changes
   useEffect(() => {
@@ -195,57 +98,6 @@ export function CanvasEditor() {
     }
   }, [activeProjectId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Drag артбордов за лейбл
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      const d = artboardDragRef.current
-      if (!d) return
-      const scale = cameraRef.current.scale
-      const dx = (e.clientX - d.startMouseX) / scale
-      const dy = (e.clientY - d.startMouseY) / scale
-      if (!d.active) {
-        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return
-        d.active = true
-        document.body.style.cursor = 'grabbing'
-      }
-      const rawX = d.startArtX + dx
-      const rawY = d.startArtY + dy
-      const state = useEditorStore.getState()
-      const { x: newX, y: newY, lines } = computeSnap(
-        d.artboardId, rawX, rawY,
-        state.project!.artboards, state.project!.artboardOrder, scale,
-      )
-      setSnapLines(lines)
-      const el = artboardElRefs.current.get(d.artboardId)
-      if (el) {
-        el.style.left = newX + 'px'
-        el.style.top = newY + 'px'
-      }
-      useEditorStore.getState().moveArtboardTemp(d.artboardId, newX, newY)
-    }
-    const onMouseUp = (e: MouseEvent) => {
-      const d = artboardDragRef.current
-      if (!d || !d.active) { artboardDragRef.current = null; return }
-      const scale = cameraRef.current.scale
-      const rawX = d.startArtX + (e.clientX - d.startMouseX) / scale
-      const rawY = d.startArtY + (e.clientY - d.startMouseY) / scale
-      const state = useEditorStore.getState()
-      const { x: newX, y: newY } = computeSnap(
-        d.artboardId, rawX, rawY,
-        state.project!.artboards, state.project!.artboardOrder, scale,
-      )
-      useEditorStore.getState().moveArtboard(d.artboardId, newX, newY)
-      artboardDragRef.current = null
-      setSnapLines([])
-      document.body.style.cursor = ''
-    }
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBreakpointSelect = (bp: Breakpoint) => {
     setViewportWidth(bp.width)
@@ -426,58 +278,6 @@ export function CanvasEditor() {
     duplicateElement, setActiveBreakpoint, toggleElementVisibility, wrapElementsInDiv,
   ])
 
-  // Image drag-drop + paste
-  useEffect(() => {
-    const onDragOver = (e: DragEvent) => {
-      if (e.dataTransfer?.types?.includes('Files')) {
-        e.preventDefault()
-        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
-      }
-    }
-    const onDrop = (e: DragEvent) => {
-      const files = e.dataTransfer?.files
-      if (!files || files.length === 0) return
-      let hasImage = false
-      for (const file of files) {
-        if (file.type.startsWith('image/')) {
-          hasImage = true
-          addImageFromFile(file)
-        }
-      }
-      if (hasImage) e.preventDefault()
-    }
-    const onPaste = (e: ClipboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-      e.preventDefault()
-
-      const items = e.clipboardData?.items
-      console.log('[paste] items:', items?.length, 'types:', Array.from(items ?? []).map(i => i.type))
-
-      if (items) {
-        for (const item of items) {
-          if (item.type.startsWith('image/')) {
-            console.log('[paste] found image:', item.type)
-            const file = item.getAsFile()
-            if (file) addImageFromFile(file)
-            return
-          }
-        }
-      }
-
-      // Нет image в clipboard — fallback на внутренний paste элемента
-      console.log('[paste] no image, fallback to pasteElement')
-      useEditorStore.getState().pasteElement()
-    }
-    window.addEventListener('dragover', onDragOver)
-    window.addEventListener('drop', onDrop)
-    window.addEventListener('paste', onPaste)
-    return () => {
-      window.removeEventListener('dragover', onDragOver)
-      window.removeEventListener('drop', onDrop)
-      window.removeEventListener('paste', onPaste)
-    }
-  }, [])
 
   if (!project) return null
 
@@ -597,14 +397,7 @@ export function CanvasEditor() {
                   onMouseDown={!isActive && !isPreview ? (e) => {
                     e.stopPropagation()
                     const ab = project.artboards[id]
-                    artboardDragRef.current = {
-                      artboardId: id,
-                      startMouseX: e.clientX,
-                      startMouseY: e.clientY,
-                      startArtX: ab.x,
-                      startArtY: ab.y,
-                      active: false,
-                    }
+                    startArtboardDrag(id, e, ab.x, ab.y)
                   } : undefined}
                 >
                   {/* Лейбл над артбордом */}
@@ -625,14 +418,7 @@ export function CanvasEditor() {
                       onMouseDown={(e) => {
                         e.stopPropagation()
                         const ab = project.artboards[id]
-                        artboardDragRef.current = {
-                          artboardId: id,
-                          startMouseX: e.clientX,
-                          startMouseY: e.clientY,
-                          startArtX: ab.x,
-                          startArtY: ab.y,
-                          active: false,
-                        }
+                        startArtboardDrag(id, e, ab.x, ab.y)
                       }}
                     >
                       {artboard.name}
@@ -740,7 +526,9 @@ export function CanvasEditor() {
               </div>
               {/* Содержимое */}
               <div style={{ flex: 1, overflow: 'hidden' }}>
-                {rightTab === 'properties' ? <Properties /> : <AIChat />}
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  {rightTab === 'properties' ? <Properties /> : <AIChat />}
+                </ErrorBoundary>
               </div>
             </div>
           </div>

@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { useEditorStore } from './store'
+import { useProject, useCurrentView } from './store/selectors'
+import { ErrorFallback } from './components/shared/ErrorFallback'
 import { ProjectsDashboard } from './components/ProjectsDashboard'
 import { CanvasEditor } from './components/CanvasEditor'
-import { BacklogPage } from './components/Backlog'
-import { TeamPage } from './components/Backlog/TeamPage'
+
+const BacklogPage = React.lazy(() => import('./components/Backlog').then(m => ({ default: m.BacklogPage })))
+const TeamPage = React.lazy(() => import('./components/Backlog/TeamPage').then(m => ({ default: m.TeamPage })))
 
 export type ResponsiveMode = 'desktop' | 'tablet' | 'mobile'
 
@@ -28,7 +32,9 @@ function useResponsiveMode(): ResponsiveMode {
 }
 
 export default function App() {
-  const { project, currentView, setCurrentView } = useEditorStore()
+  const project = useProject()
+  const currentView = useCurrentView()
+  const setCurrentView = useEditorStore(s => s.setCurrentView)
   const responsiveMode = useResponsiveMode()
   const isMobileOrTablet = responsiveMode !== 'desktop'
 
@@ -53,9 +59,23 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [setCurrentView, isMobileOrTablet])
 
-  if (currentView === 'backlog') return <BacklogPage responsiveMode={responsiveMode} />
-  if (currentView === 'team') return <TeamPage responsiveMode={responsiveMode} />
+  if (currentView === 'backlog' || currentView === 'team') {
+    return (
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#999' }}>Loading...</div>}>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          {currentView === 'backlog'
+            ? <BacklogPage responsiveMode={responsiveMode} />
+            : <TeamPage responsiveMode={responsiveMode} />}
+        </ErrorBoundary>
+      </Suspense>
+    )
+  }
+
   if (!project) return <ProjectsDashboard />
 
-  return <CanvasEditor />
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <CanvasEditor />
+    </ErrorBoundary>
+  )
 }

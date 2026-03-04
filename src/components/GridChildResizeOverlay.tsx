@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditorStore } from '../store'
+import { useSelectedElementId, useProject, useActiveBreakpointId } from '../store/selectors'
 import { findParentId } from '../utils/treeUtils'
 import { resolveStyles } from '../utils/resolveStyles'
 
@@ -53,7 +54,10 @@ type DragState = {
 // ─── Компонент ───────────────────────────────────────────────────────────────
 
 export function GridChildResizeOverlay({ artboardId }: Props) {
-  const { selectedElementId, project, activeBreakpointId, updateElement } = useEditorStore()
+  const selectedElementId = useSelectedElementId()
+  const project = useProject()
+  const activeBreakpointId = useActiveBreakpointId()
+  const updateElement = useEditorStore(s => s.updateElement)
 
   const artboard = project?.artboards[artboardId]
   const parentId = artboard && selectedElementId ? findParentId(artboard, selectedElementId) : null

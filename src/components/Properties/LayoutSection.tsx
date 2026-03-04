@@ -3,6 +3,7 @@ import type { ElementStyles } from '../../types'
 import { CollapsibleSection, PropertyRow, SegmentedControl, CompactInput } from './shared'
 import { PropertySelect } from './shared/PropertySelect'
 import { useEditorStore } from '../../store'
+import { useGridEditElementId } from '../../store/selectors'
 
 type Props = {
   styles: ElementStyles
@@ -489,7 +490,8 @@ function GridControls({ styles, onUpdate, elementId }: {
   onUpdate: (p: Partial<ElementStyles>) => void
   elementId?: string | null
 }) {
-  const { gridEditElementId, setGridEditElementId } = useEditorStore()
+  const gridEditElementId = useGridEditElementId()
+  const setGridEditElementId = useEditorStore(s => s.setGridEditElementId)
   const colTracks = parseTracks(styles.gridTemplateColumns)
   const rowTracks = parseTracks(styles.gridTemplateRows)
   const autoFlow = styles.gridAutoFlow ?? 'row'

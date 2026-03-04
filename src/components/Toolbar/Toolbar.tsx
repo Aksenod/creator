@@ -7,6 +7,7 @@ import {
   Textbox,
   Plus,
 } from '@phosphor-icons/react'
+import { useProject, useActiveArtboardId, useSelectedElementId } from '../../store/selectors'
 import { useEditorStore } from '../../store'
 import { colors, shadows } from '../../styles/tokens'
 import type { ElementType } from '../../types'
@@ -20,7 +21,10 @@ const ELEMENTS: { type: ElementType; label: string; icon: React.ReactNode }[] = 
 ]
 
 export function Toolbar() {
-  const { project, activeArtboardId, selectedElementId, addElement } = useEditorStore()
+  const project = useProject()
+  const activeArtboardId = useActiveArtboardId()
+  const selectedElementId = useSelectedElementId()
+  const addElement = useEditorStore(s => s.addElement)
   const [open, setOpen] = useState(false)
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 })
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)

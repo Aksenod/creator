@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useEditorStore } from '../../store'
+import { useAllProjects, useProjectActions } from '../../store/selectors'
 import type { Project } from '../../types'
 
 // ─── Форматирование времени ───────────────────────────────────────────────────
@@ -252,7 +253,8 @@ function NewProjectCard({ onCreate }: { onCreate: () => void }) {
 // ─── ProjectsDashboard ────────────────────────────────────────────────────────
 
 export function ProjectsDashboard() {
-  const { allProjects, createProject, openProject, deleteProject, renameProject, duplicateProject } = useEditorStore()
+  const allProjects = useAllProjects()
+  const { createProject, openProject, deleteProject, renameProject, duplicateProject } = useProjectActions()
 
   const handleCreateProject = () => {
     createProject('New project')

@@ -25,6 +25,7 @@ import {
 } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '../../store'
+import { useSelectedElementId, useSelectedElementIds, useActiveArtboardId } from '../../store/selectors'
 import { CONTAINER_TYPES, isContainerType } from '../../store/helpers'
 import type { Artboard } from '../../types'
 import { findParentId, isDescendantOf, collectDescendantIds, getVisibleLayerIds } from '../../utils/treeUtils'
@@ -79,7 +80,12 @@ function DropLine({ depth }: { depth: number }) {
 // ─── Layer item ───────────────────────────────────────────────────────────────
 
 function LayerItem({ id, artboard, depth, expandedLayers, onToggleExpand, dropIndicator, renamingId, onStartRename, onFinishRename, onCancelRename, onTabRename }: LayerItemProps) {
-  const { selectElement, selectedElementId, selectedElementIds, toggleSelectElement, activeArtboardId, toggleElementVisibility } = useEditorStore()
+  const selectedElementId = useSelectedElementId()
+  const selectedElementIds = useSelectedElementIds()
+  const activeArtboardId = useActiveArtboardId()
+  const selectElement = useEditorStore(s => s.selectElement)
+  const toggleSelectElement = useEditorStore(s => s.toggleSelectElement)
+  const toggleElementVisibility = useEditorStore(s => s.toggleElementVisibility)
   const el = artboard.elements[id]
   const [isHovered, setIsHovered] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)

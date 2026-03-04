@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Plus } from '@phosphor-icons/react'
 import { useEditorStore } from '../store'
+import { useGridEditElementId, useProject } from '../store/selectors'
 import { colors } from '../styles/tokens'
 import { parseTracks, serializeTracks } from './Properties/LayoutSection'
 import type { GridTrack } from './Properties/LayoutSection'
@@ -23,7 +24,10 @@ type DragState = {
 }
 
 export function GridEditOverlay({ artboardId }: Props) {
-  const { gridEditElementId, setGridEditElementId, project, updateElement } = useEditorStore()
+  const gridEditElementId = useGridEditElementId()
+  const project = useProject()
+  const setGridEditElementId = useEditorStore(s => s.setGridEditElementId)
+  const updateElement = useEditorStore(s => s.updateElement)
   const artboard = project?.artboards[artboardId]
   const element = gridEditElementId && artboard ? artboard.elements[gridEditElementId] : null
 

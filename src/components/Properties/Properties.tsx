@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
+import { useSelectedElementId, useSelectedElementIds, useProject, useActiveArtboardId, useActiveBreakpointId } from '../../store/selectors'
 import { CollapsibleSection, PropertyRow } from './shared'
 import { PropertySelect } from './shared/PropertySelect'
 import { AppearanceSection } from './AppearanceSection'
@@ -43,11 +44,18 @@ const getCommonStyles = (
 }
 
 export function Properties() {
-  const {
-    selectedElementId, selectedElementIds, project, activeArtboardId,
-    updateElement, updateSelectedElements, activeBreakpointId, clearBreakpointStyle,
-    updateCanvasSettings, updateArtboard,
-  } = useEditorStore()
+  const selectedElementId = useSelectedElementId()
+  const selectedElementIds = useSelectedElementIds()
+  const project = useProject()
+  const activeArtboardId = useActiveArtboardId()
+  const activeBreakpointId = useActiveBreakpointId()
+  const { updateElement, updateSelectedElements, clearBreakpointStyle } = useEditorStore(s => ({
+    updateElement: s.updateElement,
+    updateSelectedElements: s.updateSelectedElements,
+    clearBreakpointStyle: s.clearBreakpointStyle,
+  }))
+  const updateCanvasSettings = useEditorStore(s => s.updateCanvasSettings)
+  const updateArtboard = useEditorStore(s => s.updateArtboard)
 
   const artboard = project && activeArtboardId ? project.artboards[activeArtboardId] : null
   const element = artboard && selectedElementId ? artboard.elements[selectedElementId] : null

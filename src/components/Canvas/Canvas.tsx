@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditorStore } from '../../store'
+import { useSelectedElementId, useSelectedElementIds, useActiveArtboardId, useActiveBreakpointId } from '../../store/selectors'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
-import { parseCssValue, composeCssValue } from '../Properties/shared/FigmaInput'
+import { parseCssValue, composeCssValue, type CssUnit } from '../Properties/shared/FigmaInput'
 import { getCSSPosition } from '../../utils/cssUtils'
 import { migrateFills, fillsToCSS } from '../../utils/fillUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
@@ -85,11 +86,14 @@ type Props = {
 export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onArtboardClick, displayWidth }: Props) {
   const effectiveWidth = displayWidth ?? artboard.width
 
-  const {
-    selectElement, selectedElementId, selectedElementIds,
-    toggleSelectElement, updateElement, activeArtboardId, activeBreakpointId,
-    setActiveArtboard,
-  } = useEditorStore()
+  const selectedElementId = useSelectedElementId()
+  const selectedElementIds = useSelectedElementIds()
+  const activeArtboardId = useActiveArtboardId()
+  const activeBreakpointId = useActiveBreakpointId()
+  const selectElement = useEditorStore(s => s.selectElement)
+  const toggleSelectElement = useEditorStore(s => s.toggleSelectElement)
+  const updateElement = useEditorStore(s => s.updateElement)
+  const setActiveArtboard = useEditorStore(s => s.setActiveArtboard)
 
   const resizeRef = useRef<ResizeState | null>(null)
   const radiusRef = useRef<RadiusResizeState | null>(null)
@@ -176,8 +180,8 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
 
       updateElement(activeArtboardId, state.elementId, {
         styles: {
-          width: composeCssValue(String(finalNumW), uW as any),
-          height: composeCssValue(String(finalNumH), uH as any),
+          width: composeCssValue(String(finalNumW), uW as CssUnit),
+          height: composeCssValue(String(finalNumH), uH as CssUnit),
         },
       })
     }

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import type { Fill } from '../../types/fills'
 import { ColorPicker } from './shared/ColorPicker'
 
@@ -13,7 +13,7 @@ type Props = {
   isDragOver?: 'above' | 'below' | null
 }
 
-export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage, onDragStart, isDragging, isDragOver }: Props) {
+export const FillRow = React.memo(function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage, onDragStart, isDragging, isDragOver }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null)
   const swatchRef = useRef<HTMLDivElement>(null)
@@ -226,4 +226,4 @@ export function FillRow({ fill, onChange, onRemove, onOpenGradient, onOpenImage,
       )}
     </div>
   )
-}
+})

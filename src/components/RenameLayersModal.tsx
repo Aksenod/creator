@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X, ArrowRight } from '@phosphor-icons/react'
 import { useEditorStore } from '../store'
+import { useProject } from '../store/selectors'
 import { colors, shadows } from '../styles/tokens'
 
 type Props = {
@@ -67,7 +68,8 @@ function applyMatch(
 }
 
 export function RenameLayersModal({ artboardId, elementIds, onClose }: Props) {
-  const { project, renameElements } = useEditorStore()
+  const project = useProject()
+  const renameElements = useEditorStore(s => s.renameElements)
   const ab = project?.artboards[artboardId]
 
   const [template, setTemplate] = useState('')
