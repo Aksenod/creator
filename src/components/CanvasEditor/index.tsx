@@ -17,7 +17,8 @@ import { Toast } from '../Toast/Toast'
 import { AIChat } from '../AIChat/AIChat'
 import type { BreakpointId } from '../../constants/breakpoints'
 import { findParentId, getSiblingInfo, getCommonParentId } from '../../utils/treeUtils'
-import { exportArtboardHTML, downloadHTML, previewHTML } from '../../utils/exportHTML'
+import { exportArtboardHTML, previewHTML } from '../../utils/exportHTML'
+import { HTMLLightbox } from '../HTMLLightbox/HTMLLightbox'
 import type { CanvasPattern } from '../../types'
 import { useCanvasMarquee } from '../../hooks/useCanvasMarquee'
 import { getArtboardOutline, getArtboardLabelColor, getArtboardLabelWeight } from '../../utils/artboardStyles'
@@ -63,6 +64,7 @@ export function CanvasEditor() {
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [rightTab, setRightTab] = useState<'properties' | 'ai'>('properties')
+  const [htmlLightbox, setHtmlLightbox] = useState<{ html: string; filename: string } | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
@@ -292,12 +294,10 @@ export function CanvasEditor() {
         scale={scalePercent / 100}
         showCanvasSettings={showCanvasSettings}
         onCloseProject={closeProject}
-        onTogglePreview={() => {
-          if (activeArtboard) {
-            const html = exportArtboardHTML(activeArtboard)
-            previewHTML(html)
-          }
-        }}
+        onTogglePreview={activeArtboard ? () => {
+          const html = exportArtboardHTML(activeArtboard)
+          previewHTML(html)
+        } : undefined}
         onToggleSettings={() => setShowCanvasSettings(s => !s)}
         onCustomWidthChange={setCustomWidth}
         onCustomWidthBlur={(v) => {
@@ -310,7 +310,7 @@ export function CanvasEditor() {
         onAddArtboard={() => addArtboard('Artboard ' + (project.artboardOrder.length + 1))}
         onExportHTML={activeArtboard ? () => {
           const html = exportArtboardHTML(activeArtboard)
-          downloadHTML(html, `${activeArtboard.name}.html`)
+          setHtmlLightbox({ html, filename: `${activeArtboard.name}.html` })
         } : undefined}
       />
 
@@ -565,6 +565,15 @@ export function CanvasEditor() {
       {/* Toast notifications */}
       {toastMessage && (
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
+
+      {/* HTML Lightbox */}
+      {htmlLightbox && (
+        <HTMLLightbox
+          html={htmlLightbox.html}
+          filename={htmlLightbox.filename}
+          onClose={() => setHtmlLightbox(null)}
+        />
       )}
     </div>
   )

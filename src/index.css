@@ -81,3 +81,18 @@ input[type=range]::-moz-range-track {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* highlight.js — monochrome theme (Nothing Phone style) */
+.hljs {
+  color: #0a0a0a;
+  background: transparent;
+}
+.hljs-tag { color: #0a0a0a; }
+.hljs-name { color: #0a0a0a; font-weight: 600; }
+.hljs-attr { color: #525252; }
+.hljs-string { color: #737373; }
+.hljs-comment { color: #a3a3a3; font-style: italic; }
+.hljs-keyword,
+.hljs-meta { color: #0a0a0a; font-weight: 600; }
+.hljs-number { color: #525252; }
+.hljs-symbol { color: #737373; }
