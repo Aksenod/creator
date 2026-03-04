@@ -12,7 +12,7 @@ type Props = {
   scale: number
   showCanvasSettings: boolean
   onCloseProject: () => void
-  onTogglePreview: () => void
+  onTogglePreview?: () => void
   onToggleSettings: () => void
   onCustomWidthChange: (v: string) => void
   onCustomWidthBlur: (v: string) => void
@@ -184,17 +184,19 @@ export function Topbar({
         >
           <Plus size={12} weight="thin" /> Artboard
         </button>
-        <button
-          onClick={onTogglePreview}
-          title="Preview — export artboard as HTML and open in new tab"
-          style={{
-            padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
-            border: 'none', background: colors.bgSurface, color: colors.text,
-            display: 'flex', alignItems: 'center', gap: 4,
-          }}
-        >
-          <Play size={12} weight="thin" /> Preview
-        </button>
+        {onTogglePreview && (
+          <button
+            onClick={onTogglePreview}
+            title="Preview — export artboard as HTML and open in new tab"
+            style={{
+              padding: '4px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
+              border: 'none', background: colors.bgSurface, color: colors.text,
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            <Play size={12} weight="thin" /> Preview
+          </button>
+        )}
       </div>
     </div>
   )
