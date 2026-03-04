@@ -20,6 +20,7 @@ type EditorState = {
   activeArtboardId: string | null
   selectedElementId: string | null
   selectedElementIds: string[]
+  selectedArtboardIds: string[]
   activeBreakpointId: BreakpointId
   history: Project[]
   historyIndex: number
@@ -47,6 +48,7 @@ type EditorState = {
   selectElement: (id: string | null) => void
   selectElements: (ids: string[]) => void
   toggleSelectElement: (id: string) => void
+  selectArtboards: (ids: string[]) => void
   setActiveBreakpoint: (bpId: BreakpointId) => void
 
   addElement: (artboardId: string, type: ElementType, parentId: string | null) => void
@@ -110,6 +112,7 @@ export const useEditorStore = create<EditorState>()(
       activeArtboardId: null,
       selectedElementId: null,
       selectedElementIds: [],
+      selectedArtboardIds: [],
       activeBreakpointId: 'desktop' as BreakpointId,
       history: [],
       historyIndex: -1,
@@ -242,7 +245,7 @@ export const useEditorStore = create<EditorState>()(
 
       setActiveArtboard: (id) => set((state) => {
         if (state.activeArtboardId === id) return {}
-        return { activeArtboardId: id, selectedElementId: null, selectedElementIds: [] }
+        return { activeArtboardId: id, selectedElementId: null, selectedElementIds: [], selectedArtboardIds: [] }
       }),
 
       addArtboard: (name) => set((state) => {
@@ -308,7 +311,7 @@ export const useEditorStore = create<EditorState>()(
       }),
 
       selectElement: (id) => {
-        set({ selectedElementId: id, selectedElementIds: id ? [id] : [] })
+        set({ selectedElementId: id, selectedElementIds: id ? [id] : [], selectedArtboardIds: [] })
       },
 
       selectElements: (ids) => {
@@ -323,6 +326,10 @@ export const useEditorStore = create<EditorState>()(
           selectedElementId: next.length > 0 ? next[next.length - 1] : null,
         }
       }),
+
+      selectArtboards: (ids) => {
+        set({ selectedArtboardIds: ids, selectedElementId: null, selectedElementIds: [] })
+      },
 
       setActiveBreakpoint: (bpId) => set({ activeBreakpointId: bpId }),
 
