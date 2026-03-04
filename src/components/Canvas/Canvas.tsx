@@ -7,6 +7,7 @@ import { getCSSPosition } from '../../utils/cssUtils'
 import { migrateFills, fillsToCSS } from '../../utils/fillUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
 import { getGridCellsById } from '../../utils/gridUtils'
+import { findParentId } from '../../utils/treeUtils'
 import type { Camera } from '../../hooks/useCanvasTransform'
 
 // --- Resize handles ---
@@ -29,14 +30,14 @@ const HANDLE_CURSORS: Record<HandleDir, string> = {
 }
 
 const HANDLES: Array<{ id: HandleDir; style: React.CSSProperties }> = [
-  { id: 'nw', style: { top: -4, left: -4 } },
-  { id: 'n',  style: { top: -4, left: 'calc(50% - 4px)' } },
-  { id: 'ne', style: { top: -4, right: -4 } },
-  { id: 'e',  style: { top: 'calc(50% - 4px)', right: -4 } },
-  { id: 'se', style: { bottom: -4, right: -4 } },
-  { id: 's',  style: { bottom: -4, left: 'calc(50% - 4px)' } },
-  { id: 'sw', style: { bottom: -4, left: -4 } },
-  { id: 'w',  style: { top: 'calc(50% - 4px)', left: -4 } },
+  { id: 'nw', style: { top: -3, left: -3 } },
+  { id: 'n',  style: { top: -3, left: 'calc(50% - 3px)' } },
+  { id: 'ne', style: { top: -3, right: -3 } },
+  { id: 'e',  style: { top: 'calc(50% - 3px)', right: -3 } },
+  { id: 'se', style: { bottom: -3, right: -3 } },
+  { id: 's',  style: { bottom: -3, left: 'calc(50% - 3px)' } },
+  { id: 'sw', style: { bottom: -3, left: -3 } },
+  { id: 'w',  style: { top: 'calc(50% - 3px)', left: -3 } },
 ]
 
 // --- Canvas ---
@@ -160,6 +161,10 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     return `${Math.round(n * base / 100 * 100) / 100}px`
   }
 
+  const parentOfSelectedId = selectedElementId && artboard
+    ? findParentId(artboard, selectedElementId)
+    : null
+
   const renderElement = (id: string): React.ReactNode => {
     const el = artboard.elements[id]
     if (!el) return null
@@ -179,11 +184,13 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     const s = resolveStyles(el, activeBreakpointId)
     const cssPosition = getCSSPosition(el.positionMode)
 
-    // Для static-элементов когда нужны absolute-дочерние (resize handles, drop indicators)
+    const isParentOfSelected = !previewMode && id === parentOfSelectedId
+
+    // Для static-элементов когда нужны absolute-дочерние (resize handles, drop indicators, dash overlay)
     const needsRelative =
       !previewMode &&
       cssPosition === 'static' &&
-      (isSelected || isDropBefore || isDropAfter || isDropInto)
+      (isSelected || isDropBefore || isDropAfter || isDropInto || isParentOfSelected)
 
     // Outline: приоритет — drop indicator > selection > hover
     let outline: string
@@ -194,11 +201,11 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
     } else if (isDropParent) {
       outline = '2px solid #ff8c00'         // оранжевый — parent-контейнер
     } else if (isSelected) {
-      outline = '2px solid #0066ff'
+      outline = '1px solid #0066ff'
     } else if (isHovered) {
       outline = '1px solid #0066ff'
     } else {
-      outline = '1px dashed #ddd'
+      outline = 'none'
     }
 
     const style: React.CSSProperties = {
@@ -241,7 +248,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       borderWidth: s.borderWidth,
       borderColor: s.borderColor,
       borderStyle: s.borderStyle as React.CSSProperties['borderStyle'],
-      overflow: s.overflow,
+      overflow: (!previewMode && el.type !== 'body' && (isSelected || isParentOfSelected)) ? 'visible' : s.overflow,
       padding: s.paddingTop !== undefined
         ? `${s.paddingTop}px ${s.paddingRight ?? 0}px ${s.paddingBottom ?? 0}px ${s.paddingLeft ?? 0}px`
         : undefined,
@@ -250,7 +257,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         : undefined,
       zIndex: s.zIndex,
       outline,
-      outlineOffset: previewMode ? undefined : (isSelected || isDropInto || isDropParent ? -2 : -1),
+      outlineOffset: previewMode ? undefined : (isDropInto || isDropParent ? -2 : -1),
       // Синяя линия вставки через box-shadow (не меняет layout)
       boxShadow: isDropBefore
         ? '0 -2px 0 0 #0066ff'
@@ -298,16 +305,38 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
       },
     }
 
+    // Пунктирная обводка родителя при выделении дочернего (overlay с кастомным dash pattern)
+    const parentDashOverlay = isParentOfSelected && el.type !== 'body' && (
+      <div
+        key="parent-dash"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 9,
+          backgroundImage: [
+            'repeating-linear-gradient(90deg, #0066ff 0, #0066ff 8px, transparent 8px, transparent 16px)',
+            'repeating-linear-gradient(90deg, #0066ff 0, #0066ff 8px, transparent 8px, transparent 16px)',
+            'repeating-linear-gradient(0deg, #0066ff 0, #0066ff 8px, transparent 8px, transparent 16px)',
+            'repeating-linear-gradient(0deg, #0066ff 0, #0066ff 8px, transparent 8px, transparent 16px)',
+          ].join(', '),
+          backgroundSize: '100% 1px, 100% 1px, 1px 100%, 1px 100%',
+          backgroundPosition: '0 0, 0 100%, 0 0, 100% 0',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+    )
+
     const resizeHandles = isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
       <div
         key={h.id}
         style={{
           position: 'absolute',
-          width: 8,
-          height: 8,
+          width: 6,
+          height: 6,
           background: '#fff',
-          border: '1.5px solid #0066ff',
-          borderRadius: 1,
+          border: '1px solid #0066ff',
+          borderRadius: '50%',
           zIndex: 10,
           cursor: HANDLE_CURSORS[h.id],
           ...h.style,
@@ -350,6 +379,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
             }}
           />
           {resizeHandles}
+          {parentDashOverlay}
         </div>
       )
     }
@@ -470,23 +500,8 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         {el.children.map(renderElement)}
 
         {/* Resize handles — только для выбранного элемента, не в preview, не для body */}
-        {isSelected && !previewMode && el.type !== 'body' && HANDLES.map(h => (
-          <div
-            key={h.id}
-            style={{
-              position: 'absolute',
-              width: 8,
-              height: 8,
-              background: '#fff',
-              border: '1.5px solid #0066ff',
-              borderRadius: 1,
-              zIndex: 10,
-              cursor: HANDLE_CURSORS[h.id],
-              ...h.style,
-            }}
-            onMouseDown={(e) => startResize(e, id, h.id)}
-          />
-        ))}
+        {resizeHandles}
+        {parentDashOverlay}
       </div>
     )
   }
@@ -507,8 +522,7 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, isA
         background: '#fff',
         flexShrink: 0,
         boxShadow: '0 2px 16px rgba(0,0,0,0.1)',
-        outline: isActive ? '2px solid #0066ff' : 'none',
-        outlineOffset: 2,
+        outline: 'none',
         overflow: artboardOverflow,
         position: 'relative',
       }}
