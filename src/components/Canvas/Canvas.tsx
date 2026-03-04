@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useEditorStore } from '../../store'
 import type { Artboard } from '../../types'
 import { resolveStyles } from '../../utils/resolveStyles'
+import { parseCssValue, composeCssValue } from '../Properties/shared/FigmaInput'
 import { getCSSPosition } from '../../utils/cssUtils'
 import { migrateFills, fillsToCSS } from '../../utils/fillUtils'
 import { useCanvasDnD } from '../../hooks/useCanvasDnD'
@@ -21,6 +22,10 @@ type ResizeState = {
   startMouseY: number
   startW: number
   startH: number
+  unitW: string
+  unitH: string
+  startNumW: number
+  startNumH: number
 }
 
 const HANDLE_CURSORS: Record<HandleDir, string> = {
@@ -98,8 +103,26 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
       if (['se', 'sw', 's'].includes(state.handle)) newH = Math.max(20, state.startH + dy)
       if (['ne', 'nw', 'n'].includes(state.handle)) newH = Math.max(20, state.startH - dy)
 
+      const ratioW = state.startW > 0 ? newW / state.startW : 1
+      const ratioH = state.startH > 0 ? newH / state.startH : 1
+
+      const pxFallback = (u: string) => u === 'px' || u === 'auto' || u === 'none'
+
+      const finalNumW = pxFallback(state.unitW)
+        ? Math.round(newW)
+        : Math.round(state.startNumW * ratioW * 100) / 100
+      const finalNumH = pxFallback(state.unitH)
+        ? Math.round(newH)
+        : Math.round(state.startNumH * ratioH * 100) / 100
+
+      const uW = pxFallback(state.unitW) ? 'px' : state.unitW
+      const uH = pxFallback(state.unitH) ? 'px' : state.unitH
+
       updateElement(activeArtboardId, state.elementId, {
-        styles: { width: `${Math.round(newW)}px`, height: `${Math.round(newH)}px` },
+        styles: {
+          width: composeCssValue(String(finalNumW), uW as any),
+          height: composeCssValue(String(finalNumH), uH as any),
+        },
       })
     }
 
@@ -138,14 +161,25 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
     if (!elDom) return
     const rect = elDom.getBoundingClientRect()
 
+    const el = artboard.elements[id]
+    const resolved = el ? resolveStyles(el, activeBreakpointId) : undefined
+    const parsedW = parseCssValue(resolved?.width)
+    const parsedH = parseCssValue(resolved?.height)
+
     const currentScale = cameraRef?.current?.scale ?? scale
+    const startW = rect.width / currentScale
+    const startH = rect.height / currentScale
     resizeRef.current = {
       elementId: id,
       handle,
       startMouseX: e.clientX,
       startMouseY: e.clientY,
-      startW: rect.width / currentScale,
-      startH: rect.height / currentScale,
+      startW,
+      startH,
+      unitW: parsedW.unit,
+      unitH: parsedH.unit,
+      startNumW: parsedW.num ? parseFloat(parsedW.num) : startW,
+      startNumH: parsedH.num ? parseFloat(parsedH.num) : startH,
     }
 
     document.body.style.cursor = HANDLE_CURSORS[handle]
