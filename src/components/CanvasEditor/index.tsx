@@ -590,7 +590,7 @@ export function CanvasEditor() {
                     left: artboard.x,
                     top: artboard.y,
                     cursor: !isActive && !isPreview ? 'grab' : undefined,
-                    outline: selectedArtboardIds.includes(id) ? '2px solid #0066ff' : undefined,
+                    outline: isActive ? '1px solid #0a0a0a' : selectedArtboardIds.includes(id) ? '2px solid #0066ff' : undefined,
                     outlineOffset: 0,
                   }}
                   onMouseDown={!isActive && !isPreview ? (e) => {
@@ -614,7 +614,8 @@ export function CanvasEditor() {
                         top: -24,
                         left: 0,
                         fontSize: 12,
-                        color: '#555',
+                        color: isActive ? '#0a0a0a' : '#555',
+                        fontWeight: isActive ? 600 : 400,
                         userSelect: 'none',
                         whiteSpace: 'nowrap',
                         lineHeight: '20px',
