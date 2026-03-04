@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { teamMembers, type TeamMember } from './teamData'
 import { colors, shadows } from '../../styles/tokens'
+import { WorkflowDiagram } from './WorkflowDiagram'
 
 const STATUS_COLORS: Record<string, string> = {
   active: colors.text,
@@ -158,6 +159,12 @@ export function TeamSection() {
           <TeamMemberCard key={member.id} member={member} />
         ))}
       </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: colors.border, margin: '24px 0' }} />
+
+      {/* Workflow Diagram */}
+      <WorkflowDiagram />
     </div>
   )
 }
