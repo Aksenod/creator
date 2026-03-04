@@ -226,13 +226,14 @@ export function CanvasEditor() {
 
       const isMac = navigator.userAgent.includes('Mac')
       const mod = isMac ? e.metaKey : e.ctrlKey
+      const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
 
-      if (mod && e.code === 'KeyZ' && !e.shiftKey) { e.preventDefault(); undo() }
-      if (mod && e.code === 'KeyZ' && e.shiftKey) { e.preventDefault(); redo() }
-      if (mod && e.key === 'c') { e.preventDefault(); copyElement() }
+      if (mod && e.code === 'KeyZ' && !e.shiftKey && !isEditing) { e.preventDefault(); undo() }
+      if (mod && e.code === 'KeyZ' && e.shiftKey && !isEditing) { e.preventDefault(); redo() }
+      if (mod && e.key === 'c' && !isEditing) { e.preventDefault(); copyElement() }
       // Cmd+V — не перехватываем, пусть сработает paste event (обработчик ниже)
-      if (mod && e.key === 'v') return
-      if (mod && e.key === 'd') { e.preventDefault(); e.stopPropagation(); duplicateElement() }
+      if (mod && e.key === 'v' && !isEditing) return
+      if (mod && e.key === 'd' && !isEditing) { e.preventDefault(); e.stopPropagation(); duplicateElement() }
       if (mod && e.shiftKey && e.code === 'KeyH') {
         e.preventDefault()
         const s = useEditorStore.getState()
