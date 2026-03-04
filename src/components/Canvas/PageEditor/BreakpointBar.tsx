@@ -1,4 +1,4 @@
-import { Desktop, Laptop, DeviceTablet, DeviceMobile, Asterisk } from '@phosphor-icons/react'
+import { Desktop, Laptop, DeviceTablet, DeviceMobile } from '@phosphor-icons/react'
 import { colors } from '../../../styles/tokens'
 import type { BreakpointId } from '../../../constants/breakpoints'
 
@@ -107,14 +107,7 @@ export function BreakpointBar({ activeBreakpointId, detectedWidth, onSelect }: P
               gap: 2, position: 'relative',
             }}
           >
-            {bp.isBase ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <bp.icon active={isActive} />
-                <Asterisk size={8} weight="bold" style={{ color: isActive ? colors.textMuted : colors.textDisabled }} />
-              </div>
-            ) : (
-              <bp.icon active={isActive} />
-            )}
+            <bp.icon active={isActive} />
             <span style={{
               width: 3, height: 3, borderRadius: '50%',
               background: isDetected ? (isActive ? colors.bg : colors.text) : 'transparent',
