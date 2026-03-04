@@ -10,9 +10,18 @@ function toKebab(prop: string): string {
   return prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase())
 }
 
+/** Sanitize a CSS class name so it's a valid CSS identifier.
+ *  - replaces non-alphanum (except - _) with -
+ *  - prefixes with _ if starts with a digit or hyphen+digit */
+function safeCSSName(name: string): string {
+  let s = name.replace(/[^a-zA-Z0-9_-]/g, '-')
+  if (/^[0-9]/.test(s) || /^-[0-9]/.test(s)) s = '_' + s
+  return s || '_unnamed'
+}
+
 // Свойства, которые нужно пропустить (editor-only)
 const SKIP_PROPS = new Set<string>([
-  'outline', 'outlineOffset', 'boxShadow', 'cursor', 'opacity',
+  'outline', 'outlineOffset', 'boxShadow', 'cursor',
 ])
 
 // Свойства, где значение в px (числовое)
@@ -23,8 +32,7 @@ const PX_PROPS = new Set<string>([
   'borderWidth', 'borderRadius', 'borderTopWidth', 'borderRightWidth',
   'borderBottomWidth', 'borderLeftWidth', 'borderTopLeftRadius',
   'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius',
-  'zIndex', 'letterSpacing',
-  'lineHeight',
+  'letterSpacing',
 ])
 
 // Свойства, значение которых — строка (передаются as-is)
@@ -38,6 +46,11 @@ const STRING_PROPS = new Set<string>([
   'overflow', 'backgroundImage', 'backgroundClip',
   'objectFit', 'objectPosition',
   'top', 'right', 'bottom', 'left',
+])
+
+// Свойства, значение которых — число без единиц (unitless)
+const UNITLESS_PROPS = new Set<string>([
+  'opacity', 'lineHeight', 'zIndex',
 ])
 
 /**
@@ -159,13 +172,15 @@ function stylesToCSS(
 
     if (STRING_PROPS.has(key)) {
       decls.push(`${cssProp}: ${value};`)
-    } else if (PX_PROPS.has(key)) {
-      // zIndex без px
-      if (key === 'zIndex') {
-        decls.push(`${cssProp}: ${value};`)
-      } else {
-        decls.push(`${cssProp}: ${value}px;`)
+      if (key === 'backgroundClip') {
+        decls.push(`-webkit-background-clip: ${value};`)
       }
+    } else if (PX_PROPS.has(key)) {
+      decls.push(`${cssProp}: ${value}px;`)
+    } else if (UNITLESS_PROPS.has(key)) {
+      decls.push(`${cssProp}: ${value};`)
+    } else if (key === 'blendMode') {
+      decls.push(`mix-blend-mode: ${value};`)
     }
   }
 
@@ -182,6 +197,11 @@ function bpDeltaToCSS(
   resolvedAtBp: ElementStyles,
 ): string[] {
   const decls: string[] = []
+
+  // Position override in breakpoint (including static to reset)
+  if (delta.position) {
+    decls.push(`position: ${delta.position};`)
+  }
 
   const paddingKeys = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const
   const marginKeys = ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'] as const
@@ -205,9 +225,21 @@ function bpDeltaToCSS(
     decls.push(`margin: ${t}px ${r}px ${b}px ${l}px;`)
   }
 
+  // Fills in breakpoint overrides
+  const fills = migrateFills(delta)
+  const hasFills = fills && fills.some(f => f.visible)
+  if (hasFills) {
+    decls.push(...fillsToCSSDecls(fills!))
+  }
+
   const handled = new Set<string>([
-    ...paddingKeys, ...marginKeys,
+    ...paddingKeys, ...marginKeys, 'position',
   ])
+  if (hasFills) {
+    handled.add('fills')
+    handled.add('backgroundColor')
+    handled.add('backgroundImage')
+  }
 
   for (const [key, value] of Object.entries(delta)) {
     if (value === undefined || value === null) continue
@@ -218,12 +250,15 @@ function bpDeltaToCSS(
 
     if (STRING_PROPS.has(key)) {
       decls.push(`${cssProp}: ${value};`)
-    } else if (PX_PROPS.has(key)) {
-      if (key === 'zIndex') {
-        decls.push(`${cssProp}: ${value};`)
-      } else {
-        decls.push(`${cssProp}: ${value}px;`)
+      if (key === 'backgroundClip') {
+        decls.push(`-webkit-background-clip: ${value};`)
       }
+    } else if (PX_PROPS.has(key)) {
+      decls.push(`${cssProp}: ${value}px;`)
+    } else if (UNITLESS_PROPS.has(key)) {
+      decls.push(`${cssProp}: ${value};`)
+    } else if (key === 'blendMode') {
+      decls.push(`mix-blend-mode: ${value};`)
     }
   }
 
@@ -294,7 +329,7 @@ export function exportArtboardHTML(
     if (cssClasses && el.classIds) {
       for (const classId of el.classIds) {
         const cls = cssClasses[classId]
-        if (cls) parts.push(cls.name)
+        if (cls) parts.push(safeCSSName(cls.name))
       }
     }
     // Element slug (for local overrides)
@@ -320,10 +355,11 @@ export function exportArtboardHTML(
           const cls = cssClasses[classId]
           if (cls) {
             emittedClassIds.add(classId)
+            const safeName = safeCSSName(cls.name)
             // Base styles
             const baseDecls = stylesToCSS(cls.styles)
             if (baseDecls.length > 0) {
-              cssRules.push(`.${cls.name} { ${baseDecls.join(' ')} }`)
+              cssRules.push(`.${safeName} { ${baseDecls.join(' ')} }`)
             }
             // Breakpoint overrides
             if (cls.breakpointStyles) {
@@ -333,7 +369,7 @@ export function exportArtboardHTML(
                 const resolved = resolveClassStylesForBp(cls, bpId)
                 const bpDecls = bpDeltaToCSS(delta, resolved)
                 if (bpDecls.length > 0) {
-                  mediaRules[bpId].push(`.${cls.name} { ${bpDecls.join(' ')} }`)
+                  mediaRules[bpId].push(`.${safeName} { ${bpDecls.join(' ')} }`)
                 }
               }
             }
@@ -373,28 +409,37 @@ export function exportArtboardHTML(
       : el.positionMode
 
     if (hasClasses) {
-      // Only local overrides (element.styles that differ from class)
-      const localDecls = stylesToCSS(el.styles, effectivePosition)
-      if (localDecls.length > 0) {
-        cssRules.push(`.${slug} { ${localDecls.join(' ')} }`)
+      // Webflow model: class handles all visual styles.
+      // Only emit positionMode if no class provides position.
+      const classHasPosition = el.classIds!.some(cid => {
+        const cls = cssClasses![cid]
+        return cls?.styles?.position != null
+      })
+      if (!classHasPosition) {
+        const pos = effectivePosition
+        if (pos && pos !== 'static') {
+          cssRules.push(`.${slug} { position: ${pos}; }`)
+        }
       }
+      // Skip element breakpoint overrides — class breakpoints are emitted
+      // by collectUsedClasses above.
     } else {
       // No classes — all styles on element (existing behavior)
       const baseDecls = stylesToCSS(el.styles, effectivePosition)
       if (baseDecls.length > 0) {
         cssRules.push(`.${slug} { ${baseDecls.join(' ')} }`)
       }
-    }
 
-    // Breakpoint overrides (element level)
-    for (const bpId of BREAKPOINT_ORDER.slice(1)) {
-      const delta = el.breakpointStyles?.[bpId]
-      if (!delta || Object.keys(delta).length === 0) continue
+      // Breakpoint overrides (element level) — only for non-class elements
+      for (const bpId of BREAKPOINT_ORDER.slice(1)) {
+        const delta = el.breakpointStyles?.[bpId]
+        if (!delta || Object.keys(delta).length === 0) continue
 
-      const resolved = resolveStylesForBp(el, bpId)
-      const bpDecls = bpDeltaToCSS(delta, resolved)
-      if (bpDecls.length > 0) {
-        mediaRules[bpId].push(`.${slug} { ${bpDecls.join(' ')} }`)
+        const resolved = resolveStylesForBp(el, bpId)
+        const bpDecls = bpDeltaToCSS(delta, resolved)
+        if (bpDecls.length > 0) {
+          mediaRules[bpId].push(`.${slug} { ${bpDecls.join(' ')} }`)
+        }
       }
     }
 
@@ -507,6 +552,8 @@ export function exportArtboardHTML(
   <title>${esc(artboard.name)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    img, button, input { display: block; }
+    button, input { border: none; background: none; font: inherit; color: inherit; }
 ${cssRules.map(r => `    ${r}`).join('\n')}
 ${mediaSections.join('\n')}
   </style>
