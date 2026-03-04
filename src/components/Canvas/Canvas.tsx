@@ -164,10 +164,10 @@ export function Canvas({ artboard, previewMode, scale = 1, cameraRef, plain, onA
 
       const finalNumW = pxFallback(state.unitW)
         ? Math.round(newW)
-        : Math.round(state.startNumW * ratioW * 100) / 100
+        : Math.round(state.startNumW * ratioW)
       const finalNumH = pxFallback(state.unitH)
         ? Math.round(newH)
-        : Math.round(state.startNumH * ratioH * 100) / 100
+        : Math.round(state.startNumH * ratioH)
 
       const uW = pxFallback(state.unitW) ? 'px' : state.unitW
       const uH = pxFallback(state.unitH) ? 'px' : state.unitH
