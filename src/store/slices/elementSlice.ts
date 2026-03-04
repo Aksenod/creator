@@ -401,7 +401,7 @@ export const createElementSlice: StateCreator<EditorState, [], [], ElementSlice>
       newElements[newId] = {
         ...el,
         id: newId,
-        name: el.id === clipboard!.element.id ? el.name + ' (copy)' : el.name,
+        name: el.name,
         children: el.children.map(c => idMap[c] ?? c),
       }
     })
@@ -468,7 +468,7 @@ export const createElementSlice: StateCreator<EditorState, [], [], ElementSlice>
       if (!el) return
       newElements[newId] = {
         ...el, id: newId,
-        name: oldId === id ? el.name + ' copy' : el.name,
+        name: el.name,
         children: el.children.map(c => idMap[c] ?? c),
       }
     })
