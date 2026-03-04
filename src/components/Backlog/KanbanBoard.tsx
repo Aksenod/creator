@@ -13,7 +13,7 @@ import { KanbanColumn } from './KanbanColumn'
 import { TaskCard } from './TaskCard'
 import { shadows } from '../../styles/tokens'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
-import type { ResponsiveMode } from '../../App'
+import type { ResponsiveMode } from '../../types/responsive'
 
 const COLUMNS: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'design_review', 'code_review', 'done']
 

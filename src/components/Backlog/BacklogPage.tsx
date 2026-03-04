@@ -6,7 +6,7 @@ import { TaskModal } from './TaskModal'
 import { PinModal } from './PinModal'
 import { colors, statusColors, shadows } from '../../styles/tokens'
 import { ArrowLeft, Lock, Plus } from '@phosphor-icons/react'
-import type { ResponsiveMode } from '../../App'
+import type { ResponsiveMode } from '../../types/responsive'
 import type { TaskStatus } from '../../types/backlog'
 
 // Mobile groups 6 statuses into 4 filters

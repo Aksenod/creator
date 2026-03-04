@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ErrorFallback } from '../shared/ErrorFallback'
 import { useEditorStore } from '../../store'
+import { useShallow } from 'zustand/react/shallow'
 import { useActiveProjectId, useProject, useActiveArtboardId, useSelectedElementId, useActiveBreakpointId, useGridEditElementId, useSelectedArtboardIds } from '../../store/selectors'
 import { useCanvasTransform } from '../../hooks/useCanvasTransform'
 import { Layers } from '../Layers/Layers'
@@ -37,7 +38,7 @@ export function CanvasEditor() {
     closeProject, addArtboard, deleteArtboard, setActiveArtboard, selectElement,
     setActiveBreakpoint, deleteElement, undo, redo, copyElement, pasteElement,
     duplicateElement, toggleElementVisibility, wrapElementsInDiv,
-  } = useEditorStore(s => ({
+  } = useEditorStore(useShallow(s => ({
     closeProject: s.closeProject,
     addArtboard: s.addArtboard,
     deleteArtboard: s.deleteArtboard,
@@ -52,7 +53,7 @@ export function CanvasEditor() {
     duplicateElement: s.duplicateElement,
     toggleElementVisibility: s.toggleElementVisibility,
     wrapElementsInDiv: s.wrapElementsInDiv,
-  }))
+  })))
 
   const [isPreview, setIsPreview] = useState(false)
   const [panelsHidden, setPanelsHidden] = useState(false)

@@ -4,7 +4,7 @@ import { SortableTaskCard } from './TaskCard'
 import { useBacklogStore } from '../../store/backlogStore'
 import { colors, statusColors } from '../../styles/tokens'
 import type { BacklogTask, TaskStatus } from '../../types/backlog'
-import type { ResponsiveMode } from '../../App'
+import type { ResponsiveMode } from '../../types/responsive'
 
 const COLUMN_CONFIG: Record<TaskStatus, { label: string }> = {
   backlog: { label: 'Backlog' },

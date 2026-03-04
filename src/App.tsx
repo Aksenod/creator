@@ -9,7 +9,8 @@ import { CanvasEditor } from './components/CanvasEditor'
 const BacklogPage = React.lazy(() => import('./components/Backlog').then(m => ({ default: m.BacklogPage })))
 const TeamPage = React.lazy(() => import('./components/Backlog/TeamPage').then(m => ({ default: m.TeamPage })))
 
-export type ResponsiveMode = 'desktop' | 'tablet' | 'mobile'
+import type { ResponsiveMode } from './types/responsive'
+export type { ResponsiveMode }
 
 function useResponsiveMode(): ResponsiveMode {
   const [mode, setMode] = useState<ResponsiveMode>(() => {

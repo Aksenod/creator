@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useEditorStore } from '../../store'
+import { useShallow } from 'zustand/react/shallow'
 import { useSelectedElementId, useSelectedElementIds, useProject, useActiveArtboardId, useActiveBreakpointId } from '../../store/selectors'
 import { CollapsibleSection, PropertyRow } from './shared'
 import { PropertySelect } from './shared/PropertySelect'
@@ -49,11 +50,11 @@ export function Properties() {
   const project = useProject()
   const activeArtboardId = useActiveArtboardId()
   const activeBreakpointId = useActiveBreakpointId()
-  const { updateElement, updateSelectedElements, clearBreakpointStyle } = useEditorStore(s => ({
+  const { updateElement, updateSelectedElements, clearBreakpointStyle } = useEditorStore(useShallow(s => ({
     updateElement: s.updateElement,
     updateSelectedElements: s.updateSelectedElements,
     clearBreakpointStyle: s.clearBreakpointStyle,
-  }))
+  })))
   const updateCanvasSettings = useEditorStore(s => s.updateCanvasSettings)
   const updateArtboard = useEditorStore(s => s.updateArtboard)
 

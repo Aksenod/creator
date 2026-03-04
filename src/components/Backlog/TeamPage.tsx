@@ -2,7 +2,7 @@ import { useEditorStore } from '../../store'
 import { TeamSection } from './TeamSection'
 import { colors, shadows } from '../../styles/tokens'
 import { ArrowLeft } from '@phosphor-icons/react'
-import type { ResponsiveMode } from '../../App'
+import type { ResponsiveMode } from '../../types/responsive'
 
 export function TeamPage({ responsiveMode }: { responsiveMode: ResponsiveMode }) {
   const setCurrentView = useEditorStore(s => s.setCurrentView)
